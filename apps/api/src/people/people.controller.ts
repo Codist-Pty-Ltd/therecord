@@ -37,7 +37,7 @@ export class PeopleController {
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiOkResponse({ type: PersonDetailResponseDto })
   async findOne(
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('id', ParseUUIDPipe) id: string,
   ): Promise<PersonDetailResponseDto> {
     return this.people.findOne(id);
   }
