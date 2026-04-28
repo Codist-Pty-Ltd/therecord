@@ -1,0 +1,43 @@
+{
+  "name": "therecord",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The Record — South African legal intelligence and news timeline platform (Codist).",
+  "author": "Codist <hello@codist.co.za>",
+  "license": "UNLICENSED",
+  "homepage": "https://therecord.codist.co.za",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codist-co-za/therecord.git"
+  },
+  "workspaces": [
+    "apps/web",
+    "apps/api",
+    "packages/shared-types"
+  ],
+  "engines": {
+    "node": ">=20.11.0",
+    "npm": ">=10.2.4"
+  },
+  "scripts": {
+    "dev": "docker compose up",
+    "dev:build": "docker compose up --build",
+    "dev:down": "docker compose down",
+    "prod:up": "docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d",
+    "prod:down": "docker compose -f docker-compose.yml -f docker-compose.prod.yml down",
+    "dev:web": "npm run dev --workspace=@therecord/web",
+    "dev:api": "npm run start:dev --workspace=@therecord/api",
+    "build": "npm run build --workspaces --if-present",
+    "build:web": "npm run build --workspace=@therecord/web",
+    "build:api": "npm run build --workspace=@therecord/api",
+    "build:shared": "npm run build --workspace=@the-record/shared-types",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "ci": "npm run typecheck && npm run lint",
+    "clean": "npm exec --workspaces -- rimraf dist .next .turbo node_modules/.cache"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.5"
+  }
+}

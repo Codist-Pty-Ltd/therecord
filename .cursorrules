@@ -1,0 +1,305 @@
+## ALWAYS READ FIRST
+Before changing ANY of the following,
+read docs/PLATFORM_CONTEXT.md:
+  - Docker compose files
+  - nginx config
+  - CI/CD workflows
+  - Public URLs or API endpoints
+  - Environment variables
+  - Port numbers
+  - Deploy scripts
+
+## Canonical domains (non-negotiable)
+Production: https://therecord.co.za
+API:        https://therecord.co.za/api
+Dev web:    http://localhost:3090
+Dev API:    http://localhost:3091
+
+## Server
+VPS:        65.109.7.45
+User:       therecord
+App dir:    /opt/therecord/app
+Network:    therecord-network
+Web port:   127.0.0.1:3090 → container:3000
+API port:   127.0.0.1:3091 → container:3091
+
+## Never touch
+billable-network
+warroom-network
+Any other user's containers or dirs
+
+# THE RECORD — .cursorrules
+# Codist | therecord.codist.co.za
+# Ntoky — Senior Full-Stack Developer, Johannesburg (SAST / UTC+2)
+
+## Project Identity
+This is "The Record" — a South African legal intelligence and news timeline platform.
+It tracks real-world stories from incident → charges → court → outcome.
+It maps events to the South African Constitution, statutes (PRECCA, SAPS Act, etc.), and case law.
+It must explain legal concepts in plain English understandable to a child.
+
+## Data Architecture — Commissions
+The Record tracks 22 South African national commissions of inquiry since 1994.
+21 are seeded in commissions-master.seed.ts. The 22nd (Madlanga Commission)
+is seeded in mkhwanazi.seed.ts and links to the Mkhwanazi story.
+The /commissions API endpoint must JOIN across both sources — query the
+commissions table directly (all 22 rows exist there after both seeds run).
+The count discrepancy only exists during local dev if seeds are run out of order.
+Commissions are FIRST-CLASS entities — not children of stories.
+Stories can belong to a commission (e.g., "Day 1 of Zondo hearings").
+A commission has its own timeline reconstructed from its linked stories' events.
+
+The key cross-linking relationships are:
+  Commission → Person (via commission_people, with role + summary)
+  Commission → LawSection (via commission_law_sections, with usage_type)
+  Story → Commission (optional ManyToOne foreign key)
+  Person → Story (via story_people)
+  Person → Commission (via commission_people)
+  Ad Hoc Committee → LawSection (via adhoc_committee_law_sections, with usage_type)
+  SiuProclamation → LawSection / ConstitutionSection (via siu_proclamation_law_sections, with usage_type)
+  Story → law / constitution via event_legal_references on timeline events
+  
+This means:
+  Clicking a law section shows: commissions that invoked it (commission_law_sections) +
+    ad hoc committees (adhoc_committee_law_sections) + SIU proclamations
+    (siu_proclamation_law_sections) + stories (event_legal_references) — the full
+    four-way cross-link; constitution section detail uses the same pattern where applicable
+  Clicking a person shows: all commissions they appeared in + all stories + timeline
+  Clicking a commission shows: full timeline built from its stories' events
+  The /commissions page shows 30 years of South African accountability history
+
+Never flatten these relationships. Always preserve the graph structure.
+When fetching a commission, always include: people, law_sections, and linked stories.
+When fetching a person, always include: commissions + stories + merged event timeline.
+
+## Ad Hoc Parliamentary Committees
+Ad Hoc Committees are DISTINCT from Commissions of Inquiry — they are 
+a separate branch of government (Legislature, not Executive).
+
+Key distinctions:
+  Commission of Inquiry → Executive branch → President → Section 84(2)(f)
+  Ad Hoc Committee      → Legislative branch → National Assembly → Rule 253
+
+Entity: AdhocCommittee (adhoc_committees table)
+Join tables: adhoc_committee_people, adhoc_committee_law_sections
+Cross-link to Commission: adhoc_committee.related_commission_id (nullable FK)
+Cross-link from Story: story.adhoc_committee (nullable ManyToOne)
+
+A story CAN and SHOULD link to BOTH a commission AND an ad hoc committee 
+when both bodies investigate the same matter. Example: Mkhwanazi story 
+links to Madlanga Commission (executive) AND Mkhwanazi Ad Hoc Committee 
+(legislative).
+
+The category enum is:
+  'accountability' | 'constitutional_amendment' | 'legislation' |
+  'appointments' | 'disaster_response' | 'oversight' | 'other'
+
+The produced_accountability_action boolean answers:
+  "Did this committee result in anyone being removed, a law changing, 
+   or a tangible consequence?" 
+  (Different from produced_prosecutions — committees cannot prosecute.)
+
+Notable: The Mkhwebane Section 194 inquiry (2022/2023) was the first time 
+in South African history that a Chapter 9 institution head was removed 
+through the constitutional mechanism. Always treat this as historically 
+significant when displaying that committee.
+
+Seed order (with ad hoc committees added):
+  1. laws + law_sections (all enabling legislation)
+  2. constitution_sections
+  3. people (all key figures)
+  4. commissions-master.seed.ts (22 commissions)
+  5. adhoc-committees.seed.ts (10 committees — must run after commissions 
+     because Mkhwanazi committee links to Madlanga Commission)
+  6. mkhwanazi.seed.ts (links to both — must run last)
+
+API endpoints for ad hoc committees:
+  GET /api/adhoc-committees
+  GET /api/adhoc-committees/:slug
+  GET /api/adhoc-committees/by-parliament/:term
+
+Never conflate Ad Hoc Committees with Commissions in UI copy.
+Always label them as separate mechanisms with separate constitutional origins.
+The /commissions page shows both, tabbed — but they are never mixed in the same list.
+
+## Special Investigating Unit (SIU)
+The SIU is a PERMANENT statutory body — fundamentally different from 
+Commissions and Ad Hoc Committees which are created per inquiry.
+
+Key facts:
+  Established: 14 July 1997 by Presidential Proclamation R24 of 1997
+  Legislation: Special Investigating Units and Special Tribunals Act 74 of 1996
+  Branch: Executive (statutory body under the Presidency)
+  Activated by: Presidential Proclamation (one per investigation scope)
+  Powers: Subpoena witnesses, bank records, cellphone records, search and seizure
+  Cannot: Arrest, prosecute, or impose criminal sentences
+
+The THREE-WAY REFERRAL CHAIN is the SIU's core mechanism — always represent it:
+  Criminal evidence   → NPA (National Prosecuting Authority) for prosecution
+  Misconduct         → Departmental heads for disciplinary action  
+  Contract irregularities → Special Tribunal for cancellation and recovery
+
+The Special Tribunal (est. 2019) hears ONLY SIU civil matters.
+It is faster and cheaper than High Courts.
+It can: cancel contracts, freeze assets, order money recovery.
+Case numbers follow format: GP01/2021 (province prefix + number + year).
+
+Entities:
+  SiuBody (singleton — one row, the institution itself)
+  SiuProclamation (one per investigation — the activation mechanism)
+  SiuInvestigationOutcome (OneToOne with proclamation — financial figures)
+  SpecialTribunal (singleton — the court body)
+  SpecialTribunalCase (many per proclamation — individual civil cases)
+  SiuProclamationPeople (join: proclamation ↔ person with role)
+  SiuProclamationStories (join: proclamation ↔ story)
+  SiuProclamationLawSection (join: proclamation → law_section and/or constitution_section)
+
+  SiuProclamationLawSections joins proclamations to law sections
+  with a usage_type that differs from commission usage_type:
+    'enabling'        = law that gave SIU authority (SIU Act Sec 2, Constitution 84(2)(f) — row may point at constitution section 84)
+    'investigated'    = law whose violations were probed
+    'violated'        = law confirmed violated by investigation findings  
+    'recovered_under' = civil remedy law used to recover money (often POCA forfeiture)
+  Never use 'recommended' for SIU — that is commission-specific.
+
+Story cross-links:
+  story.siu_proclamation → nullable FK
+  A story can now link to commission + adhoc_committee + siu_proclamation simultaneously
+  Example: Eskom story links to Zondo Commission AND Proclamation R29/2019
+
+Financial figures are stored as bigint (ZAR cents? No — store as full rands).
+Always display with "R" prefix and format as "R2.1bn", "R389m", "R64.8bn".
+Never display raw numbers — always format in the UI.
+
+The SIU page (/siu) leads with financial impact — money is the story.
+The "produced_recoveries" boolean equivalent for SIU is actual_recovered_rands > 0.
+
+API endpoints:
+  GET /api/siu                         ← institution info + aggregate stats
+  GET /api/siu/proclamations           ← all proclamations (paginated)
+  GET /api/siu/proclamations/:slug     ← full proclamation detail
+  GET /api/siu/tribunal                ← Special Tribunal + all cases
+  GET /api/siu/tribunal/:caseNumber    ← single case
+  GET /api/siu/stats                   ← aggregate financial stats
+
+Seed order (updated):
+  1. laws + constitution_sections
+  2. people
+  3. commissions-master.seed.ts
+  4. adhoc-committees.seed.ts
+  5. siu.seed.ts                 ← after commissions + adhoc (links to both)
+  6. mkhwanazi.seed.ts           ← always last (links to everything)
+
+SABC cross-link: Proclamation R01/2019 links to adhoc-sabc-board-2017
+  (the Ad Hoc Committee found the board unfit; the SIU then recovered money)
+Transnet/Eskom cross-links: Both proclamations link to zondo-commission-state-capture
+ACSA Proclamation R228/2024 also links to zondo-commission-state-capture
+
+## Commission Domains (valid enum values for commissions, extended from stories):
+  'criminal_justice' | 'corruption' | 'politics' | 'organised_crime' | 'business' | 'labour'
+  | 'human_rights' | 'financial' | 'education' | 'policing' | 'public_safety'
+
+  -- corruption is distinct from criminal_justice:
+  --   criminal_justice = process integrity (NPA fitness, SAPS conduct, court system)
+  --   corruption       = substantive corrupt acts (state capture, arms deal, tender fraud)
+
+## Commissions seed order (important — foreign keys must exist first):
+  1. laws + law_sections (all enabling legislation)
+  2. constitution_sections
+  3. people (all key figures across all commissions)
+  4. commissions-master.seed.ts (all 22 commissions)
+  5. mkhwanazi.seed.ts (Mkhwanazi story — links to Madlanga commission which now exists)
+
+## The "produced_prosecutions" boolean is important business logic:
+  It answers the question every South African asks: "Did anything actually happen?"
+  Always display this prominently on commission pages.
+  Never hide it or soften it.
+
+## Monorepo Layout
+- apps/web       → Next.js 15 App Router (frontend)
+- apps/api       → NestJS 10 (backend orchestration)
+- apps/intelligence → Python FastAPI (NLP / AI processing)
+- packages/shared-types → TypeScript types shared across apps
+
+## Stack — Never Deviate
+- Frontend:  Next.js 15, App Router, TypeScript, Tailwind CSS, Framer Motion
+- Backend:   NestJS 10, TypeScript, TypeORM, PostgreSQL 16
+- AI Layer:  Python 3.12, FastAPI, spaCy, Anthropic SDK
+- Database:  PostgreSQL 16 (single instance, separate schema per concern)
+- Container: Docker + Docker Compose (dev and prod)
+- CI/CD:     GitHub Actions → SSH deploy to Hetzner VPS 65.109.7.45
+- User:      therecord (isolated, same pattern as warroom and billable)
+- Port:      3090 (Next.js container → nginx)
+- Network:   therecord-network (isolated from billable-network and warroom-network)
+
+## Design System — Non-Negotiable
+- Mobile-first. Every component is designed for 375px first. Desktop is enhancement.
+- Aesthetic: editorial, typographic, serious but accessible. Think NYT + Swiss design.
+- Typography: Instrument Serif (headings), Inter (body), JetBrains Mono (legal refs, codes)
+- Palette: warm cream #FAF7F2 (bg), charcoal #1C1C1E (text), burnt amber #C8651B (accent),
+           slate blue #3B5EA6 (legal/constitutional), deep red #B91C1C (alerts/charges)
+- Timeline: vertical line down the left (mobile) or center (desktop), animated nodes
+- Animations: Framer Motion — scroll-triggered reveals, staggered children, smooth page transitions
+- Never use card grids for stories. Stories are threads, not cards.
+- Legal references always appear in a distinct "legal panel" style — indented, slate blue border-left.
+- Constitutional sections get a gold (#D4A017) left border to distinguish them.
+
+## Code Standards
+- TypeScript strict mode everywhere. No `any`. No implicit returns.
+- NestJS: service/controller/module pattern. DTOs for all request/response shapes.
+- Next.js: Server Components by default. Client Components only when interaction needed.
+- All database access goes through TypeORM repositories in NestJS. Never raw SQL in controllers.
+- Python: type hints everywhere. Pydantic models for all API request/response.
+- No inline styles in JSX. Tailwind utility classes only.
+- Every entity has UUID primary key (gen_random_uuid()).
+- All timestamps in UTC. Display in SAST on the frontend.
+
+## File Naming
+- Next.js pages: app/[feature]/page.tsx
+- Next.js components: components/[Feature]/[ComponentName].tsx
+- NestJS modules: src/[feature]/[feature].module.ts
+- NestJS services: src/[feature]/[feature].service.ts
+- Python routers: routers/[feature].py
+
+## Search
+Search is a first-class feature, not an afterthought.
+
+API endpoint: `GET /api/search?q=&types=&limit=10`
+Minimum query length: 2 characters
+Returns: `SearchResult[]` blended and sorted; response includes `total` for pagination.
+Each `SearchResult` has a pre-computed `url` field for direct navigation (use `next/link` or `router.push`).
+
+Three search surfaces:
+1. **GlobalSearch** overlay — ⌘K / Ctrl+K, header search button, `/` when not focused in an input. State: `apps/web/stores/search.store.ts` (zustand `isOpen` + `open` / `close` / `toggle`). Mounted in `app/layout.tsx`.
+2. **`/search` page** — shareable, server-rendered, URL state via `?q=&types=`, `generateMetadata` for titles.
+3. **Homepage `SmartSearch`** — calls the real `GET /api/search` (e.g. `limit=6`), not client-side filtering of page props.
+
+All three use the same `SearchResult` type from `@the-record/shared-types` and navigate to `result.url` on selection.
+
+Recent queries in the overlay: `localStorage` key `the-record-recent-searches` (max 5, `{ query, timestamp }`).
+
+**Never** implement search by filtering large prop arrays in the client — always call the API.
+
+## Environment
+- Dev: docker compose up (all three services + postgres)
+- Prod: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+- Never commit .env files. .env.example is always committed.
+- ANTHROPIC_API_KEY is used by the intelligence service only.
+
+## Production Infrastructure
+- Server: Hetzner VPS 65.109.7.45
+- App dir: /opt/therecord
+- App user: therecord
+- Deploy key: /home/therecord/.ssh/therecord_deploy
+- Docker network: therecord-network
+- Nginx vhost: therecord.codist.co.za → 127.0.0.1:3090
+- SSL: Let's Encrypt (certbot, auto-renews)
+- DO NOT touch: billable-network, warroom-network, or any other user's containers
+
+## Cursor Behaviour
+- When asked to create a file, create the complete file. No placeholders.
+- When asked to scaffold a module, create all files in the module (controller, service, module, dto).
+- When writing Tailwind, always think mobile-first: base styles for mobile, md: for tablet, lg: for desktop.
+- When writing animations, use Framer Motion variants with staggerChildren.
+- Always add db indexes on foreign keys and frequently queried columns.
+- When writing Python, always use async def and await for IO operations.

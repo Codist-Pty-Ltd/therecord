@@ -1,0 +1,86 @@
+# ---------------------------------------------------------------------------
+# The Record — Production deploy
+# Pushes to main trigger an SSH deploy to the Hetzner VPS (65.109.7.45).
+#
+# Required GitHub repository secrets (Settings → Secrets and variables → Actions):
+#   SERVER_HOST     = 65.109.7.45
+#   SERVER_USER     = therecord
+#   SERVER_SSH_KEY  = full contents of the ed25519 private key used to SSH
+#                     *into* the VPS (NOT the therecord_deploy key, which
+#                     lives on the server and is used to git pull from GitHub)
+#   APP_DIR         = /opt/therecord
+#
+# Server prerequisites (one-time, outside this workflow):
+#   - /opt/therecord is a git clone of this repo, owned by user `therecord`.
+#   - ~/.ssh/therecord_deploy is an ed25519 deploy key whose public half is
+#     registered on this GitHub repo as a deploy key with read access.
+#   - docker + docker compose v2 are installed and the `therecord` user is
+#     in the `docker` group.
+# ---------------------------------------------------------------------------
+
+name: Deploy to Hetzner
+
+on:
+  push:
+    branches:
+      - main
+
+# Prevent overlapping deploys. Queued runs wait for the current one to
+# finish rather than running in parallel (which would race on the server).
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to production VPS
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Show deployment context
+        run: |
+          echo "Commit   : ${GITHUB_SHA}"
+          echo "Actor    : ${GITHUB_ACTOR}"
+          echo "Ref      : ${GITHUB_REF}"
+          echo "Target   : ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.APP_DIR }}"
+          echo "Message  : ${{ github.event.head_commit.message }}"
+
+      - name: Pull, migrate, rebuild, and prune
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          script_stop: true
+          command_timeout: 15m
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.APP_DIR }}"
+            GIT_SSH_COMMAND="ssh -i ~/.ssh/therecord_deploy" git pull origin main
+            echo "--- latest commit on server ---"
+            git log -1 --oneline
+            # Run migrations BEFORE rebuilding (against the existing running DB)
+            docker exec therecord-api npm run migration:run
+            docker compose \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
+              up -d --build
+            docker image prune -f
+
+      - name: Show running containers
+        if: always()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          script_stop: false
+          script: |
+            cd "${{ secrets.APP_DIR }}"
+            docker compose \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
+              ps

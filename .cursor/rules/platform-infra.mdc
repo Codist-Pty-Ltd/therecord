@@ -1,0 +1,13 @@
+---
+description: Read platform docs before changing deploy, Docker, CI, domains, env, or public URLs
+alwaysApply: true
+---
+
+# Platform & infrastructure
+
+Before editing **Docker Compose**, **GitHub Actions**, **`.env.example`**, **nginx / VPS deploy scripts**, **`API_URL` / `NEXT_PUBLIC_API_URL`**, **`metadataBase`**, **canonical/Open Graph URLs**, or **production hostnames**:
+
+1. Read **`docs/PLATFORM_CONTEXT.md`** for canonical ports (`3090` host→web `:3000`, `3091` API, `8001` intelligence, `5432` Postgres), domain notes (`therecord.codist.co.za` vs `therecord.co.za`), CI secrets, and cut-over checklist.
+2. Respect **`.cursorrules`** for product identity, data model (commissions/ad hoc/SIU/search), stack, and Hetzner layout.
+
+Do not assume ports or domains from memory if this doc or compose files contradict.

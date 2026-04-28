@@ -1,0 +1,218 @@
+# ---------------------------------------------------------------------------
+# The Record — continuous integration
+# Runs on every pull request and on pushes to main (deploy is separate).
+# ---------------------------------------------------------------------------
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck:
+    name: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck web
+        run: npm run typecheck --workspace=apps/web
+
+      - name: Typecheck API
+        run: npm run typecheck --workspace=apps/api
+
+      - name: Typecheck shared-types
+        run: npm run typecheck --workspace=packages/shared-types
+
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint web
+        run: npm run lint --workspace=apps/web
+
+      - name: Lint API
+        run: npm run lint --workspace=apps/api
+
+  api-smoke-test:
+    name: api-smoke-test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: therecord_test
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: therecord_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://therecord_test:testpass@localhost:5432/therecord_test
+      NODE_ENV: test
+      INGESTION_API_KEY: ci-smoke-ingestion-key
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build API
+        run: npm run build --workspace=apps/api
+
+      - name: Run database migrations
+        run: npm run migration:run --workspace=apps/api
+
+      - name: Start API
+        run: |
+          set -e
+          cd apps/api
+          export NODE_ENV=test
+          export PORT=3091
+          nohup node dist/main.js > /tmp/therecord-api.log 2>&1 &
+          echo $! > /tmp/therecord-api.pid
+          sleep 2
+
+      - name: Wait for health
+        run: |
+          curl -fsS --retry 10 --retry-delay 2 --retry-connrefused \
+            http://127.0.0.1:3091/api/health
+
+      - name: Run smoke tests
+        run: npm run test:smoke --workspace=apps/api
+
+      - name: Stop API
+        if: always()
+        run: |
+          if [ -f /tmp/therecord-api.pid ]; then
+            kill "$(cat /tmp/therecord-api.pid)" 2>/dev/null || true
+          fi
+
+  intelligence-lint:
+    name: intelligence-lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ruff and mypy
+        run: pip install ruff mypy --break-system-packages
+
+      - name: Ruff
+        run: (cd apps/intelligence && ruff check .)
+
+      - name: Mypy
+        run: (cd apps/intelligence && mypy . --ignore-missing-imports)
+
+  web-build:
+    name: web-build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: therecord_test
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: therecord_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://therecord_test:testpass@localhost:5432/therecord_test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build API
+        run: npm run build --workspace=apps/api
+
+      - name: Run database migrations
+        run: npm run migration:run --workspace=apps/api
+
+      - name: Start API for SSG
+        run: |
+          set -e
+          cd apps/api
+          export NODE_ENV=production
+          export PORT=3091
+          export INGESTION_API_KEY=ci-build-placeholder
+          nohup node dist/main.js > /tmp/ci-next-build-api.log 2>&1 &
+          echo $! > /tmp/ci-next-build-api.pid
+          sleep 2
+
+      - name: Wait for API
+        run: |
+          curl -fsS --retry 10 --retry-delay 2 --retry-connrefused \
+            http://127.0.0.1:3091/api/health
+
+      - name: Build web
+        env:
+          # Server-side RSC fetches (API_URL) + browser JSON (NEXT_PUBLIC_API_URL)
+          API_URL: http://127.0.0.1:3091
+          NEXT_PUBLIC_API_URL: http://127.0.0.1:3091
+        run: npm run build --workspace=apps/web
+
+      - name: Stop API
+        if: always()
+        run: |
+          if [ -f /tmp/ci-next-build-api.pid ]; then
+            kill "$(cat /tmp/ci-next-build-api.pid)" 2>/dev/null || true
+          fi

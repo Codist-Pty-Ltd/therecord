@@ -1,0 +1,63 @@
+# ---------------------------------------------------------------------------
+# The Record — production override
+# Usage:   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# This file ONLY applies deltas to docker-compose.yml:
+#   - Strips all bind-mount volumes (no source mounting in prod).
+#   - Forces NODE_ENV=production for Node services.
+#   - Adds restart: unless-stopped to every container.
+#   - Drops port exposures except 127.0.0.1:3090:3000 for web
+#     (nginx on the host proxies the public domain to that port).
+#
+# Requires: Docker Compose >= 2.20 (for the !override YAML tag).
+# ---------------------------------------------------------------------------
+
+services:
+  # --------------------------------------------------------------------- db
+  postgres:
+    restart: unless-stopped
+    ports: !override []
+
+  # -------------------------------------------------------------------- api
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+      target: runner
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      PORT: ${NESTJS_PORT:-3091}
+      INTELLIGENCE_URL: ${INTELLIGENCE_URL:-http://intelligence:8001}
+      INTELLIGENCE_TIMEOUT_MS: ${INTELLIGENCE_TIMEOUT_MS:-30000}
+    ports: !override []
+    volumes: !override []
+
+  # ----------------------------------------------------------- intelligence
+  intelligence:
+    restart: unless-stopped
+    command: uvicorn main:app --host 0.0.0.0 --port 8001
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      DATABASE_URL: ${DATABASE_URL}
+      ENVIRONMENT: production
+    ports: !override []
+    volumes: !override []
+
+  # -------------------------------------------------------------------- web
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: runner
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      # Server-side fetches stay on the docker network (therecord-api).
+      API_URL: http://api:3091
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://therecord.codist.co.za/api}
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports: !override
+      - "127.0.0.1:3090:3000"
+    volumes: !override []

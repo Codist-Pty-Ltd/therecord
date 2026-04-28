@@ -1,0 +1,117 @@
+# ---------------------------------------------------------------------------
+# The Record — local development stack
+# Usage:   docker compose up               (reads this file + .env)
+#          docker compose up --build       (force image rebuild)
+#          docker compose down             (stop and remove containers)
+# ---------------------------------------------------------------------------
+
+services:
+  # --------------------------------------------------------------------- db
+  postgres:
+    image: postgres:16-alpine
+    container_name: therecord-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - therecord_postgres_data:/var/lib/postgresql/data
+    networks:
+      - therecord-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # -------------------------------------------------------------------- api
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+      target: development
+    container_name: therecord-api
+    ports:
+      - "127.0.0.1:3091:3091"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: ${DATABASE_URL}
+      PORT: ${NESTJS_PORT:-3091}
+      INTELLIGENCE_URL: ${INTELLIGENCE_URL:-http://intelligence:8001}
+      INTELLIGENCE_TIMEOUT_MS: ${INTELLIGENCE_TIMEOUT_MS:-30000}
+      INGESTION_ENABLED: ${INGESTION_ENABLED:-false}
+      INGESTION_API_KEY: ${INGESTION_API_KEY:-}
+    volumes:
+      - ./apps/api/src:/app/src
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - therecord-network
+
+  # ----------------------------------------------------------- intelligence
+  intelligence:
+    build:
+      context: ./apps/intelligence
+      dockerfile: Dockerfile
+    container_name: therecord-intelligence
+    command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+    ports:
+      - "127.0.0.1:8001:8001"
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      DATABASE_URL: ${DATABASE_URL}
+      ENVIRONMENT: development
+    volumes:
+      - ./apps/intelligence:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - therecord-network
+
+  # -------------------------------------------------------------------- web
+  web:
+    build:
+      # Build context is the monorepo root so the Dockerfile can also pull in
+      # packages/shared-types (a workspace dependency of apps/web).
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: development
+    container_name: therecord-web
+    ports:
+      - "127.0.0.1:3090:3000"
+    environment:
+      NODE_ENV: development
+      # Server-side fetches from Next RSC → hits the api container directly.
+      API_URL: http://api:3091
+      # Browser-side fetches → goes out through the host port binding.
+      NEXT_PUBLIC_API_URL: http://localhost:3091
+      NEXT_TELEMETRY_DISABLED: "1"
+    volumes:
+      # Source mounts for hot reload. The container WORKDIR is /repo/apps/web.
+      - ./apps/web:/repo/apps/web
+      - ./packages/shared-types:/repo/packages/shared-types
+      # Prevent host node_modules / .next from clobbering the container's.
+      - /repo/node_modules
+      - /repo/apps/web/node_modules
+      - /repo/apps/web/.next
+    depends_on:
+      - api
+    networks:
+      - therecord-network
+
+# ----------------------------------------------------------------- networks
+networks:
+  therecord-network:
+    name: therecord-network
+    driver: bridge
+
+# ------------------------------------------------------------------ volumes
+volumes:
+  therecord_postgres_data:
+    name: therecord_postgres_data

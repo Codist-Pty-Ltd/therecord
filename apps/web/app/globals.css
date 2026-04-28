@@ -1,0 +1,164 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-cream text-charcoal font-sans;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-serif tracking-tight;
+  }
+
+  ::selection {
+    @apply bg-amber/25 text-charcoal;
+  }
+
+  /* Improve tap target size on mobile without visual change. */
+  button,
+  [role="button"],
+  a {
+    @apply touch-manipulation;
+  }
+}
+
+@layer utilities {
+  /* Small-caps mono label used for section titles inside legal panels. */
+  .label-smallcaps {
+    @apply font-mono uppercase tracking-[0.2em] text-[10px] md:text-xs;
+  }
+
+  /*
+   * Hides the scrollbar on horizontally-scrolling strips (key people, related
+   * stories, etc.) while preserving scrollability. Mobile Safari / Firefox
+   * / Chromium covered.
+   */
+  .scrollbar-hidden {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Global search overlay — skeleton row shimmer while fetching */
+  .search-skeleton-shimmer {
+    @apply bg-charcoal/[0.06];
+    background-image: linear-gradient(
+      90deg,
+      rgba(28, 28, 30, 0.06) 0%,
+      rgba(200, 101, 27, 0.12) 50%,
+      rgba(28, 28, 30, 0.06) 100%
+    );
+    background-size: 200% 100%;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .search-skeleton-shimmer {
+      animation: search-skeleton-shimmer 1.2s ease-in-out infinite;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Timeline pulse ring — applied to the MOST RECENT timeline node to draw the
+ * eye to the latest development in a story. Respects prefers-reduced-motion.
+ * ------------------------------------------------------------------------- */
+@keyframes record-pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  70% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+.animate-record-pulse {
+  animation: record-pulse-ring 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-record-pulse {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Homepage — ticker and LIVE badge pulse (reduced motion respected in markup)
+ * ------------------------------------------------------------------------- */
+@keyframes homepage-ticker {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.homepage-ticker-track {
+  animation: homepage-ticker 55s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .homepage-ticker-track {
+    animation: none;
+  }
+}
+
+@keyframes homepage-live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.homepage-live-dot {
+  animation: homepage-live-pulse 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .homepage-live-dot {
+    animation: none;
+  }
+}
+
+@keyframes search-skeleton-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}

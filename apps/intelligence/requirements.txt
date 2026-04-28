@@ -1,0 +1,17 @@
+# -----------------------------------------------------------------------------
+# The Record — Intelligence service
+# -----------------------------------------------------------------------------
+# Runtime dependencies, pinned to specific versions. The spaCy English model
+# is NOT listed here — it's installed as a separate `pip install` step in the
+# Dockerfile so pip's resolver doesn't have to evaluate its transitive
+# dependency on spaCy while also resolving all of the other packages (that
+# combination triggers "resolution-too-deep" on pip ≥ 24).
+# -----------------------------------------------------------------------------
+
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+pydantic==2.10.3
+spacy==3.7.6
+anthropic==0.40.0
+httpx==0.28.1
+python-dotenv==1.0.1
