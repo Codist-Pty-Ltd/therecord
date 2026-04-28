@@ -21,8 +21,8 @@ services:
   # -------------------------------------------------------------------- api
   api:
     build:
-      context: ./apps/api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/api/Dockerfile
       target: runner
     restart: unless-stopped
     environment:

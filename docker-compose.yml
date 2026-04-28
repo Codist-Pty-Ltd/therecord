@@ -31,8 +31,8 @@ services:
   # -------------------------------------------------------------------- api
   api:
     build:
-      context: ./apps/api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/api/Dockerfile
       target: development
     container_name: therecord-api
     ports:
@@ -46,7 +46,7 @@ services:
       INGESTION_ENABLED: ${INGESTION_ENABLED:-false}
       INGESTION_API_KEY: ${INGESTION_API_KEY:-}
     volumes:
-      - ./apps/api/src:/app/src
+      - ./apps/api/src:/repo/apps/api/src
     depends_on:
       postgres:
         condition: service_healthy

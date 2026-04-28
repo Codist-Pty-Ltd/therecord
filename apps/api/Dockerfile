@@ -2,29 +2,45 @@
 # ---------------------------------------------------------------------------
 # The Record — NestJS API (apps/api)
 #
-# Build context is apps/api (see docker-compose.yml). The API is deliberately
-# self-contained — it does not import from packages/shared-types — so we can
-# build from its own folder.
+# Build context is the monorepo root (see docker-compose.yml) so `npm ci` uses
+# the root package-lock.json and installs hoisted workspace deps under
+# /repo/node_modules (no separate apps/api/node_modules).
+#
+# The API does not import packages/shared-types; workspace package.json files
+# are still copied so the root lockfile resolves.
 #
 # Multi-stage build:
-#   - builder      : installs all deps and compiles NestJS to dist/
-#   - development  : dev image used by docker-compose.yml (hot reload via
-#                    mounted ./apps/api/src -> /app/src, runs start:dev)
-#   - runner       : lean production image, runs node dist/main
+#   - deps         : npm ci for @therecord/api
+#   - builder      : compiles NestJS to apps/api/dist/
+#   - development  : dev image (start:dev, hot reload)
+#   - runner       : production image, node dist/main
 # ---------------------------------------------------------------------------
+
+# ======================================================================
+# deps
+# ======================================================================
+FROM node:20-alpine AS deps
+
+WORKDIR /repo
+
+COPY package.json package-lock.json ./
+COPY apps/api/package.json apps/api/
+COPY apps/web/package.json apps/web/
+COPY packages/shared-types/package.json packages/shared-types/
+
+RUN npm ci --workspace=@therecord/api
 
 # ======================================================================
 # builder
 # ======================================================================
 FROM node:20-alpine AS builder
 
-WORKDIR /app
+WORKDIR /repo
 
-COPY package.json package-lock.json* ./
-RUN npm install --no-audit --no-fund
-
+COPY --from=deps /repo/node_modules ./node_modules
 COPY . .
-RUN npm run build
+
+RUN npm run build --workspace=@therecord/api
 
 # ======================================================================
 # development  (used by docker-compose.yml, target: development)
@@ -34,12 +50,12 @@ FROM node:20-alpine AS development
 ENV NODE_ENV=development \
     PORT=3091
 
-WORKDIR /app
+WORKDIR /repo
 
-COPY package.json package-lock.json* ./
-RUN npm install --no-audit --no-fund
-
+COPY --from=deps /repo/node_modules ./node_modules
 COPY . .
+
+WORKDIR /repo/apps/api
 
 EXPOSE 3091
 
@@ -53,18 +69,24 @@ FROM node:20-alpine AS runner
 ENV NODE_ENV=production \
     PORT=3091
 
-WORKDIR /app
+WORKDIR /repo
 
 RUN addgroup -g 1001 -S nodejs \
     && adduser -S nestjs -u 1001 -G nodejs
 
-COPY --chown=nestjs:nodejs package.json package-lock.json* ./
-RUN npm install --omit=dev --no-audit --no-fund && npm cache clean --force
+COPY --chown=nestjs:nodejs package.json package-lock.json ./
+COPY --chown=nestjs:nodejs apps/api/package.json apps/api/
+COPY --chown=nestjs:nodejs apps/web/package.json apps/web/
+COPY --chown=nestjs:nodejs packages/shared-types/package.json packages/shared-types/
 
-COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
+RUN npm ci --workspace=@therecord/api --omit=dev --no-audit --no-fund && npm cache clean --force
+
+COPY --from=builder --chown=nestjs:nodejs /repo/apps/api/dist ./apps/api/dist
 
 USER nestjs
 
+WORKDIR /repo/apps/api
+
 EXPOSE 3091
 
-CMD ["node", "dist/main"]
+CMD ["node", "dist/main.js"]

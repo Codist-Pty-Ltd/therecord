@@ -12,14 +12,14 @@
 #         dockerfile: apps/web/Dockerfile
 #
 # Multi-stage build:
-#   - deps         : installs root workspace node_modules
+#   - deps         : root workspace install (hoisted node_modules at /repo/node_modules)
 #   - builder      : runs `next build` with output: 'standalone'
 #   - development  : dev image used by docker-compose.yml (next dev, hot reload)
 #   - runner       : lean production image, runs Next.js standalone server
 # ---------------------------------------------------------------------------
 
 # ======================================================================
-# deps — root-level install of all workspace deps (web + shared-types)
+# deps — install workspace deps for @therecord/web (hoisted to repo root)
 # ======================================================================
 FROM node:20-alpine AS deps
 
@@ -28,13 +28,13 @@ RUN apk add --no-cache libc6-compat
 
 WORKDIR /repo
 
-# Copy just the manifests first so the install layer is cacheable.
-COPY package.json package-lock.json* ./
-COPY apps/web/package.json apps/web/package.json
-COPY packages/shared-types/package.json packages/shared-types/package.json
+# Copy manifests so `npm ci` matches the root lockfile (all workspaces listed).
+COPY package.json package-lock.json ./
+COPY apps/web/package.json apps/web/
+COPY apps/api/package.json apps/api/
+COPY packages/shared-types/package.json packages/shared-types/
 
-# `npm install` (not `ci`) so this still works when no lockfile is committed.
-RUN npm install --no-audit --no-fund
+RUN npm ci --workspace=@therecord/web
 
 # ======================================================================
 # builder — compile Next.js
@@ -47,8 +47,8 @@ WORKDIR /repo
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Hoisted install: only /repo/node_modules exists (apps/web/node_modules is not created).
 COPY --from=deps /repo/node_modules ./node_modules
-COPY --from=deps /repo/apps/web/node_modules ./apps/web/node_modules
 COPY . .
 
 RUN npm run build --workspace=@therecord/web
@@ -68,12 +68,7 @@ ENV NODE_ENV=development \
 
 WORKDIR /repo
 
-COPY package.json package-lock.json* ./
-COPY apps/web/package.json apps/web/package.json
-COPY packages/shared-types/package.json packages/shared-types/package.json
-
-RUN npm install --no-audit --no-fund
-
+COPY --from=deps /repo/node_modules ./node_modules
 COPY . .
 
 WORKDIR /repo/apps/web
@@ -107,6 +102,5 @@ USER nextjs
 
 EXPOSE 3000
 
-# The standalone bundle in a monorepo context keeps the original paths,
-# so the server entry point is apps/web/server.js.
+# Standalone layout in a monorepo keeps traced paths; server entry is under apps/web.
 CMD ["node", "apps/web/server.js"]
