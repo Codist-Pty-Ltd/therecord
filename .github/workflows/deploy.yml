@@ -65,6 +65,8 @@ jobs:
             echo "Waiting 20s for API to start..."
             sleep 20
             docker exec therecord-api \
+              --env-file /opt/therecord/app/.env \
+              therecord-api \
               node /repo/apps/api/dist/database/run-migrations.js
             docker image prune -f
 
