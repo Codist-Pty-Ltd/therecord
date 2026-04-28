@@ -26,6 +26,8 @@ import {
   listCommissions,
 } from "@/lib/api";
 
+export const dynamic = "force-dynamic";
+
 /*
  * Next 15 passes `params` as a Promise — it must be awaited in async server
  * components and metadata functions.
@@ -55,7 +57,7 @@ export async function generateMetadata({
     };
   }
 
-  const canonicalUrl = `https://therecord.codist.co.za/commissions/${commission.slug}`;
+  const canonicalUrl = `https://therecord.co.za/commissions/${commission.slug}`;
   const raw =
     commission.reason_summary?.trim() ||
     commission.plain_english_summary?.trim() ||

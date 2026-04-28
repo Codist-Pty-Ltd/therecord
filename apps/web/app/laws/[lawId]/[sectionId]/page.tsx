@@ -19,6 +19,8 @@ import PlainEnglishPanel from "@/components/Laws/PlainEnglishPanel";
 import { getLawSection } from "@/lib/api";
 import { categoryChipClasses, LAW_CATEGORY_LABELS } from "@/lib/laws";
 
+export const dynamic = "force-dynamic";
+
 interface PageParams {
   lawId: string;
   sectionId: string;
@@ -49,7 +51,7 @@ export async function generateMetadata(
     title,
     description: section.plain_english.slice(0, 200),
     alternates: {
-      canonical: `https://therecord.codist.co.za/laws/${lawId}/${sectionId}`,
+      canonical: `https://therecord.co.za/laws/${lawId}/${sectionId}`,
     },
     openGraph: {
       type: "article",

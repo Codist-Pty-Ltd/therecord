@@ -9,6 +9,8 @@ import StoryHeader from "@/components/Story/StoryHeader";
 import StoryTimeline from "@/components/Timeline/StoryTimeline";
 import { getStory } from "@/lib/api";
 
+export const dynamic = "force-dynamic";
+
 /*
  * Next 15 passes `params` as a Promise — it must be awaited in async server
  * components and metadata functions. See the App Router async params docs.
@@ -48,7 +50,7 @@ export async function generateMetadata({
       ? raw.slice(0, 160)
       : "A story tracked on The Record — South African legal intelligence.";
 
-  const canonicalUrl = `https://therecord.codist.co.za/story/${story.slug}`;
+  const canonicalUrl = `https://therecord.co.za/story/${story.slug}`;
 
   return {
     title,

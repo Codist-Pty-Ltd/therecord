@@ -5,6 +5,8 @@ import { listStories } from "@/lib/api";
 import { PLACEHOLDER_STORIES } from "@/lib/placeholders";
 import type { StorySummary } from "@the-record/shared-types";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "All stories",
   description:

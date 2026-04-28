@@ -165,7 +165,7 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
               the `flex-1` on <motion.nav> above. */}
           <div className="px-6 md:px-10 pb-10 md:pb-12 shrink-0">
             <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-amber">
-              therecord.codist.co.za
+              therecord.co.za
             </span>
           </div>
         </motion.div>

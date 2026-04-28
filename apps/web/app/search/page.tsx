@@ -11,6 +11,8 @@ import {
   typesParamToFilterId,
 } from "@/lib/search-ui";
 
+export const dynamic = "force-dynamic";
+
 const PAGE_SIZE = 10;
 
 function asString(

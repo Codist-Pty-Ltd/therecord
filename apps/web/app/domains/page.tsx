@@ -3,6 +3,8 @@ import Link from "next/link";
 
 import { DOMAINS } from "@/lib/domains";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Domains",
   description:

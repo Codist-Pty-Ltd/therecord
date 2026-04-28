@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   // Emit a standalone server so the Docker `runner` stage can `node server.js`.
   output: "standalone",
 
+  // When `API_URL` is unset at build time, `lib/api.ts` avoids throwing in
+  // production so static generation succeeds; containers set `API_URL` at runtime.
+
   // In a monorepo, tell Next where the workspace root is so file tracing
   // picks up hoisted workspace packages (e.g. @the-record/shared-types).
   outputFileTracingRoot: path.join(__dirname, "..", ".."),
@@ -20,7 +23,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "therecord.codist.co.za",
+        hostname: "therecord.co.za",
       },
     ],
   },

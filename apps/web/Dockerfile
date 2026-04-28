@@ -46,6 +46,8 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /repo
 
 ENV NEXT_TELEMETRY_DISABLED=1
+ARG API_URL=http://localhost:3091
+ENV API_URL=$API_URL 
 
 # Hoisted install: only /repo/node_modules exists (apps/web/node_modules is not created).
 COPY --from=deps /repo/node_modules ./node_modules

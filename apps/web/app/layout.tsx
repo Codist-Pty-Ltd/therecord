@@ -28,7 +28,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://therecord.codist.co.za"),
+  metadataBase: new URL("https://therecord.co.za"),
   title: {
     default: "The Record",
     template: "%s | The Record",

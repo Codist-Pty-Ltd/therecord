@@ -16,12 +16,14 @@ import LawList from "@/components/Laws/LawList";
 import { getLaw, listLaws } from "@/lib/api";
 import { LAW_CATEGORY_LABELS } from "@/lib/laws";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "The Laws — every Act that shapes South African accountability",
   description:
     "Every South African statute applied in commissions, court cases, and investigations on The Record. Each Act explained in plain language, with every section that matters.",
   alternates: {
-    canonical: "https://therecord.codist.co.za/laws",
+    canonical: "https://therecord.co.za/laws",
   },
   openGraph: {
     type: "website",

@@ -23,6 +23,8 @@ import {
 } from "@/lib/domain-routes";
 import type { StorySummary } from "@the-record/shared-types";
 
+export const dynamic = "force-dynamic";
+
 interface DomainPageProps {
   params: Promise<{ name: string }>;
 }
@@ -36,7 +38,7 @@ export async function generateMetadata({
   }
   const domainLabel = domainPageTitleLabel(name);
   const description = `All South African commissions, investigations, and stories in the ${domainLabel} domain.`;
-  const canonical = `https://therecord.codist.co.za/domain/${name}`;
+  const canonical = `https://therecord.co.za/domain/${name}`;
 
   return {
     title: `${domainLabel} | The Record`,

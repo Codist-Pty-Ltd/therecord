@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import { getSiuProclamation } from "@/lib/api";
 import { formatRandsHero, proclamationStatusBadgeClasses } from "@/lib/siu";
 
+export const dynamic = "force-dynamic";
+
 interface PageParams {
   slug: string;
 }

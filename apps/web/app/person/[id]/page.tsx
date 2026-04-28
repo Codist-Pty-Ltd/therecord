@@ -24,6 +24,8 @@ import PersonLegalStatus from "@/components/Person/PersonLegalStatus";
 import PersonStoriesList from "@/components/Person/PersonStoriesList";
 import { ApiError, getPerson } from "@/lib/api";
 
+export const dynamic = "force-dynamic";
+
 /*
  * Next 15 passes `params` as a Promise — it must be awaited in async server
  * components and metadata functions.
@@ -61,7 +63,7 @@ export async function generateMetadata({
     };
   }
 
-  const canonicalUrl = `https://therecord.codist.co.za/person/${person.id}`;
+  const canonicalUrl = `https://therecord.co.za/person/${person.id}`;
   const roleForSeo = person.current_role?.trim() || "Public figure";
   const defaultDescription = `${person.full_name} — ${roleForSeo}. Track their role across South African commissions and investigations.`;
   const description =

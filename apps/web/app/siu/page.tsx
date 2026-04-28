@@ -43,12 +43,14 @@ import type {
   SpecialTribunalCase,
 } from "@the-record/shared-types";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "SIU Investigations",
   description:
     "The Special Investigating Unit's proclamations, Special Tribunal cases, and financial recovery figures.",
   alternates: {
-    canonical: "https://therecord.codist.co.za/siu",
+    canonical: "https://therecord.co.za/siu",
   },
   openGraph: {
     type: "website",

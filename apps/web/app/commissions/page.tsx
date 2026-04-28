@@ -23,12 +23,14 @@ import DistinctionPanel from "@/components/Commissions/DistinctionPanel";
 import { listAdhocCommittees, listCommissions } from "@/lib/api";
 import { producedAnyOutcome } from "@/lib/adhoc";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "30 Years of Accountability — Commissions & Committees",
   description:
     "Every national commission of inquiry and parliamentary ad hoc committee in South Africa since 1994. Two branches of government. One accountability record.",
   alternates: {
-    canonical: "https://therecord.codist.co.za/commissions",
+    canonical: "https://therecord.co.za/commissions",
   },
   openGraph: {
     type: "website",

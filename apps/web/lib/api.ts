@@ -61,9 +61,18 @@ export class ApiError extends Error {
   }
 }
 
-function getApiBaseUrl(): string {
+/**
+ * Resolved backend origin for server-side fetches. Returns `null` when no URL is
+ * configured **and** we're in production so `next build` / static generation
+ * can finish without a live API; pages treat `null` fetches like empty /
+ * not-found state. Runtime (Docker) should always set `API_URL`.
+ */
+function resolveApiBaseUrl(): string | null {
   const url = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL;
   if (!url) {
+    if (process.env.NODE_ENV === "production") {
+      return null;
+    }
     throw new Error(
       "API_URL is not configured — set it in the server environment " +
         "(docker-compose API_URL or .env). Required for server-side fetches.",
@@ -80,7 +89,10 @@ type ApiGetInit = {
 };
 
 async function apiGet<T>(path: string, init?: ApiGetInit): Promise<T | null> {
-  const base = getApiBaseUrl();
+  const base = resolveApiBaseUrl();
+  if (base === null) {
+    return null;
+  }
   const url = `${base}${path}`;
 
   const res = await fetch(

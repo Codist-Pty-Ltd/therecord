@@ -31,6 +31,8 @@ import type {
   StoryDetail,
 } from "@the-record/shared-types";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "The Record — South African news, from incident to verdict.",
   description:
@@ -44,8 +46,6 @@ export const metadata: Metadata = {
     siteName: "The Record",
   },
 };
-
-export const revalidate = 60;
 
 /** Matches the NestJS paginated JSON envelope. */
 interface Paginated<T> {
@@ -127,8 +127,6 @@ function peopleExplorerFromStory(
 }
 
 export default async function HomePage() {
-  const base = apiBase();
-
   const [
     story,
     commissionsRes,

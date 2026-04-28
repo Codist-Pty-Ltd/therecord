@@ -24,6 +24,8 @@ import AdhocRelatedCommittees from "@/components/AdhocCommittees/AdhocRelatedCom
 import AdhocStoriesStrip from "@/components/AdhocCommittees/AdhocStoriesStrip";
 import { getAdhocCommittee, listAdhocCommittees } from "@/lib/api";
 
+export const dynamic = "force-dynamic";
+
 interface AdhocPageProps {
   params: Promise<{ slug: string }>;
 }
@@ -39,7 +41,7 @@ export async function generateMetadata({ params }: AdhocPageProps): Promise<Meta
     };
   }
 
-  const canonicalUrl = `https://therecord.codist.co.za/adhoc-committees/${committee.slug}`;
+  const canonicalUrl = `https://therecord.co.za/adhoc-committees/${committee.slug}`;
   const raw = committee.mandate_summary?.trim() ?? "";
   const description =
     raw.length > 0

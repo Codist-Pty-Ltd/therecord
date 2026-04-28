@@ -8,6 +8,8 @@ import { isPeopleIndexStatus } from "@/lib/people-index";
 
 import type { Person } from "@the-record/shared-types";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Key Figures",
   description:
