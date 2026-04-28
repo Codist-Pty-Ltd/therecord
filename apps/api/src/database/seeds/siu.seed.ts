@@ -38,6 +38,10 @@
  *     Zondo Commission exists for Transnet, Eskom and ACSA proclamations
  *     to back-link to. If Zondo is missing the seed leaves
  *     `related_commission_id` null and logs a deferred warning.
+ *     (It only seeds a handful of laws; POCA, PFMA, PRECCA, the SIU Act text,
+ *     the NPA Act, the Broadcasting Act, etc., are upserted inside this file
+ *     by `ensureSiuCorpusLaws` / `ensureSiuLawSections` so SIU law links work
+ *     even when no other seed created those rows.)
  *
  *   • adhoc-committees.seed.ts — should run BEFORE this seed so the
  *     SABC Board Inquiry committee (`adhoc-sabc-board-2017`) exists for
@@ -1046,6 +1050,52 @@ const SIU_LAWS_TO_UPSERT: readonly LawUpsert[] = [
     full_text_url: 'https://www.gov.za/documents/special-investigating-units-and-special-tribunals-act-0',
   },
   {
+    short_name: 'POCA',
+    name: 'Prevention of Organised Crime Act',
+    act_number: '121 of 1998',
+    category: LawCategory.ORGANISED_CRIME,
+    plain_english:
+      'The law that lets the state fight organised crime — gangs, cartels and syndicates — by creating new crimes like racketeering and by allowing the state to seize property earned from crime.',
+    full_text_url: 'https://www.gov.za/documents/prevention-organised-crime-act',
+  },
+  {
+    short_name: 'PFMA',
+    name: 'Public Finance Management Act',
+    act_number: '1 of 1999',
+    category: LawCategory.OTHER,
+    plain_english:
+      "The main law on how national and provincial government and public entities must spend public money. Irregular, wasteful or fruitless spending — the Auditor-General's language — breaks this Act.",
+    full_text_url: 'https://www.gov.za/documents/public-finance-management-act',
+  },
+  {
+    short_name: 'PRECCA',
+    name: 'Prevention and Combating of Corrupt Activities Act',
+    act_number: '12 of 2004',
+    category: LawCategory.CORRUPTION,
+    plain_english:
+      "South Africa's main anti-corruption law. It says it is illegal to give or take a bribe, to misuse your position for private gain, or to let corruption happen when you know about it.",
+    full_text_url:
+      'https://www.gov.za/documents/prevention-and-combating-corrupt-activities-act',
+  },
+  {
+    short_name: 'NPA Act',
+    name: 'National Prosecuting Authority Act',
+    act_number: '32 of 1998',
+    category: LawCategory.PROSECUTION,
+    plain_english:
+      'The law that creates the National Prosecuting Authority, says how prosecutors are appointed, and guarantees they can decide who to charge independently of politicians.',
+    full_text_url: 'https://www.gov.za/documents/national-prosecuting-authority-act',
+  },
+  {
+    short_name: 'Broadcasting Act',
+    name: 'Broadcasting Act',
+    act_number: '4 of 1999',
+    category: LawCategory.OTHER,
+    plain_english:
+      'The law that governs the South African Broadcasting Corporation (SABC) and all broadcasting in the country. It sets how the SABC board is appointed and what duties it owes the public.',
+    full_text_url: 'https://www.gov.za/documents/broadcasting-act',
+  },
+  {
     short_name: 'MFMA',
     name: 'Municipal Finance Management Act',
     act_number: '56 of 2003',
@@ -1091,10 +1141,31 @@ const SIU_LAW_SECTIONS_TO_UPSERT: readonly LawSectionUpsert[] = [
   },
   {
     law_short: 'POCA',
+    section_number: 'Section 2',
+    section_title: 'Offences relating to racketeering activities',
+    plain_english:
+      'It is a serious crime to be part of a group — a "pattern of racketeering activity" — that repeatedly commits crimes for profit. Civil forfeiture and related remedies under POCA complement racketeering prosecutions.',
+  },
+  {
+    law_short: 'POCA',
     section_number: 'Section 4',
     section_title: 'Money-laundering offences and related',
     plain_english:
       'Criminalises hiding the proceeds of crime. The PPE and Eskom lines of inquiry examined layered payments and front companies where kickbacks may have been laundered.',
+  },
+  {
+    law_short: 'PRECCA',
+    section_number: 'Section 3',
+    section_title: 'General offence of corruption',
+    plain_english:
+      'The core crime: if anyone — in government or out — gives or receives any benefit in exchange for acting in a dishonest, biased or unauthorised way, that is corruption.',
+  },
+  {
+    law_short: 'PRECCA',
+    section_number: 'Section 34',
+    section_title: 'Duty to report corrupt activity exceeding prescribed value',
+    plain_english:
+      'Managers and accountable persons must report serious corruption suspicions — failure to report can itself be prosecuted when the stakes cross the statutory threshold.',
   },
   {
     law_short: 'PFMA',
@@ -1144,6 +1215,13 @@ const SIU_LAW_SECTIONS_TO_UPSERT: readonly LawSectionUpsert[] = [
     section_title: "Minister’s powers and performance of the Agency",
     plain_english:
       'The Minister and SASSA must ensure social grants are actually paid. The investigation into the payment channel contract is read against that duty of delivery.',
+  },
+  {
+    law_short: 'Broadcasting Act',
+    section_number: 'Section 13',
+    section_title: 'Governance and composition of the SABC Board',
+    plain_english:
+      'The SABC Board runs the public broadcaster. Its members are recommended by the National Assembly and appointed by the President, and they answer to Parliament — not to any political party.',
   },
 ];
 
