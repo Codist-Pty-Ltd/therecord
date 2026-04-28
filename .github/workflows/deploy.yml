@@ -57,18 +57,13 @@ jobs:
           command_timeout: 15m
           script: |
             set -euo pipefail
-            cd "${{ secrets.APP_DIR }}"
+            cd "${{ secrets.APP_DIR }}/app"
             GIT_SSH_COMMAND="ssh -i ~/.ssh/therecord_deploy" git pull origin main
             echo "--- latest commit on server ---"
             git log -1 --oneline
-            docker compose \
-              -f docker-compose.yml \
-              -f docker-compose.prod.yml \
-              up -d --build
-            echo "Waiting for API to be ready..."
-            timeout 60 bash -c \
-              'until docker exec therecord-api curl -sf http://localhost:3091/api/health; do sleep 2; done' \
-              || echo "API health check timed out, running migrations anyway..."
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+            echo "Waiting 20s for API to start..."
+            sleep 20
             docker exec therecord-api npm run migration:run
             docker image prune -f
 
@@ -82,8 +77,5 @@ jobs:
           port: 22
           script_stop: false
           script: |
-            cd "${{ secrets.APP_DIR }}"
-            docker compose \
-              -f docker-compose.yml \
-              -f docker-compose.prod.yml \
-              ps
+            cd "${{ secrets.APP_DIR }}/app"
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
