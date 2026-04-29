@@ -13,6 +13,7 @@ import type {
   SimplifyResult,
   StoryCandidate,
 } from './dto/intelligence.dto';
+import type { YoutubeScoredVideoDto } from './dto/youtube-scored.dto';
 
 /**
  * Typed HTTP client for the FastAPI intelligence service.
@@ -95,6 +96,20 @@ export class IntelligenceClient {
       text,
       level,
     });
+  }
+
+  async discoverYoutube(body: {
+    entity_type: string;
+    entity_id: string;
+    entity_name: string;
+    search_queries: string[];
+    max_results_per_query?: number;
+    commission_key?: string;
+    chair_name?: string;
+    domain_keyword?: string;
+    announced_year?: string;
+  }): Promise<YoutubeScoredVideoDto[]> {
+    return this.request<YoutubeScoredVideoDto[]>('/api/youtube/discover', 'POST', body);
   }
 
   /* ------------------------------------------------------- internals */

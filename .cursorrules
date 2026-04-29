@@ -303,3 +303,153 @@ Recent queries in the overlay: `localStorage` key `the-record-recent-searches` (
 - When writing animations, use Framer Motion variants with staggerChildren.
 - Always add db indexes on foreign keys and frequently queried columns.
 - When writing Python, always use async def and await for IO operations.
+
+
+## DEPLOYMENT — READ BEFORE ANY CHANGE
+
+### Critical facts that break deployments if ignored
+
+1. PRODUCTION CONTAINER HAS NO SOURCE FILES
+   The API container only has dist/ (compiled JS).
+   Never reference src/ paths in production commands.
+   Migration runner: /repo/apps/api/dist/database/run-migrations.js
+   Seeds: /repo/apps/api/dist/database/seeds/index.js
+
+2. DATABASE_URL MUST BE IN .env
+   File: /opt/therecord/app/.env
+   Format: DATABASE_URL=postgresql://therecord:PASSWORD@therecord-postgres:5432/therecord
+   The # in the password must be URL-encoded as %23
+   The container reads .env ONLY at creation time.
+   docker restart does NOT reload .env.
+   To apply .env changes: docker compose down && docker compose up -d
+
+3. DOCKER COMPOSE SERVICE NAMES
+   In docker-compose.yml services are named:
+     api, web, intelligence, postgres
+   Container names at runtime:
+     therecord-api, therecord-web,
+     therecord-intelligence, therecord-postgres
+   Use service names with compose commands.
+   Use container names with docker exec.
+
+4. NETWORK
+   Network name: therecord-network
+   Was created manually — has no compose labels.
+   If compose recreates it, containers can communicate.
+   Internal hostnames: therecord-postgres, therecord-api etc.
+
+5. MIGRATION RUNNER
+   DO NOT use: npm run migration:run
+     (requires TypeScript source — not in prod image)
+   DO use: docker exec therecord-api
+     node /repo/apps/api/dist/database/run-migrations.js
+   Must pass DATABASE_URL via --env-file or container env.
+
+6. SEEDS
+   Run ONCE on fresh database only.
+   Safe to re-run (all upserts).
+   Command:
+     docker exec --env-file /tmp/seed.env therecord-api
+     node /repo/apps/api/dist/database/seeds/index.js
+   Order is fixed in index.js:
+     commissions → adhoc → siu → mkhwanazi
+
+7. PASSWORD SPECIAL CHARACTERS
+   POSTGRES_PASSWORD=Tr3c0rd#Hetzner2026!
+   The # breaks bash and URL parsing.
+   In .env file: write as-is (Tr3c0rd#Hetzner2026!)
+   In DATABASE_URL: encode # as %23
+   In bash commands: use python3 -c or heredoc with 'EOF'
+   Never use double quotes around passwords in bash.
+
+8. NEXT.JS PAGES MUST BE force-dynamic
+   All pages that fetch API data must have:
+     export const dynamic = 'force-dynamic'
+   Without this, next build tries to prerender
+   at build time when API is not running → build fails.
+
+9. SPACY VERSION
+   Pin to: spacy==3.7.4
+   Version 3.7.6 is yanked from PyPI.
+   File: apps/intelligence/requirements.txt
+
+10. DOMAIN
+    Production: https://therecord.co.za
+    OLD (retired): therecord.codist.co.za
+    Never use the old domain in any file.
+    metadataBase in layout.tsx: https://therecord.co.za
+    CORS in api/src/main.ts: https://therecord.co.za
+
+### Server details
+VPS:        65.109.7.45
+User:       therecord
+App dir:    /opt/therecord/app
+.env file:  /opt/therecord/app/.env
+Network:    therecord-network
+SSL cert:   /etc/letsencrypt/live/therecord.co.za/
+
+### Port mapping
+  therecord-web:         127.0.0.1:3090 → container:3000
+  therecord-api:         internal only  → container:3091
+  therecord-intelligence: internal only → container:8001
+  therecord-postgres:    internal only  → container:5432
+
+### nginx config
+  File: /etc/nginx/sites-available/therecord
+  / → proxy to 127.0.0.1:3090 (Next.js)
+  /api/ → proxy to 127.0.0.1:3091 (NestJS)
+
+### CI/CD
+  Repo: github.com/ntokyb/therecord
+  deploy.yml triggers on push to main
+  Secrets required:
+    SERVER_HOST = 65.109.7.45
+    SERVER_USER = therecord
+    SERVER_SSH_KEY = private key content
+    APP_DIR = /opt/therecord
+
+### Deploy script order
+  1. git pull
+  2. docker compose up -d --build
+  3. sleep 20
+  4. docker exec therecord-api node
+     /repo/apps/api/dist/database/run-migrations.js
+  5. docker image prune -f
+
+### Common failure modes and fixes
+
+FAILURE: 502 Bad Gateway
+  CAUSE: API container not running or
+         DATABASE_URL not set
+  FIX: docker compose down && up -d
+       Check .env has DATABASE_URL
+
+FAILURE: relation "X" does not exist
+  CAUSE: Migrations not run
+  FIX: Run run-migrations.js
+
+FAILURE: DATABASE_URL is not set
+  CAUSE: Container created without .env
+         OR docker restart used instead of
+         docker compose down/up
+  FIX: docker compose down && up -d
+
+FAILURE: next build fails on /laws page
+  CAUSE: Page missing force-dynamic export
+  FIX: Add export const dynamic = 'force-dynamic'
+
+FAILURE: seed fails — Law "X" not found
+  CAUSE: Seed running before migrations
+         OR law missing from seed data
+  FIX: Run migrations first, then seeds
+
+FAILURE: nginx reload fails
+  CAUSE: Another site config has bad SSL cert
+  FIX: Check /etc/nginx/sites-enabled/ for
+       stale configs, remove broken symlinks
+
+FAILURE: deploy script syntax error
+  CAUSE: bash -c with single quotes or
+         special chars in password
+  FIX: Use simple sequential commands,
+       no subshells, no bash -c '...'

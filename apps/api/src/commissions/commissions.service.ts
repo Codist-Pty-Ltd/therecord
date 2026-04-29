@@ -9,6 +9,7 @@ import { buildPaginationMeta } from '../common/dto/pagination-meta.dto';
 import {
   Commission,
 } from '../entities/commission.entity';
+import { CommissionReport } from '../entities/commission-report.entity';
 import {
   CommissionLawSection,
   CommissionLawSectionUsage,
@@ -30,11 +31,14 @@ import {
   CommissionLawSectionBriefDto,
   CommissionListResponseDto,
   CommissionPersonBriefDto,
+  CommissionReportDto,
+  CommissionReportsGroupedDto,
   CommissionStoryBriefDto,
   CommissionSummaryDto,
   CommissionTimelineEventDto,
   LawSectionsByUsageDto,
 } from './dto/commission-response.dto';
+import { RecommendationsService } from '../recommendations/recommendations.service';
 
 interface StoryWithLatest {
   id: string;
@@ -56,6 +60,8 @@ export class CommissionsService {
   constructor(
     @InjectRepository(Commission)
     private readonly commissionRepo: Repository<Commission>,
+    @InjectRepository(CommissionReport)
+    private readonly commissionReportRepo: Repository<CommissionReport>,
     @InjectRepository(CommissionPerson)
     private readonly commissionPersonRepo: Repository<CommissionPerson>,
     @InjectRepository(CommissionLawSection)
@@ -64,6 +70,7 @@ export class CommissionsService {
     private readonly storyRepo: Repository<Story>,
     @InjectRepository(TimelineEvent)
     private readonly timelineRepo: Repository<TimelineEvent>,
+    private readonly recommendations: RecommendationsService,
   ) {}
 
   /* ---------------------------------------------------------------- list */
@@ -114,14 +121,18 @@ export class CommissionsService {
       throw new NotFoundException(`Commission with slug "${slug}" not found.`);
     }
 
-    const [stories, people, lawSections] = await Promise.all([
+    const [stories, people, lawSections, reports] = await Promise.all([
       this.loadLinkedStories(commission.id),
       this.loadPeople(commission.id),
       this.loadLawSections(commission.id),
+      this.loadReportsForCommission(commission.id),
     ]);
 
     const storyIds = stories.map((s) => s.id);
-    const timeline = await this.loadTimelineForStories(storyIds);
+    const [timeline, recommendations_summary] = await Promise.all([
+      this.loadTimelineForStories(storyIds),
+      this.recommendations.getBundleForCommission(commission.id),
+    ]);
 
     return {
       ...this.mapCommissionSummary(commission, stories.length),
@@ -129,6 +140,43 @@ export class CommissionsService {
       people,
       law_sections: this.groupLawSectionsByUsage(lawSections),
       timeline,
+      reports: reports.map((r) => this.mapReport(r)),
+      recommendations_summary,
+    };
+  }
+
+  /** Grouped official reports for a commission (same rows as `reports` on detail). */
+  async findReportsGroupedBySlug(slug: string): Promise<CommissionReportsGroupedDto> {
+    const commission = await this.commissionRepo.findOne({ where: { slug } });
+    if (!commission) {
+      throw new NotFoundException(`Commission with slug "${slug}" not found.`);
+    }
+
+    const reports = await this.loadReportsForCommission(commission.id);
+    const dtos = reports.map((r) => this.mapReport(r));
+
+    const byType: Partial<Record<string, CommissionReportDto[]>> = {};
+    for (const d of dtos) {
+      const key = d.report_type;
+      if (!byType[key]) byType[key] = [];
+      byType[key]!.push(d);
+    }
+
+    for (const list of Object.values(byType)) {
+      list!.sort((a, b) => {
+        const vnA = a.volume_number ?? 9999;
+        const vnB = b.volume_number ?? 9999;
+        if (vnA !== vnB) return vnA - vnB;
+        const pdA = a.published_date ?? '';
+        const pdB = b.published_date ?? '';
+        if (pdA !== pdB) return pdA.localeCompare(pdB);
+        return a.title.localeCompare(b.title);
+      });
+    }
+
+    return {
+      slug: commission.slug,
+      by_type: byType as CommissionReportsGroupedDto['by_type'],
     };
   }
 
@@ -180,6 +228,42 @@ export class CommissionsService {
   }
 
   /* -------------------------------------------------------------- loaders */
+
+  private async loadReportsForCommission(
+    commissionId: string,
+  ): Promise<CommissionReport[]> {
+    return this.commissionReportRepo
+      .createQueryBuilder('cr')
+      .where('cr.commission_id = :id', { id: commissionId })
+      .orderBy('cr.volume_number', 'ASC', 'NULLS LAST')
+      .addOrderBy('cr.published_date', 'ASC', 'NULLS LAST')
+      .addOrderBy('cr.title', 'ASC')
+      .getMany();
+  }
+
+  private mapReport(r: CommissionReport): CommissionReportDto {
+    return {
+      id: r.id,
+      commission_id: r.commission_id,
+      adhoc_committee_id: r.adhoc_committee_id,
+      siu_proclamation_id: r.siu_proclamation_id,
+      volume_number: r.volume_number,
+      volume_title: r.volume_title,
+      report_type: r.report_type,
+      title: r.title,
+      published_date: r.published_date,
+      page_count: r.page_count,
+      file_size_mb: r.file_size_mb != null ? Number(r.file_size_mb) : null,
+      source_url: r.source_url,
+      mirror_url: r.mirror_url,
+      is_verified: r.is_verified,
+      language: r.language,
+      summary: r.summary,
+      key_findings: r.key_findings,
+      created_at: r.created_at.toISOString(),
+      updated_at: r.updated_at.toISOString(),
+    };
+  }
 
   private async loadLinkedStories(
     commissionId: string,

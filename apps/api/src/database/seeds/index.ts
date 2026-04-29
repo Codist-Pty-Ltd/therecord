@@ -11,6 +11,14 @@
  *      Seeds all historical commissions + their enabling laws + the cross-
  *      commission people (presidents, repeat chairs, repeat subjects).
  *
+ *   1b. reports.seed.ts
+ *      Official report / PDF metadata for commissions with known public URLs.
+ *      Depends on commissions-master (lookup by slug).
+ *
+ *   1c. recommendations.seed.ts
+ *      Key recommendations + implementation status (commission slug lookup).
+ *      Runs after reports.seed.ts.
+ *
  *   2. adhoc-committees.seed.ts
  *      Seeds all National Assembly Ad Hoc Committees + their people and
  *      enabling / investigated / being-processed / amended law sections.
@@ -52,6 +60,8 @@ import 'reflect-metadata';
 import { run as runAdhocCommittees } from './adhoc-committees.seed';
 import { run as runCommissionsMaster } from './commissions-master.seed';
 import { run as runMkhwanazi } from './mkhwanazi.seed';
+import { run as runRecommendations } from './recommendations.seed';
+import { run as runReports } from './reports.seed';
 import { run as runSiu } from './siu.seed';
 
 async function main(): Promise<void> {
@@ -60,6 +70,8 @@ async function main(): Promise<void> {
   console.log('═══════════════════════════════════════════════');
 
   await runCommissionsMaster();
+  await runReports();
+  await runRecommendations();
   await runAdhocCommittees();
   await runSiu();
   await runMkhwanazi();

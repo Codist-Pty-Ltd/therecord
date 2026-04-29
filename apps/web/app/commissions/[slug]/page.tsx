@@ -20,10 +20,14 @@ import CommissionStoriesStrip from "@/components/Commissions/CommissionStoriesSt
 import CommissionTimeline from "@/components/Commissions/CommissionTimeline";
 import EnablingLegislationPanel from "@/components/Commissions/EnablingLegislationPanel";
 import RelatedCommissions from "@/components/Commissions/RelatedCommissions";
+import ReportsSection from "@/components/Resources/ReportsSection";
+import RecommendationsSection from "@/components/Resources/RecommendationsSection";
+import VideoSection from "@/components/Resources/VideoSection";
 import {
   getCommission,
   getRelatedBySamePeople,
   listCommissions,
+  listYoutubeVideosForCommission,
 } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -108,9 +112,10 @@ export default async function CommissionDetailPage({
 
   // Fetch everything we need for the related section in parallel. The list
   // gives us domain siblings; the overlap call gives us people siblings.
-  const [allList, peopleOverlap] = await Promise.all([
+  const [allList, peopleOverlap, youtubeVideos] = await Promise.all([
     listCommissions(1, 100),
     getRelatedBySamePeople(commission.slug, personIds),
+    listYoutubeVideosForCommission(commission.id),
   ]);
 
   const sameDomain = allList.data.filter(
@@ -128,6 +133,11 @@ export default async function CommissionDetailPage({
           <CommissionPlainEnglish text={commission.plain_english_summary} />
         </div>
       </div>
+
+      <ReportsSection
+        reports={commission.reports ?? []}
+        commissionName={commission.popular_name}
+      />
 
       <div className="w-full max-w-6xl mx-auto px-4 md:px-8">
         <div className="pb-6 md:pb-10">
@@ -147,6 +157,11 @@ export default async function CommissionDetailPage({
         <CommissionStoriesStrip stories={commission.stories} />
       </div>
 
+      <RecommendationsSection
+        summary={commission.recommendations_summary}
+        commissionName={commission.popular_name}
+      />
+
       {/*
        * Timeline — full-bleed on mobile so the spine gutter matches the
        * story page pixel-for-pixel. The StoryTimeline component handles
@@ -162,6 +177,8 @@ export default async function CommissionDetailPage({
       <div className="w-full max-w-6xl mx-auto px-4 md:px-8">
         <CommissionPeopleByRole people={commission.people} />
       </div>
+
+      <VideoSection videos={youtubeVideos} />
 
       <div className="w-full max-w-6xl mx-auto px-4 md:px-8">
         <CommissionOutcome commission={commission} />

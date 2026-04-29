@@ -22,7 +22,12 @@ import AdhocPlainEnglishStack from "@/components/AdhocCommittees/AdhocPlainEngli
 import AdhocRelatedCommission from "@/components/AdhocCommittees/AdhocRelatedCommission";
 import AdhocRelatedCommittees from "@/components/AdhocCommittees/AdhocRelatedCommittees";
 import AdhocStoriesStrip from "@/components/AdhocCommittees/AdhocStoriesStrip";
-import { getAdhocCommittee, listAdhocCommittees } from "@/lib/api";
+import VideoSection from "@/components/Resources/VideoSection";
+import {
+  getAdhocCommittee,
+  listAdhocCommittees,
+  listYoutubeVideosForAdhoc,
+} from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -81,6 +86,8 @@ export default async function AdhocCommitteePage({ params }: AdhocPageProps) {
     notFound();
   }
 
+  const youtubeVideos = await listYoutubeVideosForAdhoc(committee.id);
+
   const relatedSameDomain = list.data.filter(
     (c) => c.slug !== committee.slug && c.domain === committee.domain,
   );
@@ -118,6 +125,8 @@ export default async function AdhocCommitteePage({ params }: AdhocPageProps) {
       <div className="w-full max-w-6xl mx-auto px-4 md:px-8">
         <AdhocPeopleByRole people={committee.people} />
       </div>
+
+      <VideoSection videos={youtubeVideos} />
 
       <div className="w-full max-w-6xl mx-auto px-4 md:px-8">
         <AdhocLawsByUsage law_sections={committee.law_sections} />

@@ -91,6 +91,37 @@ curl -X POST https://therecord.codist.co.za/api/ingestion/article \
 
 (Adjust the JSON body to match `IngestArticleDto` in the Nest API; required fields are validated by the API.)
 
+## YouTube discovery
+
+Videos are **never** auto-published: the intelligence service scores candidates; the API persists rows as `pending` until an operator approves them.
+
+**Requirements:** `YOUTUBE_API_KEY` on the **intelligence** container, `INGESTION_API_KEY` for Nest operator routes. Scheduled runs use the same code path as manual discovery (`INGESTION_ENABLED=true` on the API for crons).
+
+**Manual trigger** (substitute your public API host if it differs from production):
+
+```bash
+curl -X POST "https://therecord.co.za/api/youtube/discover/commission/<uuid>" \
+  -H "x-ingestion-key: $INGESTION_API_KEY"
+```
+
+Other entity types: `adhoc_committee`, `story`, `siu_proclamation` (same path pattern).
+
+**Review queue:**
+
+```bash
+curl -H "x-ingestion-key: $INGESTION_API_KEY" \
+  "https://therecord.co.za/api/youtube/review-queue" | jq
+```
+
+**Stats:**
+
+```bash
+curl -H "x-ingestion-key: $INGESTION_API_KEY" \
+  "https://therecord.co.za/api/youtube/stats" | jq
+```
+
+If you change `.env`, **recreate** containers (`docker compose down` then `up`) so Docker picks up new variables; `docker restart` alone does not reload environment files.
+
 ### Restart a single service
 
 ```bash
@@ -163,8 +194,9 @@ docker exec therecord-postgres psql -U therecord -d therecord_db \
 | `INTELLIGENCE_PORT`      | `8001` inside the intelligence image                                  |
 | `INTELLIGENCE_URL`       | e.g. `http://intelligence:8001` (Docker service name)                 |
 | `ANTHROPIC_API_KEY`      | Required by the intelligence service for LLM calls                    |
-| `INGESTION_API_KEY`      | Required for `POST /api/ingestion/*`                                  |
-| `INGESTION_ENABLED`      | Set `true` in production to run the RSS scheduler                   |
+| `YOUTUBE_API_KEY`        | YouTube Data API v3 key on **intelligence** for `/api/youtube/discover` |
+| `INGESTION_API_KEY`      | Required for `POST /api/ingestion/*` and operator YouTube routes       |
+| `INGESTION_ENABLED`      | Set `true` in production to run the RSS scheduler and YouTube discovery crons |
 | `HEALTH_API_KEY`         | Required for `GET /api/health/full`                                    |
 | `STALE_THRESHOLD_HOURS`  | Default `4`; used by full health for ingestion staleness              |
 | `NODE_ENV`               | `production` in prod                                                  |

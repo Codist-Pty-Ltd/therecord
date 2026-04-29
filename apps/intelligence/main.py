@@ -5,6 +5,7 @@ Routers:
   POST /api/legal/map          — crime → SA statute mapping
   POST /api/summary/simplify   — Claude plain-English rewrite
   POST /api/cluster/match      — article → story clustering
+  POST /api/youtube/discover  — YouTube search + relevance scoring (operator via Nest)
 
 Plus:
   GET /health                  — liveness probe for Docker / orchestrators.
@@ -27,7 +28,7 @@ from fastapi import FastAPI
 # Load .env before reading any os.environ values downstream.
 load_dotenv()
 
-from routers import cluster, entities, legal, summary  # noqa: E402  — imports after load_dotenv
+from routers import cluster, entities, legal, summary, youtube  # noqa: E402  — imports after load_dotenv
 from services.nlp_service import get_nlp  # noqa: E402
 
 logging.basicConfig(
@@ -66,6 +67,7 @@ app.include_router(entities.router, prefix="/api")
 app.include_router(legal.router, prefix="/api")
 app.include_router(summary.router, prefix="/api")
 app.include_router(cluster.router, prefix="/api")
+app.include_router(youtube.router, prefix="/api")
 
 
 @app.get("/health", tags=["health"], summary="Liveness probe")

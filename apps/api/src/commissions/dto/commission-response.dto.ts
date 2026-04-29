@@ -3,6 +3,7 @@ import {
   CommissionDomain,
   CommissionStatus,
 } from '../../entities/commission.entity';
+import { CommissionReportType } from '../../entities/commission-report.entity';
 import { CommissionLawSectionUsage } from '../../entities/commission_law_section.entity';
 import { CommissionPersonRole } from '../../entities/commission_person.entity';
 import {
@@ -11,6 +12,7 @@ import {
 } from '../../entities/timeline_event.entity';
 import { PersonStatus } from '../../entities/person.entity';
 import { PaginationMetaDto } from '../../common/dto/pagination-meta.dto';
+import { CommissionRecommendationBundleDto } from '../../recommendations/dto/recommendation.dto';
 
 // -----------------------------------------------------------------------------
 // Flat commission summary (used by list endpoint + as the base for detail)
@@ -63,6 +65,57 @@ export class CommissionSummaryDto {
     description: 'Number of stories linked to this commission.',
   })
   story_count?: number;
+}
+
+export class CommissionReportDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  commission_id!: string | null;
+  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  adhoc_committee_id!: string | null;
+  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  siu_proclamation_id!: string | null;
+
+  @ApiPropertyOptional({ nullable: true }) volume_number!: number | null;
+  @ApiPropertyOptional({ nullable: true }) volume_title!: string | null;
+  @ApiProperty({ enum: CommissionReportType }) report_type!: CommissionReportType;
+
+  @ApiProperty() title!: string;
+  @ApiPropertyOptional({ nullable: true, format: 'date' })
+  published_date!: string | null;
+  @ApiPropertyOptional({ nullable: true }) page_count!: number | null;
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'File size in megabytes.',
+  })
+  file_size_mb!: number | null;
+
+  @ApiProperty() source_url!: string;
+  @ApiPropertyOptional({ nullable: true }) mirror_url!: string | null;
+  @ApiProperty() is_verified!: boolean;
+  @ApiProperty() language!: string;
+
+  @ApiPropertyOptional({ nullable: true }) summary!: string | null;
+  @ApiPropertyOptional({ type: [String], nullable: true })
+  key_findings!: string[] | null;
+
+  @ApiProperty({ format: 'date-time' }) created_at!: string;
+  @ApiProperty({ format: 'date-time' }) updated_at!: string;
+}
+
+/** `GET /api/commissions/:slug/reports` — reports bucketed by `report_type`. */
+export class CommissionReportsGroupedDto {
+  @ApiProperty() slug!: string;
+
+  @ApiProperty({
+    description:
+      'Each key is a `report_type` string. Omitted keys mean no reports in that bucket.',
+    example: {
+      final_report: [],
+      interim_report: [],
+    },
+  })
+  by_type!: Partial<Record<CommissionReportType, CommissionReportDto[]>>;
 }
 
 // -----------------------------------------------------------------------------
@@ -157,6 +210,20 @@ export class CommissionDetailResponseDto extends CommissionSummaryDto {
       'Unified timeline reconstructed from every linked story, ordered by event_date ASC.',
   })
   timeline!: CommissionTimelineEventDto[];
+
+  @ApiProperty({
+    type: [CommissionReportDto],
+    description:
+      'Official reports and PDFs linked to this commission, ordered by volume number then date.',
+  })
+  reports!: CommissionReportDto[];
+
+  @ApiProperty({
+    type: CommissionRecommendationBundleDto,
+    description:
+      'Key recommendations from this commission, grouped by category, with implementation status counts.',
+  })
+  recommendations_summary!: CommissionRecommendationBundleDto;
 }
 
 export class CommissionListResponseDto {

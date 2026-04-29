@@ -7,7 +7,8 @@ import LegalFramework from "@/components/Story/LegalFramework";
 import RecentArticles from "@/components/Story/RecentArticles";
 import StoryHeader from "@/components/Story/StoryHeader";
 import StoryTimeline from "@/components/Timeline/StoryTimeline";
-import { getStory } from "@/lib/api";
+import VideoSection from "@/components/Resources/VideoSection";
+import { getStory, listYoutubeVideosForStory } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -84,6 +85,8 @@ export default async function StoryPage({ params }: StoryPageProps) {
     notFound();
   }
 
+  const youtubeVideos = await listYoutubeVideosForStory(story.id);
+
   return (
     <article className="bg-cream">
       {/*
@@ -127,6 +130,7 @@ export default async function StoryPage({ params }: StoryPageProps) {
             <div className="flex flex-col gap-0 lg:gap-8">
               <LegalFramework events={story.timeline_events} />
               <RecentArticles articles={story.articles} />
+              <VideoSection videos={youtubeVideos} heading="Video resources" />
             </div>
           </aside>
         </div>

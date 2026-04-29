@@ -7,6 +7,7 @@ import { Story } from '../entities/story.entity';
 import { StoryPerson } from '../entities/story_person.entity';
 import { IngestionApiKeyGuard } from '../auth/ingestion-api-key.guard';
 import { IntelligenceModule } from '../intelligence/intelligence.module';
+import { YoutubeModule } from '../youtube/youtube.module';
 import { IngestionController } from './ingestion.controller';
 import { IngestionSchedulerService } from './ingestion-scheduler.service';
 import { IngestionService } from './ingestion.service';
@@ -24,6 +25,7 @@ import { IngestionService } from './ingestion.service';
 @Module({
   imports: [
     IntelligenceModule,
+    YoutubeModule,
     TypeOrmModule.forFeature([Story, Article, Person, StoryPerson, LawSection]),
   ],
   controllers: [IngestionController],

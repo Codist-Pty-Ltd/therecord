@@ -25,6 +25,14 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "therecord.co.za",
       },
+      {
+        protocol: "https",
+        hostname: "i.ytimg.com",
+      },
+      {
+        protocol: "https",
+        hostname: "img.youtube.com",
+      },
     ],
   },
 };

@@ -643,12 +643,141 @@ export interface CommissionTimelineEvent {
   significance: EventSignificance;
 }
 
+/** Mirrors `commission-report.entity.ts`. */
+export type CommissionReportType =
+  | "final_report"
+  | "interim_report"
+  | "supplementary_report"
+  | "terms_of_reference"
+  | "executive_summary"
+  | "recommendations_only"
+  | "minority_report";
+
+/** Alias for {@link CommissionReportType} (prompt naming). */
+export type ReportType = CommissionReportType;
+
+export interface CommissionReport {
+  id: string;
+  commission_id: string | null;
+  adhoc_committee_id: string | null;
+  siu_proclamation_id: string | null;
+  volume_number: number | null;
+  volume_title: string | null;
+  report_type: CommissionReportType;
+  title: string;
+  published_date: string | null;
+  page_count: number | null;
+  file_size_mb: number | null;
+  source_url: string;
+  mirror_url: string | null;
+  is_verified: boolean;
+  language: string;
+  summary: string | null;
+  key_findings: string[] | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Response shape of `GET /api/commissions/:slug/reports`. */
+export interface CommissionReportsGrouped {
+  slug: string;
+  by_type: Partial<Record<CommissionReportType, CommissionReport[]>>;
+}
+
+// -----------------------------------------------------------------------------
+// Recommendations (`recommendations` table + commission detail bundle)
+// -----------------------------------------------------------------------------
+
+export type RecommendationCategory =
+  | "prosecution"
+  | "legislation"
+  | "policy"
+  | "institutional"
+  | "disciplinary"
+  | "further_investigation"
+  | "compensation"
+  | "appointment"
+  | "other";
+
+export type ImplementationStatus =
+  | "implemented"
+  | "partially_implemented"
+  | "not_implemented"
+  | "in_progress"
+  | "rejected"
+  | "unknown";
+
+export interface Recommendation {
+  id: string;
+  commission_id: string | null;
+  adhoc_committee_id: string | null;
+  reference_number: string | null;
+  title: string;
+  full_text: string | null;
+  plain_english: string | null;
+  plain_english_child: string | null;
+  category: RecommendationCategory;
+  directed_at: string | null;
+  persons_named: string[] | null;
+  implementation_status: ImplementationStatus;
+  implementation_notes: string | null;
+  implementation_date: string | null;
+  implementation_source_url: string | null;
+  volume_reference: string | null;
+  is_verified: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RecommendationStatusCounts {
+  implemented: number;
+  partially_implemented: number;
+  not_implemented: number;
+  in_progress: number;
+  rejected: number;
+  unknown: number;
+}
+
+export interface RecommendationsByCategory {
+  prosecution: Recommendation[];
+  legislation: Recommendation[];
+  policy: Recommendation[];
+  institutional: Recommendation[];
+  disciplinary: Recommendation[];
+  further_investigation: Recommendation[];
+  compensation: Recommendation[];
+  appointment: Recommendation[];
+  other: Recommendation[];
+}
+
+export interface CommissionRecommendationBundle {
+  by_category: RecommendationsByCategory;
+  status_counts: RecommendationStatusCounts;
+}
+
+/** `GET /api/recommendations/stats` */
+export interface RecommendationStats {
+  total: number;
+  by_status: RecommendationStatusCounts;
+  by_category: Record<string, number>;
+  implementation_rate: number;
+}
+
+/** `GET /api/commissions/:slug/recommendations` */
+export interface CommissionRecommendationsResponse {
+  slug: string;
+  recommendations: Recommendation[];
+  status_counts: RecommendationStatusCounts;
+}
+
 /** Response shape of `GET /api/commissions/:slug`. */
 export interface CommissionDetail extends CommissionSummary {
   stories: CommissionStoryBrief[];
   people: CommissionPersonBrief[];
   law_sections: LawSectionsByUsage;
   timeline: CommissionTimelineEvent[];
+  reports: CommissionReport[];
+  recommendations_summary: CommissionRecommendationBundle;
 }
 
 /** One side of a commission vs. commission comparison. */
@@ -1338,4 +1467,45 @@ export interface SearchResponse {
   /** Total matches before `limit` / `page` are applied. */
   total: number;
   results: SearchResult[];
+}
+
+// -----------------------------------------------------------------------------
+// YouTube resources (`GET /api/youtube/...`)
+// -----------------------------------------------------------------------------
+
+export type YoutubeVideoReviewStatus = "pending" | "approved" | "rejected";
+
+export type YoutubeVideoType =
+  | "news_report"
+  | "parliamentary"
+  | "commission_hearing"
+  | "documentary"
+  | "analysis"
+  | "interview"
+  | "other";
+
+/** Mirrors `youtube-video.entity.ts` — public list/detail projection. */
+export interface YoutubeVideo {
+  id: string;
+  youtube_id: string;
+  title: string;
+  channel_name: string | null;
+  channel_id: string | null;
+  description: string | null;
+  published_at: string | null;
+  duration_seconds: number | null;
+  thumbnail_url: string | null;
+  /** Decimal string from API (`bigint` view_count). */
+  view_count: string | null;
+  relevance_score: number;
+  relevance_reason: string | null;
+  status: YoutubeVideoReviewStatus;
+  video_type: YoutubeVideoType;
+  language: string;
+  commission_id: string | null;
+  adhoc_committee_id: string | null;
+  story_id: string | null;
+  siu_proclamation_id: string | null;
+  created_at: string;
+  updated_at: string;
 }

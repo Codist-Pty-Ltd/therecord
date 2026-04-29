@@ -31,6 +31,7 @@ import type {
   StoryDetail,
   StoryDomain,
   StorySummary,
+  YoutubeVideo,
 } from "@the-record/shared-types";
 
 /** Paginated envelope from the NestJS pagination helper. */
@@ -584,5 +585,44 @@ export const searchGlobal = cache(
     return apiGet<SearchResponse>(`/api/search?${p.toString()}`, {
       cacheNoStore: true,
     });
+  },
+);
+
+export const listYoutubeVideosForCommission = cache(
+  async (commissionId: string): Promise<YoutubeVideo[]> => {
+    const r = await apiGet<YoutubeVideo[]>(
+      `/api/youtube/commission/${encodeURIComponent(commissionId)}`,
+      {
+        revalidate: REVALIDATE_STORIES_SECONDS,
+        tags: [`youtube:commission:${commissionId}`],
+      },
+    );
+    return r ?? [];
+  },
+);
+
+export const listYoutubeVideosForAdhoc = cache(
+  async (committeeId: string): Promise<YoutubeVideo[]> => {
+    const r = await apiGet<YoutubeVideo[]>(
+      `/api/youtube/adhoc-committee/${encodeURIComponent(committeeId)}`,
+      {
+        revalidate: REVALIDATE_STORIES_SECONDS,
+        tags: [`youtube:adhoc:${committeeId}`],
+      },
+    );
+    return r ?? [];
+  },
+);
+
+export const listYoutubeVideosForStory = cache(
+  async (storyId: string): Promise<YoutubeVideo[]> => {
+    const r = await apiGet<YoutubeVideo[]>(
+      `/api/youtube/story/${encodeURIComponent(storyId)}`,
+      {
+        revalidate: REVALIDATE_STORIES_SECONDS,
+        tags: [`youtube:story:${storyId}`],
+      },
+    );
+    return r ?? [];
   },
 );

@@ -8,6 +8,7 @@ import { Article } from '../entities/article.entity';
 import { StoryDomain } from '../entities/story.entity';
 import { IngestArticleDto } from './dto/ingest-article.dto';
 import { IngestionService } from './ingestion.service';
+import { YoutubeService } from '../youtube/youtube.service';
 
 /**
  * One publisher we're scraping every cron tick.
@@ -111,6 +112,7 @@ export class IngestionSchedulerService implements OnModuleInit {
   constructor(
     private readonly ingestion: IngestionService,
     private readonly config: ConfigService,
+    private readonly youtube: YoutubeService,
     @InjectRepository(Article)
     private readonly articleRepo: Repository<Article>,
   ) {}
@@ -123,7 +125,8 @@ export class IngestionSchedulerService implements OnModuleInit {
     if (this.isEnabled()) {
       this.logger.log(
         `RSS scheduler armed — polling ${FEEDS.length} feeds every 15 minutes ` +
-          `(INGESTION_ENABLED=true).`,
+          `(INGESTION_ENABLED=true). ` +
+          `YouTube discovery: Monday 02:00 (active bodies); 1st of month 04:00 UTC (concluded commissions).`,
       );
     } else {
       this.logger.warn(
@@ -212,6 +215,38 @@ export class IngestionSchedulerService implements OnModuleInit {
 
   private isEnabled(): boolean {
     return this.config.get<string>('INGESTION_ENABLED') === 'true';
+  }
+
+  /** Monday 02:00 — weekly YouTube discovery for active commissions & ad hoc committees. */
+  @Cron('0 0 2 * * 1', { name: 'youtube-weekly' })
+  async weeklyYoutubeDiscovery(): Promise<void> {
+    if (!this.isEnabled()) return;
+    this.logger.log('YouTube weekly discovery start.');
+    try {
+      await this.youtube.runWeeklyDiscovery();
+    } catch (err) {
+      this.logger.error(
+        `YouTube weekly discovery failed: ${err instanceof Error ? err.message : err}`,
+        err instanceof Error ? err.stack : undefined,
+      );
+    }
+    this.logger.log('YouTube weekly discovery finished.');
+  }
+
+  /** First day of month 04:00 UTC — concluded commissions (announced after 2010). */
+  @Cron('0 0 4 1 * *', { name: 'youtube-monthly-concluded' })
+  async monthlyYoutubeConcluded(): Promise<void> {
+    if (!this.isEnabled()) return;
+    this.logger.log('YouTube monthly (concluded commissions) discovery start.');
+    try {
+      await this.youtube.runMonthlyConcludedDiscovery();
+    } catch (err) {
+      this.logger.error(
+        `YouTube monthly discovery failed: ${err instanceof Error ? err.message : err}`,
+        err instanceof Error ? err.stack : undefined,
+      );
+    }
+    this.logger.log('YouTube monthly discovery finished.');
   }
 
   /**

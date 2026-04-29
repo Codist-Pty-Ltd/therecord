@@ -13,6 +13,8 @@ import { SearchModule } from './search/search.module';
 import { SiuModule } from './siu/siu.module';
 import { StoriesModule } from './stories/stories.module';
 import { TimelineModule } from './timeline/timeline.module';
+import { YoutubeModule } from './youtube/youtube.module';
+import { RecommendationsModule } from './recommendations/recommendations.module';
 
 @Module({
   imports: [
@@ -45,6 +47,8 @@ import { TimelineModule } from './timeline/timeline.module';
     SiuModule,
     StoriesModule,
     TimelineModule,
+    YoutubeModule,
+    RecommendationsModule,
   ],
 })
 export class AppModule {}

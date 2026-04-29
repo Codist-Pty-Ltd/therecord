@@ -7,6 +7,7 @@ import { AppModule } from './app.module';
 const CORS_ALLOWED_ORIGINS = [
   'http://localhost:3090',
   'http://localhost:3000',
+  'https://therecord.co.za',
   'https://therecord.codist.co.za',
 ];
 

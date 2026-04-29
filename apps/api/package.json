@@ -28,6 +28,8 @@
     "schema:drop": "npm run typeorm -- schema:drop -d src/database/data-source.ts",
     "seed": "ts-node src/database/seeds/mkhwanazi.seed.ts",
     "seed:commissions": "ts-node src/database/seeds/commissions-master.seed.ts",
+    "seed:reports": "ts-node src/database/seeds/reports.seed.ts",
+    "seed:recommendations": "ts-node src/database/seeds/recommendations.seed.ts",
     "seed:adhoc": "ts-node src/database/seeds/adhoc-committees.seed.ts",
     "seed:siu": "ts-node src/database/seeds/siu.seed.ts",
     "seed:all": "ts-node src/database/seeds/index.ts",
