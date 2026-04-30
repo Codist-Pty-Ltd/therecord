@@ -42,6 +42,16 @@ const NAV_LINKS: ReadonlyArray<{
   { href: "/domains", label: "Domains" },
 ];
 
+const LEGAL_LINKS: ReadonlyArray<{
+  readonly href: string;
+  readonly label: string;
+}> = [
+  { href: "/privacy", label: "Privacy Policy" },
+  { href: "/terms", label: "Terms of Use" },
+  { href: "/editorial", label: "Editorial Standards" },
+  { href: "/takedown", label: "Content Removal" },
+];
+
 const drawerVariants: Variants = {
   hidden: { x: "100%" },
   visible: { x: 0 },
@@ -153,6 +163,35 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
                     href={link.href}
                     onClick={onClose}
                     className="inline-block font-serif text-[32px] md:text-[40px] leading-[1.1] text-cream hover:text-amber transition-colors focus-visible:outline-none focus-visible:text-amber"
+                  >
+                    {link.label}
+                  </Link>
+                </motion.li>
+              ))}
+            </ul>
+          </motion.nav>
+
+          <motion.nav
+            aria-label="Legal and policies"
+            className="px-6 md:px-10 pb-8 shrink-0"
+            variants={shouldReduceMotion ? undefined : listVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-amber/90 mb-4">
+              Legal
+            </p>
+            <ul className="flex flex-col gap-3">
+              {LEGAL_LINKS.map((link) => (
+                <motion.li
+                  key={link.href}
+                  variants={shouldReduceMotion ? undefined : itemVariants}
+                  transition={itemTransition}
+                >
+                  <Link
+                    href={link.href}
+                    onClick={onClose}
+                    className="inline-block font-sans text-[15px] text-cream/75 hover:text-amber transition-colors focus-visible:outline-none focus-visible:text-amber"
                   >
                     {link.label}
                   </Link>

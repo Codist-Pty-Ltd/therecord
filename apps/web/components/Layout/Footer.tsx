@@ -1,26 +1,47 @@
 /**
- * Site footer — server component.
+ * Site footer — server component. Legal links row required for POPIA visibility.
  */
+import Link from "next/link";
+
+const LEGAL_LINKS: ReadonlyArray<{ href: string; label: string }> = [
+  { href: "/privacy", label: "Privacy Policy" },
+  { href: "/terms", label: "Terms of Use" },
+  { href: "/editorial", label: "Editorial Standards" },
+  { href: "/takedown", label: "Content Removal" },
+  { href: "/about", label: "About" },
+];
+
 export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
     <footer className="border-t border-charcoal/10 mt-16 md:mt-24">
-      <div className="mx-auto max-w-6xl px-4 md:px-8 py-6 md:py-10 flex flex-col gap-3 md:flex-row md:items-center md:justify-between text-xs text-charcoal/60 font-sans">
-        <p>
-          © {year} The Record — a{" "}
-          <a
-            href="https://codist.co.za"
-            className="text-amber hover:underline underline-offset-4"
-            rel="noreferrer"
-          >
-            Codist
-          </a>{" "}
-          project.
-        </p>
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em]">
-          Johannesburg · SAST (UTC+2)
-        </p>
+      <div className="mx-auto max-w-6xl px-4 md:px-8 py-8 md:py-12 flex flex-col gap-6">
+        <nav
+          aria-label="Legal and policies"
+          className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center font-sans text-xs text-charcoal/75"
+        >
+          {LEGAL_LINKS.map((link, i) => (
+            <span key={link.href} className="inline-flex items-center gap-x-3">
+              {i > 0 ? (
+                <span className="text-charcoal/30 select-none" aria-hidden>
+                  ·
+                </span>
+              ) : null}
+              <Link
+                href={link.href}
+                className="text-charcoal/80 hover:text-amber transition-colors underline-offset-4 hover:underline"
+              >
+                {link.label}
+              </Link>
+            </span>
+          ))}
+        </nav>
+
+        <div className="flex flex-col items-center gap-1.5 text-center font-sans text-[11px] text-charcoal/50">
+          <p>© {year} Codist (Pty) Ltd · South Africa</p>
+          <p>The Record does not use tracking cookies or advertising.</p>
+        </div>
       </div>
     </footer>
   );

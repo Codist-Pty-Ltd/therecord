@@ -137,13 +137,20 @@ export class IngestionService {
         storyPersonRepo,
       );
 
+      const snippet = dto.content_snippet.slice(0, 500);
+      const trimmedFeed = dto.source_rss_feed?.trim();
       const article = articleRepo.create({
         story_id: storyDecision.story_id,
         source_name: dto.source_name,
         source_url: dto.source_url,
         headline: dto.headline,
         published_at: new Date(dto.published_at),
-        content_snippet: dto.content_snippet.slice(0, 500),
+        content_snippet: snippet,
+        fetched_at: new Date(),
+        snippet_char_count: snippet.length,
+        full_text_stored: false,
+        source_rss_feed:
+          trimmedFeed && trimmedFeed.length > 0 ? trimmedFeed.slice(0, 500) : null,
         ai_processed: true,
       });
       const savedArticle = await articleRepo.save(article);

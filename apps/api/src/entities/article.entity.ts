@@ -44,6 +44,24 @@ export class Article {
   @Column({ type: 'varchar', length: 500 })
   content_snippet!: string;
 
+  @Column({ type: 'timestamptz' })
+  fetched_at!: Date;
+
+  /** Character length of `content_snippet` at ingest time (audit). */
+  @Column({ type: 'int' })
+  snippet_char_count!: number;
+
+  /**
+   * Audit flag — full article body must never be persisted on `articles`.
+   * Always false; reserved for compliance verification.
+   */
+  @Column({ type: 'boolean', default: false })
+  full_text_stored!: boolean;
+
+  /** RSS feed URL when the article was ingested by the scheduler. */
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  source_rss_feed!: string | null;
+
   @Column({ type: 'boolean', default: false })
   ai_processed!: boolean;
 

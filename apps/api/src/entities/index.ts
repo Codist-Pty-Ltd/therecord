@@ -14,6 +14,11 @@ export { Person, PersonStatus } from './person.entity';
 export { Story, StoryDomain, StoryStatus } from './story.entity';
 export { StoryPerson } from './story_person.entity';
 export {
+  TakedownRequest,
+  TakedownRequestStatus,
+  TakedownRequestType,
+} from './takedown-request.entity';
+export {
   EventSignificance,
   EventType,
   TimelineEvent,

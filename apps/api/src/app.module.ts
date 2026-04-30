@@ -12,6 +12,7 @@ import { PeopleModule } from './people/people.module';
 import { SearchModule } from './search/search.module';
 import { SiuModule } from './siu/siu.module';
 import { StoriesModule } from './stories/stories.module';
+import { TakedownModule } from './takedown/takedown.module';
 import { TimelineModule } from './timeline/timeline.module';
 import { YoutubeModule } from './youtube/youtube.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
@@ -46,6 +47,7 @@ import { RecommendationsModule } from './recommendations/recommendations.module'
     SearchModule,
     SiuModule,
     StoriesModule,
+    TakedownModule,
     TimelineModule,
     YoutubeModule,
     RecommendationsModule,

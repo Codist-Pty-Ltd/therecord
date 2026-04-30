@@ -67,4 +67,10 @@ export class IngestArticleDto {
       'default_domain must be one of: criminal_justice, politics, organised_crime, business, labour.',
   })
   default_domain?: StoryDomain;
+
+  /** RSS feed URL when ingested by the scheduler (audit). */
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  source_rss_feed?: string;
 }

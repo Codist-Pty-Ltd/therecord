@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { SITE_URL } from "@/lib/site";
+
 export const metadata: Metadata = {
   title: "About",
   description:
     "The Record is a South African legal intelligence platform. We connect incidents to investigations, charges, and outcomes — in plain English.",
+  alternates: { canonical: `${SITE_URL}/about` },
 };
 
 export default function AboutPage() {
@@ -100,6 +103,76 @@ export default function AboutPage() {
             between charged and convicted. The Constitution&apos;s presumption
             of innocence applies here just as it does in court.
           </p>
+        </section>
+
+        <section className="flex flex-col gap-5 pt-4 border-t border-charcoal/10">
+          <h2 className="font-sans text-base font-medium tracking-[0.02em] uppercase text-charcoal">
+            Legal &amp; editorial
+          </h2>
+          <div className="flex flex-col gap-4 font-sans text-[15px] leading-[1.8] text-charcoal/90">
+            <p>
+              <span className="font-medium text-charcoal">Who runs this:</span>{" "}
+              The Record is built and operated by Codist (Pty) Ltd, Johannesburg,
+              South Africa.
+            </p>
+            <p>
+              <span className="font-medium text-charcoal">Editorial approach:</span>{" "}
+              We distinguish between allegations, charges, and convictions. We link
+              to primary sources. We show brief excerpts, never full articles. We
+              explain legal concepts — we do not provide legal advice.
+            </p>
+            <p>
+              <span className="font-medium text-charcoal">Our commitment:</span>{" "}
+              We will correct factual errors. Contact:{" "}
+              <a
+                href="mailto:editorial@therecord.co.za"
+                className="underline decoration-amber decoration-2 underline-offset-[5px] hover:text-amber transition-colors"
+              >
+                editorial@therecord.co.za
+              </a>
+            </p>
+            <p>
+              <span className="font-medium text-charcoal">
+                Information Officer (POPIA):
+              </span>{" "}
+              [your name] —{" "}
+              <a
+                href="mailto:privacy@therecord.co.za"
+                className="underline decoration-amber decoration-2 underline-offset-[5px] hover:text-amber transition-colors"
+              >
+                privacy@therecord.co.za
+              </a>
+            </p>
+            <p>
+              <Link
+                href="/privacy"
+                className="underline decoration-amber decoration-2 underline-offset-[5px] hover:text-amber transition-colors"
+              >
+                Privacy Policy
+              </Link>
+              {" · "}
+              <Link
+                href="/terms"
+                className="underline decoration-amber decoration-2 underline-offset-[5px] hover:text-amber transition-colors"
+              >
+                Terms of Use
+              </Link>
+              {" · "}
+              <Link
+                href="/editorial"
+                className="underline decoration-amber decoration-2 underline-offset-[5px] hover:text-amber transition-colors"
+              >
+                Editorial standards
+              </Link>
+              {" · "}
+              <Link
+                href="/takedown"
+                className="underline decoration-amber decoration-2 underline-offset-[5px] hover:text-amber transition-colors"
+              >
+                Content removal
+              </Link>
+            </p>
+          </div>
         </section>
       </div>
     </article>

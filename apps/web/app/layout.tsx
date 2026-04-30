@@ -35,6 +35,10 @@ export const metadata: Metadata = {
   },
   description:
     "Track South African stories from incident to verdict. Every charge explained. Every law linked.",
+  robots: {
+    index: true,
+    follow: true,
+  },
   keywords: [
     "South Africa",
     "law",
@@ -74,6 +78,9 @@ export default function RootLayout({
       className={`${instrumentSerif.variable} ${inter.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        <meta name="robots" content="index, follow" />
+      </head>
       {/*
        * `suppressHydrationWarning` on <body> absorbs attribute mismatches
        * that come from browser extensions (ColorZilla adds cz-shortcut-listen,

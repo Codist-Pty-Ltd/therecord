@@ -414,6 +414,7 @@ export class IngestionSchedulerService implements OnModuleInit {
       full_text: fullText,
       simplify_summary: true,
       default_domain: StoryDomain.CRIMINAL_JUSTICE,
+      source_rss_feed: feed.url.slice(0, 500),
     };
     return dto;
   }
