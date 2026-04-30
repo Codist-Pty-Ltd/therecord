@@ -1720,6 +1720,12 @@ export interface IngestArticleRequest {
   simplify_summary?: boolean;
   /** Used only when clustering fails and a new story must be created. */
   default_domain?: StoryDomain;
+  /** Province slug (e.g. `western-cape`); resolves `story.province_id`. */
+  province_slug?: string;
+  /** Municipality slug (e.g. `city-of-cape-town`); resolves `story.municipality_id`. */
+  municipality_slug?: string;
+  /** Accountability category to set on the story when provided. */
+  story_category?: StoryCategory;
 }
 
 export interface IngestedPerson {

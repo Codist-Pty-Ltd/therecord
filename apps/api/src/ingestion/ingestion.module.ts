@@ -2,7 +2,9 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Article } from '../entities/article.entity';
 import { LawSection } from '../entities/law_section.entity';
+import { Municipality } from '../entities/municipality.entity';
 import { Person } from '../entities/person.entity';
+import { Province } from '../entities/province.entity';
 import { Story } from '../entities/story.entity';
 import { StoryPerson } from '../entities/story_person.entity';
 import { IngestionApiKeyGuard } from '../auth/ingestion-api-key.guard';
@@ -26,7 +28,15 @@ import { IngestionService } from './ingestion.service';
   imports: [
     IntelligenceModule,
     YoutubeModule,
-    TypeOrmModule.forFeature([Story, Article, Person, StoryPerson, LawSection]),
+    TypeOrmModule.forFeature([
+      Story,
+      Article,
+      Person,
+      StoryPerson,
+      LawSection,
+      Province,
+      Municipality,
+    ]),
   ],
   controllers: [IngestionController],
   providers: [IngestionService, IngestionSchedulerService, IngestionApiKeyGuard],

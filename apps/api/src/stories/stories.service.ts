@@ -164,6 +164,7 @@ export class StoriesService {
     let moreQb = this.storyRepo
       .createQueryBuilder('s')
       .where('s.id NOT IN (:...ids)', { ids: [...excludeIds] })
+      .andWhere('s.domain = :dom', { dom: story.domain })
       .orderBy('s.updated_at', 'DESC')
       .take(need);
 

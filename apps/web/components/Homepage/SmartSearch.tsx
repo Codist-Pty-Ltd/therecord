@@ -80,7 +80,13 @@ export default function SmartSearch() {
         <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-charcoal/50 mb-3">
           Smart search
         </p>
-        <div className="relative">
+        <div
+          className="relative"
+          role="combobox"
+          aria-expanded={showPanel}
+          aria-haspopup="listbox"
+          aria-controls="homepage-search-results"
+        >
           <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-charcoal/40">
             <SearchIcon className="h-4 w-4" aria-hidden />
           </div>
@@ -92,12 +98,11 @@ export default function SmartSearch() {
               setOpen(true);
             }}
             onFocus={() => setOpen(true)}
-            placeholder="Search people, commissions, laws, cases…"
+            placeholder="Search people, commissions, laws, provinces, municipalities…"
             className="w-full min-h-[48px] rounded border border-cream pl-10 pr-4 text-sm text-charcoal shadow-sm outline-none transition focus:border-amber focus:ring-1 focus:ring-amber"
             autoComplete="off"
             aria-label="Search The Record"
-            aria-expanded={showPanel}
-            aria-controls="homepage-search-results"
+            aria-autocomplete="list"
           />
           {showPanel ? (
             <div
@@ -114,7 +119,12 @@ export default function SmartSearch() {
               {!loading && !error && results.length > 0 ? (
                 <ul className="max-h-80 overflow-y-auto py-1" role="list">
                   {results.map((r) => (
-                    <li key={resultKey(r)} className="px-1" role="option">
+                    <li
+                      key={resultKey(r)}
+                      className="px-1"
+                      role="option"
+                      aria-selected={false}
+                    >
                       <SearchResultRow
                         r={r}
                         onPick={() => setOpen(false)}

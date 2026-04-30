@@ -29,7 +29,7 @@ PROD FACTS (non-negotiable):
 
 SEED ORDER (FK-dependent — never reorder):
   laws → people → commissions → adhoc → siu →
-  reports → recommendations → mkhwanazi
+  reports → recommendations → mkhwanazi → cape-town-stories
 
 SCHEMA: 27 entities confirmed. Key ones:
   Story → Commission (FK), AdhocCommittee (FK), SiuProclamation (FK)
@@ -229,18 +229,70 @@ API endpoints:
   GET /api/siu/tribunal/:caseNumber    ← single case
   GET /api/siu/stats                   ← aggregate financial stats
 
-Seed order (updated):
-  1. laws + constitution_sections
-  2. people
-  3. commissions-master.seed.ts
-  4. adhoc-committees.seed.ts
-  5. siu.seed.ts                 ← after commissions + adhoc (links to both)
-  6. mkhwanazi.seed.ts           ← always last (links to everything)
+Full database seed orchestration (npm run seed:all): see **Provincial & Municipal Accountability → Seed order** below (includes cape-town-stories after mkhwanazi).
 
 SABC cross-link: Proclamation R01/2019 links to adhoc-sabc-board-2017
   (the Ad Hoc Committee found the board unfit; the SIU then recovered money)
 Transnet/Eskom cross-links: Both proclamations link to zondo-commission-state-capture
 ACSA Proclamation R228/2024 also links to zondo-commission-state-capture
+
+## Provincial & Municipal Accountability
+The Record tracks corruption and accountability at three geographic levels:
+  National (commissions, SIU, Parliament) — existing
+  Provincial (province entity, provincial stories) — new
+  Municipal (municipality entity, municipal stories) — new
+
+New entities:
+  Province (9 rows — all SA provinces)
+  Municipality (metropolitan, local, district)
+  PublicExpenditureRecord (discrete money amounts per story)
+  SimilarStory (join table linking related stories)
+
+Story now has:
+  story.province → nullable FK (Western Cape, Gauteng, etc.)
+  story.municipality → nullable FK (City of Cape Town, etc.)
+  story.story_category → enum (tender_fraud, housing, water, etc.)
+  story.total_amount_rands → cached sum of expenditure records
+
+PublicExpenditureRecord rules:
+  amount_qualifier must ALWAYS be displayed — never show a raw amount
+  without its qualifier. Users must know if it is exact, approximate,
+  or merely under investigation.
+  expenditure_type 'under_investigation' ≠ 'stolen' — never conflate them.
+  The Cape Town R1.6bn is 'under_investigation', not 'allegedly_stolen'.
+
+The MoneyCounter on the homepage is the platform's most powerful feature.
+It shows the total public money tracked across ALL stories.
+It always shows the disclaimer: "Figures reflect amounts under
+investigation or alleged — not confirmed losses."
+
+New API endpoints:
+  GET /api/expenditure/counter  ← homepage money counter
+  GET /api/provinces            ← all provinces
+  GET /api/provinces/:slug      ← province detail + stories
+  GET /api/provinces/:slug/money ← province financial summary
+  GET /api/municipalities/:slug  ← municipality detail
+
+New routes:
+  /provinces                   ← province index
+  /provinces/[slug]            ← province detail
+  /municipality/[slug]        ← municipality detail
+
+Seed order (updated):
+  1. laws + constitution_sections
+  2. people
+  3. commissions-master.seed.ts
+  4. adhoc-committees.seed.ts
+  5. siu.seed.ts
+  6. reports.seed.ts
+  7. recommendations.seed.ts
+  8. mkhwanazi.seed.ts
+  9. cape-town-stories.seed.ts   ← NEW (after mkhwanazi, needs province seeded)
+
+SimilarStory algorithm (for auto-linking):
+  Manual: seeded via similar-stories join table
+  Auto-fallback: same province OR same story_category (max 5, exclude self)
+  Never suggest stories from different domains as 'similar'
 
 ## Commission Domains (valid enum values for commissions, extended from stories):
   'criminal_justice' | 'corruption' | 'politics' | 'organised_crime' | 'business' | 'labour'

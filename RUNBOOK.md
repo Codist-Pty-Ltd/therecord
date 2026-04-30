@@ -86,10 +86,128 @@ The `seed` script runs only the Mkhwanazi / Madlanga story seed (`mkhwanazi.seed
 curl -X POST https://therecord.codist.co.za/api/ingestion/article \
   -H "content-type: application/json" \
   -H "x-ingestion-key: $INGESTION_API_KEY" \
-  -d '{ "headline": "…", "source_name": "Daily Maverick", "source_url": "https://…", "raw_text": "…" }'
+  -d '{"headline":"…","source_name":"Daily Maverick","source_url":"https://…","published_at":"2026-01-15T10:00:00.000Z","content_snippet":"…","full_text":"…"}'
 ```
 
 (Adjust the JSON body to match `IngestArticleDto` in the Nest API; required fields are validated by the API.)
+
+## Provincial Stories & Money Counter
+
+Provincial sample data (Western Cape / City of Cape Town narratives) ships in a dedicated seed. Run it after the main orchestrated import so provinces and base stories exist:
+
+```bash
+docker exec therecord-api node dist/database/seeds/cape-town-stories.seed.js
+```
+
+Verify the homepage money counter aggregates tracked expenditure (JSON field name matches the live API):
+
+```bash
+curl https://therecord.co.za/api/expenditure/counter | jq '.total_tracked_rands'
+```
+
+List provinces:
+
+```bash
+curl https://therecord.co.za/api/provinces | jq '.[].name'
+```
+
+**Add or enrich a story with provincial scope via ingestion:** include optional slugs and category in the JSON body. The API resolves province and municipality by slug and sets them on the story.
+
+```json
+{
+  "headline": "…",
+  "source_name": "…",
+  "source_url": "https://…",
+  "published_at": "2026-01-15T10:00:00.000Z",
+  "content_snippet": "…",
+  "full_text": "…",
+  "province_slug": "western-cape",
+  "municipality_slug": "city-of-cape-town",
+  "story_category": "tender_fraud"
+}
+```
+
+If both `province_slug` and `municipality_slug` are sent, the municipality must belong to that province or the API returns `400 Bad Request`.
+
+### Phase 4 — After GitHub Actions (provincial rollout)
+
+SSH to the server, then:
+
+```bash
+sudo -i -u therecord
+cd /opt/therecord/app
+```
+
+**Migration** (production image — runs compiled migration runner; equivalent to `npm run migration:run:prod` inside the container):
+
+```bash
+docker exec therecord-api node dist/database/run-migrations.js
+```
+
+**Provincial seed** (Cape Town narratives, expenditure rows, similar-story links; provinces and municipalities are already created by migration `AddProvincialAccountability`):
+
+```bash
+docker exec therecord-api node dist/database/seeds/cape-town-stories.seed.js
+```
+
+**Verify provinces (expect 9 rows):**
+
+```bash
+docker exec therecord-postgres psql -U therecord -d therecord_db \
+  -c "SELECT name, slug FROM provinces ORDER BY name;"
+```
+
+**Verify expenditure records:**
+
+```bash
+docker exec therecord-postgres psql -U therecord -d therecord_db \
+  -c "SELECT s.title, e.amount_rands, e.expenditure_type
+      FROM public_expenditure_records e
+      JOIN stories s ON s.id = e.story_id
+      ORDER BY e.amount_rands DESC;"
+```
+
+**Money counter** (on-host API port):
+
+```bash
+curl http://127.0.0.1:3091/api/expenditure/counter | jq '.total_tracked_rands'
+```
+
+**Homepage** (web container):
+
+```bash
+curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3090/
+```
+
+Expect `200`. If any step fails: `docker logs therecord-api --tail 100`.
+
+### Phase 4 — Public smoke tests (provincial API)
+
+From any machine with `curl` and `jq`:
+
+```bash
+# Province index — expect 9
+curl https://therecord.co.za/api/provinces | jq 'length'
+
+# Cape Town municipality (`name` is the official full title; `short_name` is the common label)
+curl https://therecord.co.za/api/municipalities/city-of-cape-town | jq '.short_name'
+# Should be "Cape Town"
+
+# Western Cape stories (paginated) — expect at least 2
+curl "https://therecord.co.za/api/provinces/western-cape/stories" | jq '.data | length'
+
+# Similar stories for Cape Town tender story — expect > 0
+curl "https://therecord.co.za/api/stories/cape-town-r1-6bn-tender-fraud-2025/similar" | jq 'length'
+
+# Money counter summary
+curl https://therecord.co.za/api/expenditure/counter | jq '{
+  total: .total_tracked_rands,
+  stories: .story_count,
+  provinces: .province_count
+}'
+```
+
+If a check fails, inspect API logs on the server (`docker logs therecord-api --tail 100`) before escalating.
 
 ## YouTube discovery
 

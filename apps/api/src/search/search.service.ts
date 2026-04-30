@@ -6,7 +6,7 @@ import { AdhocCommittee } from '../entities/adhoc_committee.entity';
 import { Commission } from '../entities/commission.entity';
 import { Law } from '../entities/law.entity';
 import { LawSection } from '../entities/law_section.entity';
-import { Municipality } from '../entities/municipality.entity';
+import { AgAuditOutcome, Municipality } from '../entities/municipality.entity';
 import { Person } from '../entities/person.entity';
 import { Province } from '../entities/province.entity';
 import { SiuProclamation } from '../entities/siu_proclamation.entity';
@@ -371,17 +371,34 @@ export class SearchService {
       .take(PER_TYPE_LIMIT)
       .getMany();
 
-    return rows.map((pr) => ({
-      sortAt: pr.created_at.getTime(),
-      result: {
-        type: 'province' as const,
-        id: pr.id,
-        name: pr.name,
-        subtitle: [pr.abbreviation, pr.capital].filter(Boolean).join(' · ') || 'Province',
-        slug: pr.slug,
-        url: `/province/${pr.slug}`,
-      },
-    }));
+    if (rows.length === 0) return [];
+
+    const ids = rows.map((pr) => pr.id);
+    const countRows = await this.storyRepo
+      .createQueryBuilder('s')
+      .select('s.province_id', 'pid')
+      .addSelect('COUNT(*)', 'c')
+      .where('s.province_id IN (:...ids)', { ids })
+      .groupBy('s.province_id')
+      .getRawMany<{ pid: string; c: string }>();
+    const storyCountByProvince = new Map(countRows.map((r) => [r.pid, Number(r.c)]));
+
+    return rows.map((pr) => {
+      const n = storyCountByProvince.get(pr.id) ?? 0;
+      const storyBit = `${n} ${n === 1 ? 'story' : 'stories'}`;
+      const subtitle = [pr.abbreviation?.trim() || null, storyBit].filter(Boolean).join(' · ');
+      return {
+        sortAt: pr.created_at.getTime(),
+        result: {
+          type: 'province' as const,
+          id: pr.id,
+          name: pr.name,
+          subtitle: subtitle || storyBit,
+          slug: pr.slug,
+          url: `/provinces/${pr.slug}`,
+        },
+      };
+    });
   }
 
   private async searchMunicipalities(pat: string): Promise<InternalHit[]> {
@@ -399,11 +416,20 @@ export class SearchService {
         type: 'municipality' as const,
         id: m.id,
         name: m.name,
-        subtitle: [m.short_name, m.province?.name].filter(Boolean).join(' · ') || 'Municipality',
+        subtitle: [
+          m.province?.name,
+          m.ag_audit_outcome != null ? this.formatAgAuditOutcome(m.ag_audit_outcome) : null,
+        ]
+          .filter(Boolean)
+          .join(' · ') || 'Municipality',
         slug: m.slug,
         url: `/municipality/${m.slug}`,
       },
     }));
+  }
+
+  private formatAgAuditOutcome(o: AgAuditOutcome): string {
+    return o.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
   }
 
   private oneLine(text: string | null | undefined, max = 200): string | undefined {

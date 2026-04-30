@@ -8,7 +8,8 @@ export type SearchFilterId =
   | "commissions"
   | "adhoc"
   | "siu"
-  | "laws";
+  | "laws"
+  | "provinces";
 
 export const FILTER_CHIPS: ReadonlyArray<{
   id: SearchFilterId;
@@ -21,6 +22,7 @@ export const FILTER_CHIPS: ReadonlyArray<{
   { id: "adhoc", label: "Ad Hoc" },
   { id: "siu", label: "SIU" },
   { id: "laws", label: "Laws" },
+  { id: "provinces", label: "Provinces" },
 ];
 
 /** Maps UI chip → comma-separated `types` query. `undefined` = all types. */
@@ -35,6 +37,7 @@ export function filterIdToTypesParam(
     adhoc: "committees",
     siu: "siu",
     laws: "laws,law_sections",
+    provinces: "province,municipality",
   };
   return m[id];
 }
@@ -44,6 +47,22 @@ export function typesParamToFilterId(
   types: string | undefined,
 ): SearchFilterId {
   if (!types || types.trim() === "") return "all";
+  const partSet = new Set(
+    types
+      .split(",")
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean),
+  );
+  if (
+    partSet.size === 2 &&
+    partSet.has("province") &&
+    partSet.has("municipality")
+  ) {
+    return "provinces";
+  }
+  if (partSet.size === 1 && partSet.has("province")) return "provinces";
+  if (partSet.size === 1 && partSet.has("municipality")) return "provinces";
+
   const t = types.trim().toLowerCase();
   if (t === "stories" || t === "story") return "stories";
   if (t === "people" || t === "person") return "people";
@@ -125,9 +144,9 @@ export function typeBadgeClass(type: SearchResultType): string {
     case "law_section":
       return "bg-charcoal/10 text-charcoal/80";
     case "province":
-      return "bg-amber/10 text-amber";
+      return "bg-emerald-600/10 text-emerald-800";
     case "municipality":
-      return "bg-legal-blue/10 text-legal-blue";
+      return "bg-teal-600/10 text-teal-800";
     default:
       return "bg-charcoal/10 text-charcoal";
   }

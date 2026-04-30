@@ -6,11 +6,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { slugify } from '../common/utils/slug.util';
 import { Article } from '../entities/article.entity';
 import { LawSection } from '../entities/law_section.entity';
+import { Municipality } from '../entities/municipality.entity';
 import { Person, PersonStatus } from '../entities/person.entity';
+import { Province } from '../entities/province.entity';
 import { Story, StoryDomain, StoryStatus } from '../entities/story.entity';
 import { StoryPerson } from '../entities/story_person.entity';
 import { IntelligenceClient } from '../intelligence/intelligence.client';
@@ -130,6 +132,13 @@ export class IngestionService {
         storyRepo,
       );
 
+      await this.applyStoryGeographicScope(
+        dto,
+        storyDecision.story_id,
+        manager,
+        warnings,
+      );
+
       const ingestedPeople = await this.linkPeople(
         storyDecision.story_id,
         entities,
@@ -224,6 +233,77 @@ export class IngestionService {
       simplified: result.simplified,
       reading_level: result.reading_level,
     };
+  }
+
+  private async applyStoryGeographicScope(
+    dto: IngestArticleDto,
+    storyId: string,
+    manager: EntityManager,
+    warnings: string[],
+  ): Promise<void> {
+    const hasProvince =
+      dto.province_slug != null && dto.province_slug.trim().length > 0;
+    const hasMunicipality =
+      dto.municipality_slug != null && dto.municipality_slug.trim().length > 0;
+    const hasCategory = dto.story_category !== undefined;
+
+    if (!hasProvince && !hasMunicipality && !hasCategory) {
+      return;
+    }
+
+    const storyRepo = manager.getRepository(Story);
+    const provinceRepo = manager.getRepository(Province);
+    const municipalityRepo = manager.getRepository(Municipality);
+
+    const story = await storyRepo.findOne({ where: { id: storyId } });
+    if (!story) {
+      warnings.push('geographic_scope_skipped: story row missing after resolve');
+      return;
+    }
+
+    let provinceId: string | null = story.province_id;
+    let municipalityId: string | null = story.municipality_id;
+
+    if (hasMunicipality) {
+      const mSlug = dto.municipality_slug!.trim();
+      const municipality = await municipalityRepo.findOne({
+        where: { slug: mSlug },
+        relations: ['province'],
+      });
+      if (!municipality) {
+        throw new BadRequestException(`Unknown municipality_slug: "${mSlug}"`);
+      }
+      municipalityId = municipality.id;
+      if (hasProvince) {
+        const pSlug = dto.province_slug!.trim();
+        const province = await provinceRepo.findOne({ where: { slug: pSlug } });
+        if (!province) {
+          throw new BadRequestException(`Unknown province_slug: "${pSlug}"`);
+        }
+        if (municipality.province_id !== province.id) {
+          throw new BadRequestException(
+            `municipality_slug "${mSlug}" is not in province "${pSlug}"`,
+          );
+        }
+        provinceId = province.id;
+      } else {
+        provinceId = municipality.province_id;
+      }
+    } else if (hasProvince) {
+      const pSlug = dto.province_slug!.trim();
+      const province = await provinceRepo.findOne({ where: { slug: pSlug } });
+      if (!province) {
+        throw new BadRequestException(`Unknown province_slug: "${pSlug}"`);
+      }
+      provinceId = province.id;
+    }
+
+    if (hasCategory) {
+      story.story_category = dto.story_category!;
+    }
+    story.province_id = provinceId;
+    story.municipality_id = municipalityId;
+    await storyRepo.save(story);
   }
 
   /* ------------------------------------------------------- steps */

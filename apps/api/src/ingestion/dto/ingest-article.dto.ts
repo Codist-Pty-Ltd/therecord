@@ -1,3 +1,4 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsEnum,
@@ -9,7 +10,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { StoryDomain } from '../../entities/story.entity';
+import { StoryCategory, StoryDomain } from '../../entities/story.entity';
 
 /**
  * Payload for POST /api/ingestion/article.
@@ -73,4 +74,31 @@ export class IngestArticleDto {
   @IsString()
   @MaxLength(500)
   source_rss_feed?: string;
+
+  @ApiPropertyOptional({
+    description: 'Province slug (e.g. western-cape). Resolves `story.province_id`.',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  province_slug?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Municipality slug (e.g. city-of-cape-town). Resolves `story.municipality_id` and, when `province_slug` is omitted, `story.province_id`.',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  municipality_slug?: string;
+
+  @ApiPropertyOptional({
+    enum: StoryCategory,
+    description: 'Accountability category to set on the story when provided.',
+  })
+  @IsOptional()
+  @IsEnum(StoryCategory, {
+    message: 'story_category must be a valid StoryCategory enum value.',
+  })
+  story_category?: StoryCategory;
 }
