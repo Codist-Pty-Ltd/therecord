@@ -5,14 +5,18 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, IsNull, Not, Repository } from 'typeorm';
+import { Brackets, In, IsNull, Not, Repository } from 'typeorm';
 import { buildPaginationMeta } from '../common/dto/pagination-meta.dto';
 import { slugify } from '../common/utils/slug.util';
 import { Article } from '../entities/article.entity';
 import { EventLegalReference } from '../entities/event_legal_reference.entity';
 import { Investigation } from '../entities/investigation.entity';
 import { LawSection } from '../entities/law_section.entity';
+import { Municipality } from '../entities/municipality.entity';
 import { Person } from '../entities/person.entity';
+import { Province } from '../entities/province.entity';
+import { PublicExpenditureRecord } from '../entities/public-expenditure-record.entity';
+import { SimilarStory } from '../entities/similar-story.entity';
 import { Story, StoryDomain, StoryStatus } from '../entities/story.entity';
 import { StoryPerson } from '../entities/story_person.entity';
 import { TimelineEvent } from '../entities/timeline_event.entity';
@@ -22,7 +26,11 @@ import {
   InvestigationBriefDto,
   LawSectionBriefDto,
   LegalReferenceBriefDto,
+  MunicipalityBriefForStoryDto,
   PersonBriefDto,
+  ProvinceBriefDto,
+  PublicExpenditureRecordBriefDto,
+  SimilarStoryBriefDto,
   StoryDetailResponseDto,
   StoryListItemDto,
   StoryListResponseDto,
@@ -51,6 +59,12 @@ export class StoriesService {
     @InjectRepository(Article) private readonly articleRepo: Repository<Article>,
     @InjectRepository(EventLegalReference)
     private readonly eventLegalRefRepo: Repository<EventLegalReference>,
+    @InjectRepository(Province) private readonly provinceRepo: Repository<Province>,
+    @InjectRepository(Municipality)
+    private readonly municipalityRepo: Repository<Municipality>,
+    @InjectRepository(PublicExpenditureRecord)
+    private readonly expenditureRepo: Repository<PublicExpenditureRecord>,
+    @InjectRepository(SimilarStory) private readonly similarStoryRepo: Repository<SimilarStory>,
   ) {}
 
   /* ---------------------------------------------------------------- list */
@@ -112,6 +126,85 @@ export class StoriesService {
     };
   }
 
+  async findSimilarBySlug(slug: string): Promise<SimilarStoryBriefDto[]> {
+    const story = await this.storyRepo.findOne({ where: { slug } });
+    if (!story) {
+      throw new NotFoundException(`Story with slug "${slug}" not found.`);
+    }
+    return this.findSimilarForStory(story);
+  }
+
+  private async findSimilarForStory(story: Story): Promise<SimilarStoryBriefDto[]> {
+    const explicit = await this.similarStoryRepo.find({
+      where: { story_id: story.id },
+      relations: ['similar_story'],
+      order: { created_at: 'DESC' },
+      take: 5,
+    });
+
+    const out: SimilarStoryBriefDto[] = explicit.map((row) => ({
+      title: row.similar_story.title,
+      slug: row.similar_story.slug,
+      total_amount_rands: row.similar_story.total_amount_rands,
+      similarity_reason: row.similarity_reason,
+      similarity_note: row.similarity_note,
+      match_type: 'explicit_table',
+    }));
+
+    if (out.length >= 5) {
+      return out;
+    }
+
+    const excludeIds = new Set<string>([story.id]);
+    for (const row of explicit) {
+      excludeIds.add(row.similar_story_id);
+    }
+    const need = 5 - out.length;
+
+    let moreQb = this.storyRepo
+      .createQueryBuilder('s')
+      .where('s.id NOT IN (:...ids)', { ids: [...excludeIds] })
+      .orderBy('s.updated_at', 'DESC')
+      .take(need);
+
+    if (story.province_id != null || story.story_category != null) {
+      moreQb = moreQb.andWhere(
+        new Brackets((qb) => {
+          if (story.province_id != null && story.story_category != null) {
+            qb.where('s.province_id = :pid', { pid: story.province_id }).orWhere(
+              's.story_category = :cat',
+              { cat: story.story_category },
+            );
+          } else if (story.province_id != null) {
+            qb.where('s.province_id = :pid', { pid: story.province_id });
+          } else if (story.story_category != null) {
+            qb.where('s.story_category = :cat', { cat: story.story_category });
+          }
+        }),
+      );
+    }
+
+    const more = await moreQb.getMany();
+
+    for (const s of more) {
+      if (out.length >= 5) break;
+      let match_type: SimilarStoryBriefDto['match_type'] = 'fallback_recent';
+      if (story.province_id != null && s.province_id === story.province_id) {
+        match_type = 'fallback_province';
+      } else if (story.story_category != null && s.story_category === story.story_category) {
+        match_type = 'fallback_category';
+      }
+      out.push({
+        title: s.title,
+        slug: s.slug,
+        total_amount_rands: s.total_amount_rands,
+        match_type,
+      });
+    }
+
+    return out;
+  }
+
   /* ---------------------------------------------------------------- slug */
 
   async findBySlug(slug: string): Promise<StoryDetailResponseDto> {
@@ -120,24 +213,39 @@ export class StoriesService {
       throw new NotFoundException(`Story with slug "${slug}" not found.`);
     }
 
-    const [timelineEvents, storyPeople, investigations, articles] = await Promise.all([
-      this.timelineRepo.find({
-        where: { story_id: story.id },
-        order: { event_date: 'ASC', created_at: 'ASC' },
-      }),
-      this.storyPersonRepo.find({
-        where: { story_id: story.id },
-        relations: ['person'],
-      }),
-      this.investigationRepo.find({
-        where: { story_id: story.id },
-        order: { started_at: 'ASC' },
-      }),
-      this.articleRepo.find({
-        where: { story_id: story.id },
-        order: { published_at: 'DESC' },
-        take: MAX_ARTICLES_IN_DETAIL,
-      }),
+    const [timelineEvents, storyPeople, investigations, articles, expenditureRows, similarStories] =
+      await Promise.all([
+        this.timelineRepo.find({
+          where: { story_id: story.id },
+          order: { event_date: 'ASC', created_at: 'ASC' },
+        }),
+        this.storyPersonRepo.find({
+          where: { story_id: story.id },
+          relations: ['person'],
+        }),
+        this.investigationRepo.find({
+          where: { story_id: story.id },
+          order: { started_at: 'ASC' },
+        }),
+        this.articleRepo.find({
+          where: { story_id: story.id },
+          order: { published_at: 'DESC' },
+          take: MAX_ARTICLES_IN_DETAIL,
+        }),
+        this.expenditureRepo.find({
+          where: { story_id: story.id },
+          order: { amount_rands: 'DESC', created_at: 'DESC' },
+        }),
+        this.findSimilarForStory(story),
+      ]);
+
+    const [provinceEntity, municipalityEntity] = await Promise.all([
+      story.province_id
+        ? this.provinceRepo.findOne({ where: { id: story.province_id } })
+        : Promise.resolve(null),
+      story.municipality_id
+        ? this.municipalityRepo.findOne({ where: { id: story.municipality_id } })
+        : Promise.resolve(null),
     ]);
 
     const eventIds = timelineEvents.map((e) => e.id);
@@ -150,6 +258,26 @@ export class StoriesService {
       ? timelineEvents[timelineEvents.length - 1].event_date
       : null;
 
+    const province: ProvinceBriefDto | null = provinceEntity
+      ? {
+          id: provinceEntity.id,
+          name: provinceEntity.name,
+          slug: provinceEntity.slug,
+          abbreviation: provinceEntity.abbreviation,
+          capital: provinceEntity.capital,
+        }
+      : null;
+
+    const municipality: MunicipalityBriefForStoryDto | null = municipalityEntity
+      ? {
+          id: municipalityEntity.id,
+          name: municipalityEntity.name,
+          short_name: municipalityEntity.short_name,
+          slug: municipalityEntity.slug,
+          municipality_type: municipalityEntity.municipality_type,
+        }
+      : null;
+
     return {
       ...this.mapEntityToListItem(story, latestEventDate),
       timeline_events: timelineEvents.map((e) =>
@@ -159,6 +287,10 @@ export class StoriesService {
       investigations: investigations.map((i) => this.mapInvestigation(i)),
       articles: articles.map((a) => this.mapArticle(a)),
       law_sections: lawSectionsForSidebar,
+      province,
+      municipality,
+      expenditure_records: expenditureRows.map((e) => this.mapExpenditureRecord(e)),
+      similar_stories: similarStories,
     };
   }
 
@@ -414,6 +546,27 @@ export class StoriesService {
       official_url: i.official_url,
       started_at: i.started_at,
       concluded_at: i.concluded_at,
+    };
+  }
+
+  private mapExpenditureRecord(e: PublicExpenditureRecord): PublicExpenditureRecordBriefDto {
+    return {
+      id: e.id,
+      story_id: e.story_id,
+      province_id: e.province_id,
+      municipality_id: e.municipality_id,
+      amount_rands: e.amount_rands,
+      amount_qualifier: e.amount_qualifier,
+      expenditure_type: e.expenditure_type,
+      sector: e.sector,
+      description: e.description,
+      plain_english: e.plain_english,
+      source_document: e.source_document,
+      source_url: e.source_url,
+      reference_date: e.reference_date,
+      is_verified: e.is_verified,
+      created_at: e.created_at.toISOString(),
+      updated_at: e.updated_at.toISOString(),
     };
   }
 

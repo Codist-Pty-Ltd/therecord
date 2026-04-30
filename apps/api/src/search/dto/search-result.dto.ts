@@ -8,6 +8,8 @@ const SEARCH_TYPES = [
   'siu',
   'law',
   'law_section',
+  'province',
+  'municipality',
 ] as const;
 
 export class SearchResultDto {

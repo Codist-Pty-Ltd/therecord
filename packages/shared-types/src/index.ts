@@ -1574,7 +1574,9 @@ export type SearchResultType =
   | "committee"
   | "siu"
   | "law"
-  | "law_section";
+  | "law_section"
+  | "province"
+  | "municipality";
 
 /**
  * A single match from the global search endpoint — one row in the

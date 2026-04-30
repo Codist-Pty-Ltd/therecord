@@ -23,6 +23,7 @@ import {
   StoryListResponseDto,
 } from './dto/story-response.dto';
 import { StoriesService } from './stories.service';
+import { SimilarStoryBriefDto } from './dto/story-response.dto';
 
 @ApiTags('Stories')
 @Controller('stories')
@@ -39,6 +40,17 @@ export class StoriesController {
   @ApiOkResponse({ type: StoryListResponseDto })
   async findAll(@Query() query: StoryListQueryDto): Promise<StoryListResponseDto> {
     return this.stories.findAll(query.page, query.limit, query.domain);
+  }
+
+  @Get(':slug/similar')
+  @ApiOperation({
+    summary: 'Similar stories',
+    description:
+      'Uses `similar_stories` rows first; fills up to 5 with same province or same story_category.',
+  })
+  @ApiOkResponse({ type: [SimilarStoryBriefDto] })
+  async findSimilar(@Param('slug') slug: string): Promise<SimilarStoryBriefDto[]> {
+    return this.stories.findSimilarBySlug(slug);
   }
 
   @Get(':slug')

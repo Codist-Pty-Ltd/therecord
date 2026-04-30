@@ -6,7 +6,9 @@ import { AdhocCommittee } from '../entities/adhoc_committee.entity';
 import { Commission } from '../entities/commission.entity';
 import { Law } from '../entities/law.entity';
 import { LawSection } from '../entities/law_section.entity';
+import { Municipality } from '../entities/municipality.entity';
 import { Person } from '../entities/person.entity';
+import { Province } from '../entities/province.entity';
 import { SiuProclamation } from '../entities/siu_proclamation.entity';
 import { Story } from '../entities/story.entity';
 import { SearchQueryDto } from './dto/search-query.dto';
@@ -23,6 +25,8 @@ const ALL_TYPE_KEYS = [
   'siu',
   'laws',
   'law_sections',
+  'province',
+  'municipality',
 ] as const;
 
 type TypeKey = (typeof ALL_TYPE_KEYS)[number];
@@ -42,6 +46,8 @@ export class SearchService {
     @InjectRepository(SiuProclamation) private readonly siuRepo: Repository<SiuProclamation>,
     @InjectRepository(Law) private readonly lawRepo: Repository<Law>,
     @InjectRepository(LawSection) private readonly lawSectionRepo: Repository<LawSection>,
+    @InjectRepository(Province) private readonly provinceRepo: Repository<Province>,
+    @InjectRepository(Municipality) private readonly municipalityRepo: Repository<Municipality>,
   ) {}
 
   async search(dto: SearchQueryDto): Promise<SearchResponseDto> {
@@ -73,6 +79,12 @@ export class SearchService {
     }
     if (activeTypes.has('law_sections')) {
       tasks.push(this.searchLawSections(pat));
+    }
+    if (activeTypes.has('province')) {
+      tasks.push(this.searchProvinces(pat));
+    }
+    if (activeTypes.has('municipality')) {
+      tasks.push(this.searchMunicipalities(pat));
     }
 
     const chunks = await Promise.all(tasks);
@@ -349,6 +361,49 @@ export class SearchService {
         },
       };
     });
+  }
+
+  private async searchProvinces(pat: string): Promise<InternalHit[]> {
+    const rows = await this.provinceRepo
+      .createQueryBuilder('pr')
+      .where('(pr.name ILIKE :pat OR pr.abbreviation ILIKE :pat)', { pat })
+      .orderBy('pr.name', 'ASC')
+      .take(PER_TYPE_LIMIT)
+      .getMany();
+
+    return rows.map((pr) => ({
+      sortAt: pr.created_at.getTime(),
+      result: {
+        type: 'province' as const,
+        id: pr.id,
+        name: pr.name,
+        subtitle: [pr.abbreviation, pr.capital].filter(Boolean).join(' · ') || 'Province',
+        slug: pr.slug,
+        url: `/province/${pr.slug}`,
+      },
+    }));
+  }
+
+  private async searchMunicipalities(pat: string): Promise<InternalHit[]> {
+    const rows = await this.municipalityRepo
+      .createQueryBuilder('m')
+      .innerJoinAndSelect('m.province', 'p')
+      .where('(m.name ILIKE :pat OR m.short_name ILIKE :pat)', { pat })
+      .orderBy('m.name', 'ASC')
+      .take(PER_TYPE_LIMIT)
+      .getMany();
+
+    return rows.map((m) => ({
+      sortAt: m.updated_at.getTime(),
+      result: {
+        type: 'municipality' as const,
+        id: m.id,
+        name: m.name,
+        subtitle: [m.short_name, m.province?.name].filter(Boolean).join(' · ') || 'Municipality',
+        slug: m.slug,
+        url: `/municipality/${m.slug}`,
+      },
+    }));
   }
 
   private oneLine(text: string | null | undefined, max = 200): string | undefined {

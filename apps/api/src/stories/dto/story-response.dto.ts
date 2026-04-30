@@ -9,7 +9,14 @@ import {
   InvestigationType,
 } from '../../entities/investigation.entity';
 import { LawCategory } from '../../entities/law.entity';
+import { MunicipalityType } from '../../entities/municipality.entity';
 import { PersonStatus } from '../../entities/person.entity';
+import {
+  AmountQualifier,
+  ExpenditureSector,
+  ExpenditureType,
+} from '../../entities/public-expenditure-record.entity';
+import { SimilarityReason } from '../../entities/similar-story.entity';
 import { StoryDomain, StoryStatus, StoryCategory } from '../../entities/story.entity';
 
 /* ------------------------------------------------------------------ list */
@@ -163,6 +170,54 @@ export class LawSectionBriefDto {
   @ApiProperty({ enum: LawCategory }) law_category!: LawCategory;
 }
 
+export class ProvinceBriefDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiProperty() name!: string;
+  @ApiProperty() slug!: string;
+  @ApiPropertyOptional({ nullable: true }) abbreviation!: string | null;
+  @ApiPropertyOptional({ nullable: true }) capital!: string | null;
+}
+
+export class MunicipalityBriefForStoryDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiProperty() name!: string;
+  @ApiProperty() short_name!: string;
+  @ApiProperty() slug!: string;
+  @ApiProperty({ enum: MunicipalityType }) municipality_type!: MunicipalityType;
+}
+
+export class PublicExpenditureRecordBriefDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiProperty({ format: 'uuid' }) story_id!: string;
+  @ApiPropertyOptional({ nullable: true, format: 'uuid' }) province_id!: string | null;
+  @ApiPropertyOptional({ nullable: true, format: 'uuid' }) municipality_id!: string | null;
+  @ApiProperty() amount_rands!: string;
+  @ApiProperty({ enum: AmountQualifier }) amount_qualifier!: AmountQualifier;
+  @ApiProperty({ enum: ExpenditureType }) expenditure_type!: ExpenditureType;
+  @ApiProperty({ enum: ExpenditureSector }) sector!: ExpenditureSector;
+  @ApiProperty() description!: string;
+  @ApiPropertyOptional({ nullable: true }) plain_english!: string | null;
+  @ApiPropertyOptional({ nullable: true }) source_document!: string | null;
+  @ApiPropertyOptional({ nullable: true }) source_url!: string | null;
+  @ApiPropertyOptional({ nullable: true, format: 'date' }) reference_date!: string | null;
+  @ApiProperty() is_verified!: boolean;
+  @ApiProperty({ format: 'date-time' }) created_at!: string;
+  @ApiProperty({ format: 'date-time' }) updated_at!: string;
+}
+
+const SIMILAR_MATCH = ['explicit_table', 'fallback_province', 'fallback_category', 'fallback_recent'] as const;
+export type SimilarStoryMatchType = (typeof SIMILAR_MATCH)[number];
+
+export class SimilarStoryBriefDto {
+  @ApiProperty() title!: string;
+  @ApiProperty() slug!: string;
+  @ApiPropertyOptional({ nullable: true }) total_amount_rands!: string | null;
+  @ApiPropertyOptional({ enum: SimilarityReason, description: 'Set when row comes from similar_stories table' })
+  similarity_reason?: SimilarityReason;
+  @ApiPropertyOptional({ nullable: true }) similarity_note?: string | null;
+  @ApiProperty({ enum: SIMILAR_MATCH }) match_type!: SimilarStoryMatchType;
+}
+
 /* ------------------------------------------------------------------ detail */
 
 export class StoryDetailResponseDto extends StoryListItemDto {
@@ -184,4 +239,19 @@ export class StoryDetailResponseDto extends StoryListItemDto {
       'Distinct law sections referenced by any timeline event of this story, via event_legal_references.',
   })
   law_sections!: LawSectionBriefDto[];
+
+  @ApiPropertyOptional({ type: ProvinceBriefDto, nullable: true })
+  province!: ProvinceBriefDto | null;
+
+  @ApiPropertyOptional({ type: MunicipalityBriefForStoryDto, nullable: true })
+  municipality!: MunicipalityBriefForStoryDto | null;
+
+  @ApiProperty({ type: [PublicExpenditureRecordBriefDto] })
+  expenditure_records!: PublicExpenditureRecordBriefDto[];
+
+  @ApiProperty({
+    type: [SimilarStoryBriefDto],
+    description: 'Up to 5 related threads — explicit links first, then province/category fallback.',
+  })
+  similar_stories!: SimilarStoryBriefDto[];
 }

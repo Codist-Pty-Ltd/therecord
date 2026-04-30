@@ -5,7 +5,9 @@ import { AdhocCommittee } from '../entities/adhoc_committee.entity';
 import { Commission } from '../entities/commission.entity';
 import { Law } from '../entities/law.entity';
 import { LawSection } from '../entities/law_section.entity';
+import { Municipality } from '../entities/municipality.entity';
 import { Person } from '../entities/person.entity';
+import { Province } from '../entities/province.entity';
 import { SiuProclamation } from '../entities/siu_proclamation.entity';
 import { Story } from '../entities/story.entity';
 import { SearchController } from './search.controller';
@@ -21,6 +23,8 @@ import { SearchService } from './search.service';
       SiuProclamation,
       Law,
       LawSection,
+      Province,
+      Municipality,
     ]),
   ],
   controllers: [SearchController],

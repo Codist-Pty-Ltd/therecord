@@ -4,11 +4,14 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AdhocCommitteesModule } from './adhoc-committees/adhoc-committees.module';
 import { CommissionsModule } from './commissions/commissions.module';
+import { ExpenditureModule } from './expenditure/expenditure.module';
 import { HealthModule } from './health/health.module';
 import { IngestionModule } from './ingestion/ingestion.module';
 import { InvestigationsModule } from './investigations/investigations.module';
 import { LegalModule } from './legal/legal.module';
+import { MunicipalitiesModule } from './municipalities/municipalities.module';
 import { PeopleModule } from './people/people.module';
+import { ProvincesModule } from './provinces/provinces.module';
 import { SearchModule } from './search/search.module';
 import { SiuModule } from './siu/siu.module';
 import { StoriesModule } from './stories/stories.module';
@@ -39,11 +42,14 @@ import { RecommendationsModule } from './recommendations/recommendations.module'
     }),
     AdhocCommitteesModule,
     CommissionsModule,
+    ExpenditureModule,
     HealthModule,
     IngestionModule,
     InvestigationsModule,
     LegalModule,
+    MunicipalitiesModule,
     PeopleModule,
+    ProvincesModule,
     SearchModule,
     SiuModule,
     StoriesModule,
