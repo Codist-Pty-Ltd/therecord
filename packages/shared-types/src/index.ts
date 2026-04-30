@@ -529,6 +529,40 @@ export interface NationalStats {
   unemployment_expanded: number;
   housing_backlog: number;
   without_water: number;
+  /** Editorial headline figure — municipal water losses / waste scale (annual, rands). */
+  water_loss_rands_annual: number;
+}
+
+/** `GET /api/impact/sectors/:slug` — full sector dossier. */
+export interface ImpactLinkedStoryBrief {
+  id: string;
+  title: string;
+  slug: string;
+  impact_chain: string[];
+  impact_severity: ImpactSeverity;
+  amount_diverted_rands: string | null;
+  people_affected_estimate: string | null;
+  plain_english_impact: string | null;
+}
+
+export interface ImpactLinkedCommissionBrief {
+  id: string;
+  slug: string;
+  popular_name: string;
+  impact_summary: string;
+}
+
+export interface ImpactSectorDetail extends ImpactSectorListItem {
+  what_was_promised: string;
+  ground_reality: string;
+  plain_english_child: string;
+  stat_source: string | null;
+  stat_year: string | null;
+  linked_stories: ImpactLinkedStoryBrief[];
+  linked_commissions: ImpactLinkedCommissionBrief[];
+  total_money_tracked_rands: number;
+  what_it_should_have_funded_lines: string[];
+  what_it_should_have_funded_combined: string;
 }
 
 export interface ImpactWeb {

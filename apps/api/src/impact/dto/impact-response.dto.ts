@@ -101,6 +101,10 @@ export class NationalStatsDto {
   @ApiProperty({ description: 'Expanded unemployment rate (%)' }) unemployment_expanded!: number;
   @ApiProperty({ description: 'RDP / government housing backlog (units)' }) housing_backlog!: number;
   @ApiProperty({ description: 'People without basic water access' }) without_water!: number;
+  @ApiProperty({
+    description: 'Editorial headline scale of water losses / waste (annual, whole rands)',
+  })
+  water_loss_rands_annual!: number;
 }
 
 export class ImpactWebResponseDto {

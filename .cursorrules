@@ -46,7 +46,7 @@ ARCHITECTURE RULES:
   Health full: guarded by x-health-key header
 
 ROUTES BUILT (no Coming Soon anywhere):
-  / /story/[slug] /commissions /commissions/[slug]
+  / /story/[slug] /impact /commissions /commissions/[slug]
   /adhoc-committees/[slug] /siu /people /person/[id]
   /laws /laws/[id]/[sectionId] /constitution/[section]
   /domain/[name] /search /about
@@ -84,6 +84,64 @@ This is "The Record" — a South African legal intelligence and news timeline pl
 It tracks real-world stories from incident → charges → court → outcome.
 It maps events to the South African Constitution, statutes (PRECCA, SAPS Act, etc.), and case law.
 It must explain legal concepts in plain English understandable to a child.
+
+## Human Impact Layer
+The /impact page is the most emotionally significant page on the platform.
+It answers: "What does all of this actually mean for ordinary South Africans?"
+
+Eight sectors, each linked to a constitutional right:
+  housing (Section 26), water (Section 27), health (Section 27),
+  education (Section 29), jobs (Section 22), safety (Section 12),
+  food (Section 27), transport (implied Section 9 equality framing).
+
+Key entities:
+  ImpactSector (8 rows — reference table, rarely edited)
+  StoryImpactSector (join: story + sector + impact_chain JSON/array)
+  ExpenditureImpactSector (join: expenditure + sector + what_was_not_built)
+  CommissionImpactSector (join: commission + sector)
+
+The impact_chain is the most important narrative field in this layer.
+It is an ordered text array showing HOW money stolen in one place
+reaches the life of an ordinary person elsewhere.
+Seed it from the perspective of the affected person,
+ending with a human consequence:
+  WRONG last step: 'Audit finding issued'
+  RIGHT last step: 'Child misses school because the roof is leaking'
+
+what_it_should_have_funded is the most shareable field on expenditure rows.
+Compute illustrative equivalents using these editorial constants:
+  RDP house: R250,000
+  School repair (full): R5,000,000
+  Water connection (household): R50,000
+  Child Support Grant (1 year): R6,360 (R530 × 12)
+  Old Age Grant (1 year): R26,400 (R2,200 × 12)
+  ICU hospital bed: R1,000,000
+  Teacher salary (1 year): R300,000
+
+MoneyToReality endpoint: GET /api/impact/money-to-reality?rands=N
+Returns floored counts for each conversion.
+
+Public API routes:
+  GET /api/impact/sectors
+  GET /api/impact/sectors/:slug
+  GET /api/impact/web
+  GET /api/impact/story/:storyId
+  GET /api/impact/money-to-reality?rands=N
+
+Web routes:
+  /impact — spider-web human cost page (force-dynamic, error.tsx)
+
+Navigation:
+  Desktop Header: "Impact" before "About"
+  Mobile nav: "The Real Cost" subtitle "How corruption affects you" → /impact
+
+Presentation rules:
+  Spider-web SVG: draw radial spokes first (pathLength), then fade sector nodes.
+  Never show the spider-web block without constitutional-rights framing nearby.
+  Always show plain_english_child per sector (PlainEnglishBox child level).
+  Disclaimer on impact stats:
+    "These figures show the scale of service delivery failures.
+     Not all are caused solely by corruption — but all are worsened by it."
 
 ## Data Architecture — Commissions
 The Record tracks 22 South African national commissions of inquiry since 1994.

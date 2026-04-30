@@ -106,6 +106,7 @@ const NATIONAL_STATS: NationalStatsDto = {
   unemployment_expanded: 42.4,
   housing_backlog: 2_400_000,
   without_water: 8_500_000,
+  water_loss_rands_annual: 19_000_000_000,
 };
 
 function pairKey(a: string, b: string): string {

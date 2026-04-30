@@ -116,6 +116,20 @@ export default function HomeHero() {
             What is this?
           </Link>
         </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.75, duration: 0.4 }}
+          style={{ willChange: "transform, opacity" }}
+          className="mt-4"
+        >
+          <Link
+            href="/impact"
+            className="inline-flex text-sm font-medium text-cream/50 underline-offset-4 transition hover:text-amber hover:underline"
+          >
+            See how this affects everyday life →
+          </Link>
+        </motion.div>
       </div>
     </section>
   );

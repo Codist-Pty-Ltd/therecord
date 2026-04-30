@@ -32,6 +32,7 @@ export interface MobileNavProps {
 const NAV_LINKS: ReadonlyArray<{
   readonly href: string;
   readonly label: string;
+  readonly subtitle?: string;
 }> = [
   { href: "/stories", label: "Stories" },
   { href: "/provinces", label: "Provinces" },
@@ -40,6 +41,11 @@ const NAV_LINKS: ReadonlyArray<{
   { href: "/siu", label: "SIU" },
   { href: "/laws", label: "Laws & Constitution" },
   { href: "/people", label: "People" },
+  {
+    href: "/impact",
+    label: "The Real Cost",
+    subtitle: "How corruption affects you",
+  },
   { href: "/about", label: "About" },
   { href: "/domains", label: "Domains" },
   { href: "/#money-counter-anchor", label: "Money Tracker" },
@@ -168,6 +174,11 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
                     className="inline-block font-serif text-[32px] md:text-[40px] leading-[1.1] text-cream hover:text-amber transition-colors focus-visible:outline-none focus-visible:text-amber"
                   >
                     {link.label}
+                    {link.subtitle ? (
+                      <span className="mt-2 block font-sans text-[15px] font-normal leading-snug text-cream/50">
+                        {link.subtitle}
+                      </span>
+                    ) : null}
                   </Link>
                 </motion.li>
               ))}

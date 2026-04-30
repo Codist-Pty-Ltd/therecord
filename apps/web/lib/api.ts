@@ -23,6 +23,9 @@ import type {
   CommissionDetail,
   CommissionDomain,
   CommissionSummary,
+  ImpactSectorDetail,
+  ImpactSectorListItem,
+  ImpactWeb,
   LawSectionDetail,
   LawSummary,
   LawWithSections,
@@ -659,6 +662,35 @@ export const getAccountabilityBodyCases = cache(
         tags: [`accountability-body:cases:${slug}`],
       },
     );
+  },
+);
+
+// -----------------------------------------------------------------------------
+// Human impact (`/impact`)
+// -----------------------------------------------------------------------------
+
+export const getImpactWeb = cache(async (): Promise<ImpactWeb | null> => {
+  return apiGet<ImpactWeb>(`/api/impact/web`, {
+    revalidate: REVALIDATE_SEMI_STABLE_SECONDS,
+    tags: ["impact:web"],
+  });
+});
+
+export const listImpactSectors = cache(async (): Promise<ImpactSectorListItem[]> => {
+  const r = await apiGet<ImpactSectorListItem[]>(`/api/impact/sectors`, {
+    revalidate: REVALIDATE_SEMI_STABLE_SECONDS,
+    tags: ["impact:sectors:list"],
+  });
+  return r ?? [];
+});
+
+export const getImpactSectorDetail = cache(
+  async (slug: string): Promise<ImpactSectorDetail | null> => {
+    const enc = encodeURIComponent(slug);
+    return apiGet<ImpactSectorDetail>(`/api/impact/sectors/${enc}`, {
+      revalidate: REVALIDATE_SEMI_STABLE_SECONDS,
+      tags: [`impact:sector:${slug}`],
+    });
   },
 );
 

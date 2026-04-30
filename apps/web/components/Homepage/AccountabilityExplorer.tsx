@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import ImpactExplorerGrid from "@/components/Homepage/ImpactExplorerGrid";
 import {
   AdhocRowList,
   BodiesRowList,
@@ -19,6 +20,7 @@ import type {
   LawSummary,
   PersonSummary,
   SiuProclamationSummary,
+  ImpactWebSectorNode,
 } from "@the-record/shared-types";
 
 import type { ExplorerTab } from "./StatsBar";
@@ -35,6 +37,7 @@ export interface AccountabilityExplorerProps {
   siuProclamations: SiuProclamationSummary[];
   peopleRows: PeopleExplorerRow[];
   laws: LawSummary[];
+  impactSectors: ImpactWebSectorNode[];
 }
 
 const TABS: { id: ExplorerTab; label: string }[] = [
@@ -44,6 +47,7 @@ const TABS: { id: ExplorerTab; label: string }[] = [
   { id: "siu", label: "SIU" },
   { id: "people", label: "People" },
   { id: "laws", label: "Laws" },
+  { id: "impact", label: "Impact" },
 ];
 
 export default function AccountabilityExplorer({
@@ -53,6 +57,7 @@ export default function AccountabilityExplorer({
   siuProclamations,
   peopleRows,
   laws,
+  impactSectors,
 }: AccountabilityExplorerProps) {
   const [tab, setTab] = useState<ExplorerTab>("commissions");
   const prefersReduced = useReducedMotion() ?? false;
@@ -81,10 +86,12 @@ export default function AccountabilityExplorer({
         return peopleRows.length;
       case "laws":
         return laws.length;
+      case "impact":
+        return impactSectors.length;
       default:
         return 0;
     }
-  }, [tab, commissions, committees, accountabilityBodies, siuProclamations, peopleRows, laws]);
+  }, [tab, commissions, committees, accountabilityBodies, siuProclamations, peopleRows, laws, impactSectors]);
 
   return (
     <section
@@ -140,6 +147,7 @@ export default function AccountabilityExplorer({
               {tab === "siu" && <SiuProclamationsRowList rows={siuProclamations} />}
               {tab === "people" && <PeopleList rows={peopleRows} />}
               {tab === "laws" && <LawsList rows={laws} />}
+              {tab === "impact" && <ImpactExplorerGrid sectors={impactSectors} />}
             </ExplorerPanel>
           </AnimatePresence>
         </div>

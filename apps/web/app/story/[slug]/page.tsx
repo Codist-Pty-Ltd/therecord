@@ -7,6 +7,7 @@ import LegalFramework from "@/components/Story/LegalFramework";
 import RecentArticles from "@/components/Story/RecentArticles";
 import ExpenditureSection from "@/components/Story/ExpenditureSection";
 import SimilarStoriesStrip from "@/components/Story/SimilarStoriesStrip";
+import SectorImpactStrip from "@/components/Impact/SectorImpactStrip";
 import StoryHeader from "@/components/Story/StoryHeader";
 import StoryTimeline from "@/components/Timeline/StoryTimeline";
 import VideoSection from "@/components/Resources/VideoSection";
@@ -125,6 +126,9 @@ export default async function StoryPage({ params }: StoryPageProps) {
               records={story.expenditure_records ?? []}
               storyTitle={story.title}
             />
+            {story.impact_sectors && story.impact_sectors.length > 0 ? (
+              <SectorImpactStrip links={story.impact_sectors} />
+            ) : null}
             <SimilarStoriesStrip
               stories={story.similar_stories ?? []}
               currentSlug={story.slug}

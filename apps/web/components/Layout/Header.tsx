@@ -21,6 +21,7 @@ const DESKTOP_NAV_LINKS: ReadonlyArray<{
   { href: "/siu", label: "SIU" },
   { href: "/laws", label: "Laws" },
   { href: "/people", label: "People" },
+  { href: "/impact", label: "Impact" },
   { href: "/about", label: "About" },
 ];
 

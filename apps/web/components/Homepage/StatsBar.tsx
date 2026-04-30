@@ -10,7 +10,8 @@ export type ExplorerTab =
   | "special_units"
   | "siu"
   | "people"
-  | "laws";
+  | "laws"
+  | "impact";
 
 export interface StatsBarProps {
   /** Compact Rand headline for money counter (null when API unavailable). */

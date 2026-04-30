@@ -20,20 +20,18 @@ import SiuMoneyBanner from "@/components/Homepage/SiuMoneyBanner";
 import SmartSearch from "@/components/Homepage/SmartSearch";
 import StatsBar from "@/components/Homepage/StatsBar";
 import { formatRands, formatRandsCompact } from "@/lib/format";
-import {
-  listAccountabilityBodies,
-} from "@/lib/api";
+import { getImpactWeb, listAccountabilityBodies } from "@/lib/api";
 import { MKHWANAZI_SLUG } from "@/lib/placeholders";
 
 import type {
   AdhocCommitteeSummary,
   CommissionSummary,
+  ExpenditureCounter,
   LawSummary,
   PersonSummary,
   SiuProclamationSummary,
   SiuStats,
   StoryDetail,
-  ExpenditureCounter,
 } from "@the-record/shared-types";
 
 export const dynamic = "force-dynamic";
@@ -143,6 +141,7 @@ export default async function HomePage() {
     laws,
     madlangaCommission,
     expenditureCounter,
+    impactWeb,
   ] = await Promise.all([
     fetchJson<StoryDetail>(`/api/stories/${encodeURIComponent(MKHWANAZI_SLUG)}`),
     fetchJson<Paginated<CommissionSummary>>(
@@ -160,6 +159,7 @@ export default async function HomePage() {
     fetchJson<LawSummary[]>("/api/legal/laws"),
     fetchJson<MadlangaCommission>("/api/commissions/madlanga-commission"),
     fetchJson<ExpenditureCounter>("/api/expenditure/counter"),
+    getImpactWeb(),
   ]);
 
   const commissions = commissionsRes?.data ?? [];
@@ -233,6 +233,7 @@ export default async function HomePage() {
         siuProclamations={siuProc}
         peopleRows={explorerPeople}
         laws={lawsList}
+        impactSectors={impactWeb?.sectors ?? []}
       />
       <SiuMoneyBanner stats={siuStats} />
       <PeopleStrip rows={strip} />

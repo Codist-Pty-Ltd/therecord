@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 /**
  * PlainEnglishBox — collapsible panel rendering a plain-English explanation.
@@ -30,6 +30,11 @@ interface PlainEnglishBoxProps {
    * Use for solemn institutional pages with a three-level stack.
    */
   collapsible?: boolean;
+  /**
+   * When true with `collapsible`, body stays open from the `md` breakpoint up
+   * (toggle hidden) — mobile keeps collapsible behaviour.
+   */
+  collapseMobileOnly?: boolean;
 }
 
 interface LevelStyle {
@@ -81,12 +86,23 @@ export default function PlainEnglishBox({
   className,
   label,
   collapsible = true,
+  collapseMobileOnly = false,
 }: PlainEnglishBoxProps) {
   const [open, setOpen] = useState(defaultOpen);
+  const [desktopExpanded, setDesktopExpanded] = useState(false);
   const reduce = useReducedMotion() ?? false;
   const style = LEVELS[level];
 
-  if (!collapsible) {
+  useEffect(() => {
+    if (!collapseMobileOnly || !collapsible) return;
+    const mq = window.matchMedia("(min-width: 768px)");
+    const sync = () => setDesktopExpanded(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, [collapseMobileOnly, collapsible]);
+
+  if (!collapsible || (collapseMobileOnly && desktopExpanded)) {
     return (
       <div
         className={[
