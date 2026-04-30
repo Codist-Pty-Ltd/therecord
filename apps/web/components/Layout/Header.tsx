@@ -71,7 +71,7 @@ export default function Header() {
           </div>
 
           {/* Mobile: search, then hamburger */}
-          <div className="flex lg:hidden items-center shrink-0 -mr-1">
+          <div className="flex lg:hidden items-center shrink-0 gap-1">
             <HeaderSearchButton />
             <button
               type="button"

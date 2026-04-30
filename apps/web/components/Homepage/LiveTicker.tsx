@@ -20,7 +20,7 @@ export default function LiveTicker({ items }: LiveTickerProps) {
   if (reduce) {
     return (
       <div
-        className="bg-charcoal text-amber border-b border-white/[0.06] overflow-hidden"
+        className="bg-charcoal text-amber border-b border-white/[0.06] overflow-hidden whitespace-nowrap w-full"
         aria-live="off"
       >
         <div
@@ -44,17 +44,17 @@ export default function LiveTicker({ items }: LiveTickerProps) {
 
   return (
     <div
-      className="bg-charcoal text-amber border-b border-white/[0.06] overflow-hidden"
+      className="bg-charcoal text-amber border-b border-white/[0.06] overflow-hidden whitespace-nowrap w-full min-w-0"
       aria-live="off"
     >
       <p className="sr-only">Headlines: {items.join(". ")}</p>
-      <div className="group w-full">
-        <div className="homepage-ticker-track group-hover:[animation-play-state:paused] flex w-max min-h-[2.75rem] items-center">
+      <div className="group w-full min-w-0 overflow-hidden whitespace-nowrap">
+        <div className="homepage-ticker-track group-hover:[animation-play-state:paused] inline-block whitespace-nowrap min-h-[2.75rem] align-middle">
           {track.map((text, i) => (
             <span
               key={`${i}-${text.slice(0, 24)}`}
               aria-hidden={i >= items.length}
-              className="shrink-0 px-8 font-mono text-[11px] tracking-[0.2em] uppercase"
+              className="inline-block whitespace-nowrap px-8 font-mono text-[11px] tracking-[0.2em] uppercase align-middle"
             >
               {text}
             </span>

@@ -23,12 +23,12 @@ export function HeaderSearchButton() {
   const hint = useMacOSHint();
 
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-1 lg:gap-1.5">
       <button
         type="button"
         onClick={open}
         aria-label="Search The Record (⌘K)"
-        className="w-10 h-10 md:w-9 md:h-9 inline-flex items-center justify-center rounded text-cream/85 hover:text-amber transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber/60 -mr-0.5"
+        className="w-11 h-11 lg:w-9 lg:h-9 inline-flex items-center justify-center rounded text-cream/85 hover:text-amber transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber/60 -mr-0.5"
       >
         <SearchMagnifierIcon className="w-5 h-5" />
       </button>

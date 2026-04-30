@@ -171,10 +171,15 @@ export default async function HomePage() {
 
   const activeCommissions = commissions.filter((c) => c.status === "active");
 
+  /** Prefer API total; fall back to 22 if fetch fails. Bump 21→22 when meta is one short of editorial count. */
+  const commissionTickerTotal = commissionsRes
+    ? Math.max(commMeta.total, commissions.length, commMeta.total === 21 ? 22 : 0)
+    : 22;
+
   const tickerItems: string[] = [
     `MADLANGA COMMISSION · DAY ${commissionDays} — ACTIVE`,
     litigationTicker,
-    `${commMeta.total} COMMISSIONS SINCE 1994`,
+    `${commissionTickerTotal} COMMISSIONS SINCE 1994`,
     `MKHWANAZI AD HOC COMMITTEE — 7TH PARLIAMENT`,
     ...activeCommissions.map(
       (c) => `${c.popular_name.toUpperCase()} — ${c.status.toUpperCase()}`,
