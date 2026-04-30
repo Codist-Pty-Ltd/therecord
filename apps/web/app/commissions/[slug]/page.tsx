@@ -10,9 +10,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import CommissionCostPanel from "@/components/Resources/CommissionCostPanel";
 import CommissionHeader from "@/components/Commissions/CommissionHeader";
 import CommissionLaws from "@/components/Commissions/CommissionLaws";
-import CommissionMetrics from "@/components/Commissions/CommissionMetrics";
 import CommissionOutcome from "@/components/Commissions/CommissionOutcome";
 import CommissionPeopleByRole from "@/components/Commissions/CommissionPeopleByRole";
 import CommissionPlainEnglish from "@/components/Commissions/CommissionPlainEnglish";
@@ -126,6 +126,13 @@ export default async function CommissionDetailPage({
     <article className="bg-cream">
       <div className="w-full max-w-6xl mx-auto px-4 md:px-8">
         <CommissionHeader commission={commission} />
+        <CommissionCostPanel
+          cost_rands={commission.cost_rands ?? null}
+          total_hearing_days={commission.total_hearing_days ?? null}
+          announced_date={commission.announced_date ?? null}
+          concluded_date={commission.concluded_date ?? null}
+          commissionName={commission.popular_name}
+        />
       </div>
 
       <div className="w-full max-w-6xl mx-auto px-4 md:px-8">
@@ -147,10 +154,6 @@ export default async function CommissionDetailPage({
             enabling_sections={commission.law_sections.enabling}
           />
         </div>
-      </div>
-
-      <div className="w-full max-w-6xl mx-auto px-4 md:px-8">
-        <CommissionMetrics commission={commission} />
       </div>
 
       <div className="w-full max-w-6xl mx-auto px-4 md:px-8">

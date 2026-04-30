@@ -31,6 +31,7 @@ import type {
   CommissionSummary,
 } from "@the-record/shared-types";
 
+import CommissionsCostComparison from "@/components/Commissions/CommissionsCostComparison";
 import {
   accountabilityActionDescriptor,
   ADHOC_CATEGORY_LABELS,
@@ -157,6 +158,10 @@ export default function AccountabilityIndex({
   return (
     <section aria-label="Accountability bodies" className="bg-cream">
       <TabBar tab={tab} onChange={switchTab} commissionCount={commissions.length} committeeCount={committees.length} />
+
+      {tab === "commissions" ? (
+        <CommissionsCostComparison commissions={commissions} />
+      ) : null}
 
       <div
         role="tabpanel"

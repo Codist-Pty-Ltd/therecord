@@ -269,19 +269,72 @@ export function formatDurationDays(days: number | null): string {
 }
 
 /**
- * `"1000000000"` (rands as bigint string) → `"R1.0bn"`.
- * Uses decimal magnitudes — R (rands), K (thousand), M (million), B (billion).
+ * Duration from commission `announced_date` to `concluded_date` for display.
+ * When not concluded: "Ongoing (started …)".
+ */
+export function formatAnnouncedToConcludedDuration(
+  announced_date: string | null,
+  concluded_date: string | null,
+): string {
+  if (!announced_date) return "—";
+  const start = new Date(`${announced_date}T12:00:00`);
+  if (Number.isNaN(start.getTime())) return "—";
+
+  if (!concluded_date) {
+    const label = start.toLocaleDateString("en-ZA", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+    return `Ongoing (started ${label})`;
+  }
+
+  const end = new Date(`${concluded_date}T12:00:00`);
+  if (Number.isNaN(end.getTime())) return "—";
+
+  const days = Math.max(
+    0,
+    Math.round((end.getTime() - start.getTime()) / 86_400_000),
+  );
+  if (days < 30) return `${days} day${days === 1 ? "" : "s"}`;
+
+  let totalMonths =
+    (end.getFullYear() - start.getFullYear()) * 12 +
+    (end.getMonth() - start.getMonth());
+  if (end.getDate() < start.getDate()) totalMonths -= 1;
+
+  const years = Math.floor(totalMonths / 12);
+  const months = totalMonths % 12;
+
+  if (years === 0) {
+    return `${months} month${months === 1 ? "" : "s"}`;
+  }
+  if (months === 0) {
+    return `${years} year${years === 1 ? "" : "s"}`;
+  }
+  return `${years} year${years === 1 ? "" : "s"} ${months} month${months === 1 ? "" : "s"}`;
+}
+
+/**
+ * Rand amount → compact display (`R1.0bn`, `R200m`, etc.).
+ * Accepts API `cost_rands` as a number or legacy string.
  */
 export function formatRandsCompact(
-  rands: string | null | undefined,
+  rands: number | string | null | undefined,
 ): string {
-  if (!rands) return "—";
-  const n = Number(rands);
+  if (rands == null || rands === "") return "—";
+  const n = typeof rands === "number" ? rands : Number(rands);
   if (!Number.isFinite(n) || n <= 0) return "—";
   if (n >= 1_000_000_000) return `R${(n / 1_000_000_000).toFixed(1)}bn`;
   if (n >= 1_000_000) return `R${(n / 1_000_000).toFixed(0)}m`;
   if (n >= 1_000) return `R${(n / 1_000).toFixed(0)}k`;
   return `R${n.toLocaleString("en-ZA")}`;
+}
+
+/** Full rand display for large headline figures (no compact suffix). */
+export function formatRandsFull(rands: number): string {
+  if (!Number.isFinite(rands) || rands <= 0) return "—";
+  return `R${rands.toLocaleString("en-ZA", { maximumFractionDigits: 0 })}`;
 }
 
 // -----------------------------------------------------------------------------
@@ -329,18 +382,15 @@ export function prosecutionDescriptor(
   };
 }
 
-/** Sum the non-null cost_rands across a list, returning a bigint-safe string. */
+/** Sum `cost_rands` across commissions where the figure is known. */
 export function sumCostRands(
   commissions: Array<Pick<CommissionSummary, "cost_rands">>,
-): string {
-  let total = 0n;
+): number {
+  let total = 0;
   for (const c of commissions) {
-    if (!c.cost_rands) continue;
-    try {
-      total += BigInt(c.cost_rands);
-    } catch {
-      // Ignore non-integer strings; the API guarantees digit-only serialisation.
+    if (c.cost_rands != null && Number.isFinite(c.cost_rands)) {
+      total += c.cost_rands;
     }
   }
-  return total.toString();
+  return total;
 }

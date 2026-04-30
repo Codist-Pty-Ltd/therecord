@@ -44,8 +44,11 @@ export class CommissionCompareSideDto {
   @ApiPropertyOptional({ nullable: true, description: 'Duration in days.' })
   duration_days!: number | null;
 
-  @ApiPropertyOptional({ nullable: true, description: 'Total cost in ZAR (bigint as string).' })
-  cost_rands!: string | null;
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Total cost in ZAR as a whole number.',
+  })
+  cost_rands!: number | null;
 
   @ApiPropertyOptional({ nullable: true })
   total_hearing_days!: number | null;
@@ -79,9 +82,9 @@ export class CommissionCompareDeltaDto {
   @ApiPropertyOptional({
     nullable: true,
     description:
-      'cost_rands(right) - cost_rands(left) as a decimal string. Null when either is missing.',
+      'cost_rands(right) - cost_rands(left). Null when either side is missing.',
   })
-  cost_delta_rands!: string | null;
+  cost_delta_rands!: number | null;
 
   @ApiPropertyOptional({ nullable: true })
   hearing_days_delta!: number | null;

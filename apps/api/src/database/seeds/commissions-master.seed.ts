@@ -891,7 +891,7 @@ const COMMISSIONS_SEED: readonly CommissionSeed[] = [
     status: CommissionStatus.CONCLUDED,
     official_url: null,
     report_url: null,
-    cost_rands: null,
+    cost_rands: '40000000',
     total_hearing_days: null,
     outcome_summary:
       'Found serious inefficiency in SAPS allocation and detective capacity in Khayelitsha. SAPS initially contested the Premier\'s authority; the Constitutional Court affirmed it in 2014.',
@@ -972,7 +972,7 @@ const COMMISSIONS_SEED: readonly CommissionSeed[] = [
     status: CommissionStatus.CONCLUDED,
     official_url: null,
     report_url: null,
-    cost_rands: null,
+    cost_rands: '180000000',
     total_hearing_days: null,
     outcome_summary:
       "Concluded there was no evidence of improper conduct. The report was widely condemned as a whitewash. The North Gauteng High Court later set aside the commission's report in 2019, finding it was not independent and failed to investigate properly.",
@@ -1010,7 +1010,7 @@ const COMMISSIONS_SEED: readonly CommissionSeed[] = [
     status: CommissionStatus.CONCLUDED,
     official_url: null,
     report_url: null,
-    cost_rands: null,
+    cost_rands: '25000000',
     total_hearing_days: null,
     outcome_summary:
       'Found that fully free higher education was not immediately feasible given fiscal constraints. President Zuma then announced free education for students from households earning under R350,000 per year — going beyond what the commission recommended.',

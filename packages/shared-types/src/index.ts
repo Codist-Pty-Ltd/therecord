@@ -328,8 +328,9 @@ export interface Investigation {
  * lives independently of any one story — stories can link to it via
  * `story.commission_id`.
  *
- * `cost_rands` is serialised as a decimal string (bigint) to preserve
- * precision for large figures like the Zondo commission's ~R1bn cost.
+ * API responses expose `cost_rands` as a whole number of rands (parsed from
+ * the database `bigint`); values beyond `Number.MAX_SAFE_INTEGER` are sent
+ * as null.
  */
 export interface Commission {
   id: string;
@@ -349,8 +350,7 @@ export interface Commission {
   status: CommissionStatus;
   official_url: string | null;
   report_url: string | null;
-  /** Decimal string — bigint preserves precision for large sums. */
-  cost_rands: string | null;
+  cost_rands: number | null;
   total_hearing_days: number | null;
   outcome_summary: string | null;
   produced_prosecutions: boolean | null;
@@ -794,7 +794,7 @@ export interface CommissionCompareSide {
   concluded_date: string | null;
   report_released_date: string | null;
   duration_days: number | null;
-  cost_rands: string | null;
+  cost_rands: number | null;
   total_hearing_days: number | null;
   produced_prosecutions: boolean | null;
   laws_invoked: string[];
@@ -805,7 +805,7 @@ export interface CommissionCompareSide {
 /** Side-by-side delta between the two sides of a compare response. */
 export interface CommissionCompareDelta {
   duration_delta_days: number | null;
-  cost_delta_rands: string | null;
+  cost_delta_rands: number | null;
   hearing_days_delta: number | null;
   prosecutions_winner: "left" | "right" | "both" | "neither" | "unknown";
 }

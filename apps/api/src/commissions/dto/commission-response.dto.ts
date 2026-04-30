@@ -45,11 +45,12 @@ export class CommissionSummaryDto {
 
   /** Cost in ZAR cents is not tracked — this is the full rand figure as a
    *  numeric string (bigint -> string in TypeORM to preserve precision). */
+  /** Total cost in ZAR (integer). Null when not disclosed in source data. */
   @ApiPropertyOptional({
     nullable: true,
-    description: 'Total cost in ZAR, as a decimal string (bigint).',
+    description: 'Total cost in ZAR as a whole number (from bigint).',
   })
-  cost_rands!: string | null;
+  cost_rands!: number | null;
 
   @ApiPropertyOptional({ nullable: true }) total_hearing_days!: number | null;
   @ApiPropertyOptional({ nullable: true }) outcome_summary!: string | null;

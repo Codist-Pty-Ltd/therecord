@@ -213,7 +213,7 @@ export class CommissionsService {
       right,
       delta: {
         duration_delta_days: this.diffNullableInt(left.duration_days, right.duration_days),
-        cost_delta_rands: this.diffNullableBigInt(left.cost_rands, right.cost_rands),
+        cost_delta_rands: this.diffNullableCost(left.cost_rands, right.cost_rands),
         hearing_days_delta: this.diffNullableInt(
           left.total_hearing_days,
           right.total_hearing_days,
@@ -419,7 +419,7 @@ export class CommissionsService {
         commission.hearings_started,
         commission.concluded_date,
       ),
-      cost_rands: commission.cost_rands,
+      cost_rands: this.serializeCostRands(commission.cost_rands),
       total_hearing_days: commission.total_hearing_days,
       produced_prosecutions: commission.produced_prosecutions,
       laws_invoked: lawsInvoked,
@@ -448,18 +448,22 @@ export class CommissionsService {
     return b - a;
   }
 
-  /**
-   * bigint diff without losing precision for cost figures.
-   * TypeORM serialises `bigint` as a JS `string`. We promote to native BigInt
-   * for the subtraction, then back to string for transport.
-   */
-  private diffNullableBigInt(a: string | null, b: string | null): string | null {
+  private diffNullableCost(a: number | null, b: number | null): number | null {
     if (a === null || b === null) return null;
-    try {
-      return (BigInt(b) - BigInt(a)).toString();
-    } catch {
+    return b - a;
+  }
+
+  /**
+   * `bigint` commission costs from Postgres arrive as decimal strings in
+   * TypeORM. We expose them as finite JS numbers for API / web consumption.
+   */
+  private serializeCostRands(value: string | null): number | null {
+    if (value == null || value === '') return null;
+    const n = Number(value);
+    if (!Number.isFinite(n) || n < 0 || n > Number.MAX_SAFE_INTEGER) {
       return null;
     }
+    return Math.round(n);
   }
 
   private compareProsecutions(
@@ -524,7 +528,7 @@ export class CommissionsService {
       status: c.status,
       official_url: c.official_url,
       report_url: c.report_url,
-      cost_rands: c.cost_rands,
+      cost_rands: this.serializeCostRands(c.cost_rands),
       total_hearing_days: c.total_hearing_days,
       outcome_summary: c.outcome_summary,
       produced_prosecutions: c.produced_prosecutions,
