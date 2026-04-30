@@ -64,6 +64,8 @@ const TYPE_ORDER: SearchResultType[] = [
   "siu",
   "law",
   "law_section",
+  "province",
+  "municipality",
 ];
 
 const GROUP_HEADER: Record<SearchResultType, string> = {
@@ -74,6 +76,8 @@ const GROUP_HEADER: Record<SearchResultType, string> = {
   siu: "SIU",
   law: "LAWS",
   law_section: "LAW SECTIONS",
+  province: "PROVINCES",
+  municipality: "MUNICIPALITIES",
 };
 
 export function groupSearchResults(
@@ -120,6 +124,10 @@ export function typeBadgeClass(type: SearchResultType): string {
       return "bg-amber/12 text-amber";
     case "law_section":
       return "bg-charcoal/10 text-charcoal/80";
+    case "province":
+      return "bg-amber/10 text-amber";
+    case "municipality":
+      return "bg-legal-blue/10 text-legal-blue";
     default:
       return "bg-charcoal/10 text-charcoal";
   }
@@ -141,6 +149,10 @@ export function typeBadgeLabel(type: SearchResultType): string {
       return "Law";
     case "law_section":
       return "Section";
+    case "province":
+      return "Province";
+    case "municipality":
+      return "Municipality";
     default:
       return type;
   }

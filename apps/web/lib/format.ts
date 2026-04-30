@@ -25,6 +25,21 @@ export function formatRands(
   return `R${n.toLocaleString("en-ZA")}`;
 }
 
+/**
+ * Compact Rand label for hero counters (billions round to whole `R[X]bn`).
+ * Treats zero as `R0`; null/invalid as em dash.
+ */
+export function formatRandsCompact(
+  amount: number | string | null | undefined,
+): string {
+  if (amount === null || amount === undefined || amount === "") return "—";
+  const n = typeof amount === "string" ? Number(amount) : amount;
+  if (!Number.isFinite(n)) return "—";
+  if (n === 0) return "R0";
+  if (n < 0) return "—";
+  return formatRands(n, { compact: true });
+}
+
 export function formatEventDate(date: string): string {
   return new Intl.DateTimeFormat("en-ZA", {
     day: "numeric",

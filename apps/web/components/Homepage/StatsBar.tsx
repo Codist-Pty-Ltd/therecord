@@ -12,6 +12,8 @@ export type ExplorerTab =
   | "laws";
 
 export interface StatsBarProps {
+  /** Compact Rand headline for money counter (null when API unavailable). */
+  moneyTrackedCompact: string | null;
   commissionTotal: number;
   committeeTotal: number;
   peopleTotal: number;
@@ -35,6 +37,7 @@ function scrollToId(id: string) {
  * Clickable four-up grid: scrolls to anchored sections and selects explorer tab.
  */
 export default function StatsBar({
+  moneyTrackedCompact,
   commissionTotal,
   committeeTotal,
   peopleTotal,
@@ -42,10 +45,25 @@ export default function StatsBar({
 }: StatsBarProps) {
   const litigation = siuStats?.total_civil_litigation_rands;
   const litStr = formatRands(litigation, { compact: true });
+  const moneyLabel = moneyTrackedCompact ?? "—";
 
   return (
     <div className="bg-charcoal border-t border-white/[0.06]">
-      <div className="grid max-w-6xl mx-auto grid-cols-4 gap-0 divide-x divide-white/[0.06] px-0">
+      <div className="mx-auto grid max-w-6xl grid-cols-2 divide-x divide-white/[0.06] min-[520px]:grid-cols-3 lg:grid-cols-5">
+        <button
+          type="button"
+          onClick={() => {
+            scrollToId("money-counter-anchor");
+          }}
+          className="min-h-[52px] cursor-pointer px-1 py-3 text-left transition hover:bg-white/[0.04] sm:px-2"
+        >
+          <p className="font-serif text-[18px] tabular-nums text-amber sm:text-[22px] lg:text-[24px] leading-tight">
+            {moneyLabel}
+          </p>
+          <p className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.16em] text-cream/40 sm:text-[9px]">
+            Money tracked
+          </p>
+        </button>
         <button
           type="button"
           onClick={() => {

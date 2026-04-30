@@ -130,6 +130,7 @@ export class ExpenditureService {
       total_confirmed_stolen_rands: sumByType(ExpenditureType.STOLEN),
       total_recovered_rands: sumByType(ExpenditureType.RECOVERED),
       total_prevented_rands: sumByType(ExpenditureType.PREVENTED),
+      total_fruitless_wasteful_rands: sumByType(ExpenditureType.FRUITLESS_WASTEFUL),
       story_count: Number(storyCountRow?.c ?? 0),
       province_count: Number(provinceCountRow[0]?.c ?? 0),
       by_province: byProvince,

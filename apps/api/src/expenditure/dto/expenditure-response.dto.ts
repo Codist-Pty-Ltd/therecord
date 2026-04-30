@@ -48,6 +48,7 @@ export class ExpenditureCounterResponseDto {
   @ApiProperty() total_confirmed_stolen_rands!: number;
   @ApiProperty() total_recovered_rands!: number;
   @ApiProperty() total_prevented_rands!: number;
+  @ApiProperty() total_fruitless_wasteful_rands!: number;
   @ApiProperty() story_count!: number;
   @ApiProperty({
     description:

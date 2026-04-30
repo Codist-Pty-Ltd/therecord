@@ -14,11 +14,12 @@ import FeaturedStory from "@/components/Homepage/FeaturedStory";
 import HomeHero from "@/components/Homepage/HomeHero";
 import HowItWorks from "@/components/Homepage/HowItWorks";
 import LiveTicker from "@/components/Homepage/LiveTicker";
+import MoneyCounter from "@/components/Homepage/MoneyCounter";
 import PeopleStrip from "@/components/Homepage/PeopleStrip";
 import SiuMoneyBanner from "@/components/Homepage/SiuMoneyBanner";
 import SmartSearch from "@/components/Homepage/SmartSearch";
 import StatsBar from "@/components/Homepage/StatsBar";
-import { formatRands } from "@/lib/format";
+import { formatRands, formatRandsCompact } from "@/lib/format";
 import { MKHWANAZI_SLUG } from "@/lib/placeholders";
 
 import type {
@@ -29,6 +30,7 @@ import type {
   SiuProclamationSummary,
   SiuStats,
   StoryDetail,
+  ExpenditureCounter,
 } from "@the-record/shared-types";
 
 export const dynamic = "force-dynamic";
@@ -136,6 +138,7 @@ export default async function HomePage() {
     peopleRes,
     laws,
     madlangaCommission,
+    expenditureCounter,
   ] = await Promise.all([
     fetchJson<StoryDetail>(`/api/stories/${encodeURIComponent(MKHWANAZI_SLUG)}`),
     fetchJson<Paginated<CommissionSummary>>(
@@ -151,6 +154,7 @@ export default async function HomePage() {
     fetchJson<Paginated<PersonSummary>>("/api/people?page=1&limit=100"),
     fetchJson<LawSummary[]>("/api/legal/laws"),
     fetchJson<MadlangaCommission>("/api/commissions/madlanga-commission"),
+    fetchJson<ExpenditureCounter>("/api/expenditure/counter"),
   ]);
 
   const commissions = commissionsRes?.data ?? [];
@@ -168,6 +172,10 @@ export default async function HomePage() {
     : "SIU: CIVIL LITIGATION — SPECIAL TRIBUNAL";
 
   const commissionDays = daysSinceHearingOrAnnouncement(madlangaCommission);
+
+  const moneyTrackedCompact = expenditureCounter
+    ? formatRandsCompact(expenditureCounter.total_tracked_rands)
+    : null;
 
   const activeCommissions = commissions.filter((c) => c.status === "active");
 
@@ -199,11 +207,13 @@ export default async function HomePage() {
       <LiveTicker items={tickerItems} />
       <HomeHero />
       <StatsBar
+        moneyTrackedCompact={moneyTrackedCompact}
         commissionTotal={commMeta.total}
         committeeTotal={committeeMeta.total}
         peopleTotal={peopleMeta.total}
         siuStats={siuStats}
       />
+      <MoneyCounter counter={expenditureCounter} />
       <SmartSearch />
       <FeaturedStory
         title={story?.title ?? "The Mkhwanazi allegations & Madlanga Commission"}

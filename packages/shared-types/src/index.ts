@@ -292,6 +292,31 @@ export interface PublicExpenditureRecord {
   updated_at: string;
 }
 
+/** Response shape of `GET /api/expenditure/counter` (Nest `ExpenditureCounterResponseDto`). */
+export interface ExpenditureCounter {
+  total_tracked_rands: number;
+  total_under_investigation_rands: number;
+  total_allegedly_stolen_rands: number;
+  total_confirmed_stolen_rands: number;
+  total_recovered_rands: number;
+  total_prevented_rands: number;
+  total_fruitless_wasteful_rands: number;
+  story_count: number;
+  province_count: number;
+  by_province: {
+    province_name: string;
+    slug: string;
+    total_rands: number;
+    story_count: number;
+  }[];
+  by_sector: {
+    sector: ExpenditureSector;
+    total_rands: number;
+    story_count: number;
+  }[];
+  updated_at: string;
+}
+
 /** Mirrors `similar-story.entity.ts`. */
 export interface SimilarStory {
   id: string;
