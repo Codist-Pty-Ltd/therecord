@@ -7,6 +7,7 @@ import type { SiuStats } from "@the-record/shared-types";
 export type ExplorerTab =
   | "commissions"
   | "adhoc"
+  | "special_units"
   | "siu"
   | "people"
   | "laws";

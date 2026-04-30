@@ -20,6 +20,9 @@ import SiuMoneyBanner from "@/components/Homepage/SiuMoneyBanner";
 import SmartSearch from "@/components/Homepage/SmartSearch";
 import StatsBar from "@/components/Homepage/StatsBar";
 import { formatRands, formatRandsCompact } from "@/lib/format";
+import {
+  listAccountabilityBodies,
+} from "@/lib/api";
 import { MKHWANAZI_SLUG } from "@/lib/placeholders";
 
 import type {
@@ -133,6 +136,7 @@ export default async function HomePage() {
     story,
     commissionsRes,
     committeesRes,
+    accountabilityBodies,
     siuStats,
     siuProcRes,
     peopleRes,
@@ -147,6 +151,7 @@ export default async function HomePage() {
     fetchJson<Paginated<AdhocCommitteeSummary>>(
       "/api/adhoc-committees?page=1&limit=100",
     ),
+    listAccountabilityBodies(),
     fetchJson<SiuStats>("/api/siu/stats"),
     fetchJson<Paginated<SiuProclamationSummary>>(
       "/api/siu/proclamations?page=1&limit=9",
@@ -224,6 +229,7 @@ export default async function HomePage() {
       <AccountabilityExplorer
         commissions={commissions.slice(0, 22)}
         committees={committees.slice(0, 10)}
+        accountabilityBodies={accountabilityBodies.slice(0, 12)}
         siuProclamations={siuProc}
         peopleRows={explorerPeople}
         laws={lawsList}

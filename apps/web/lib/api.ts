@@ -13,6 +13,11 @@ import "server-only";
 import { cache } from "react";
 
 import type {
+  AccountabilityBody,
+  AccountabilityBodyCasesListResponse,
+  AccountabilityBodyCompareResponse,
+  AccountabilityBodyDetail,
+  AccountabilityBodyTimelineResponse,
   AdhocCommitteeDetail,
   AdhocCommitteeSummary,
   CommissionDetail,
@@ -617,6 +622,70 @@ export const listYoutubeVideosForAdhoc = cache(
       },
     );
     return r ?? [];
+  },
+);
+
+// -----------------------------------------------------------------------------
+// Accountability bodies (special units)
+// -----------------------------------------------------------------------------
+
+export const listAccountabilityBodies = cache(
+  async (): Promise<AccountabilityBody[]> => {
+    const r = await apiGet<AccountabilityBody[]>(`/api/accountability-bodies`, {
+      revalidate: REVALIDATE_STABLE_SECONDS,
+      tags: ["accountability-bodies:list"],
+    });
+    return r ?? [];
+  },
+);
+
+export const getAccountabilityBody = cache(
+  async (slug: string): Promise<AccountabilityBodyDetail | null> => {
+    const enc = encodeURIComponent(slug);
+    return apiGet<AccountabilityBodyDetail>(`/api/accountability-bodies/${enc}`, {
+      revalidate: REVALIDATE_STABLE_SECONDS,
+      tags: [`accountability-body:${slug}`],
+    });
+  },
+);
+
+export const getAccountabilityBodyCases = cache(
+  async (slug: string): Promise<AccountabilityBodyCasesListResponse | null> => {
+    const enc = encodeURIComponent(slug);
+    return apiGet<AccountabilityBodyCasesListResponse>(
+      `/api/accountability-bodies/${enc}/cases`,
+      {
+        revalidate: REVALIDATE_STABLE_SECONDS,
+        tags: [`accountability-body:cases:${slug}`],
+      },
+    );
+  },
+);
+
+export const compareAccountabilityBodies = cache(
+  async (slugsComma: string): Promise<AccountabilityBodyCompareResponse | null> => {
+    const q = new URLSearchParams();
+    q.set("bodies", slugsComma);
+    return apiGet<AccountabilityBodyCompareResponse>(
+      `/api/accountability-bodies/compare?${q.toString()}`,
+      {
+        revalidate: REVALIDATE_STABLE_SECONDS,
+        tags: ["accountability-bodies:compare"],
+      },
+    );
+  },
+);
+
+export const getAccountabilityBodyTimeline = cache(
+  async (slug: string): Promise<AccountabilityBodyTimelineResponse | null> => {
+    const enc = encodeURIComponent(slug);
+    return apiGet<AccountabilityBodyTimelineResponse>(
+      `/api/accountability-bodies/${enc}/timeline`,
+      {
+        revalidate: REVALIDATE_STORIES_SECONDS,
+        tags: [`accountability-body:timeline:${slug}`],
+      },
+    );
   },
 );
 

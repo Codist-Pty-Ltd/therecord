@@ -525,6 +525,8 @@ export class CommissionsService {
       name: body.name,
       body_type: body.body_type,
       status: body.status,
+      mandate_summary: body.mandate_summary,
+      legacy_summary: body.legacy_summary ?? null,
     };
   }
 

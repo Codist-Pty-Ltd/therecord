@@ -191,6 +191,7 @@ export class AccountabilityBodiesService {
       popular_name: c.popular_name,
       full_name: c.full_name,
       status: c.status,
+      outcome_summary: c.outcome_summary ?? null,
     }));
   }
 
@@ -266,6 +267,8 @@ export class AccountabilityBodiesService {
       name: b.name,
       body_type: b.body_type,
       status: b.status,
+      mandate_summary: b.mandate_summary,
+      legacy_summary: b.legacy_summary ?? null,
     };
   }
 

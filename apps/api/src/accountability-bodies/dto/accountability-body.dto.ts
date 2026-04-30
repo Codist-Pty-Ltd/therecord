@@ -85,6 +85,8 @@ export class AccountabilityBodyEmbedDto {
   @ApiProperty() name!: string;
   @ApiProperty({ enum: AccountabilityBodyType }) body_type!: AccountabilityBodyType;
   @ApiProperty({ enum: AccountabilityBodyStatus }) status!: AccountabilityBodyStatus;
+  @ApiProperty() mandate_summary!: string;
+  @ApiPropertyOptional({ nullable: true }) legacy_summary!: string | null;
 }
 
 /** Brief row for commissions that investigated this body. */
@@ -94,6 +96,8 @@ export class AccountabilityBodyRelatedCommissionDto {
   @ApiProperty() popular_name!: string;
   @ApiProperty() full_name!: string;
   @ApiProperty() status!: string;
+  @ApiPropertyOptional({ nullable: true })
+  outcome_summary!: string | null;
 }
 
 export class AccountabilityBodyLinkedStoryDto {

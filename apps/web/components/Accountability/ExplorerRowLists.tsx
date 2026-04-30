@@ -11,6 +11,11 @@ import {
   adhocStatusBadgeClasses,
 } from "@/lib/adhoc";
 import {
+  bodyStatusChipClasses,
+  convictionRateDisplay,
+  formatBodyYearsActive,
+} from "@/lib/accountability-bodies-display";
+import {
   COMMISSION_DOMAIN_LABELS,
   statusBadgeClasses,
 } from "@/lib/commissions";
@@ -18,6 +23,7 @@ import { formatRands } from "@/lib/format";
 import { proclamationStatusBadgeClasses } from "@/lib/siu";
 
 import type {
+  AccountabilityBody,
   AdhocCommitteeSummary,
   CommissionSummary,
   SiuProclamationSummary,
@@ -157,6 +163,59 @@ export function AdhocRowList({ rows }: { rows: AdhocCommitteeSummary[] }) {
                     {st.label}
                   </span>
                   {accountabilityActionBadge(c.produced_accountability_action)}
+                </div>
+              </div>
+              <span className="shrink-0 text-charcoal/35 transition group-hover:text-amber">
+                →
+              </span>
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+// -----------------------------------------------------------------------------
+// Accountability bodies (special units)
+// -----------------------------------------------------------------------------
+
+export function BodiesRowList({ rows }: { rows: AccountabilityBody[] }) {
+  if (rows.length === 0) {
+    return <ListEmptyHint />;
+  }
+  return (
+    <ul className="divide-y divide-charcoal/10">
+      {rows.map((b) => {
+        const st = bodyStatusChipClasses(b.status);
+        const rate = convictionRateDisplay(b.conviction_rate_percentage);
+        const years = formatBodyYearsActive(b);
+        return (
+          <li key={b.id}>
+            <Link
+              href={`/accountability-bodies/${b.slug}`}
+              className="group flex min-h-[48px] items-start justify-between gap-3 py-3 transition hover:bg-amber/[0.04] first:pt-0"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-baseline gap-2">
+                  <h3 className="font-serif text-base text-charcoal">{b.popular_name}</h3>
+                  <span className="rounded border border-amber/35 bg-amber/10 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-amber">
+                    {b.abbreviation}
+                  </span>
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span
+                    className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-wider ${st.wrap}`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${st.dot}`} />
+                    {st.label}
+                  </span>
+                  {rate ? (
+                    <span className="font-mono text-[10px] text-amber">
+                      Conviction {rate}
+                    </span>
+                  ) : null}
+                  <span className="font-mono text-[10px] text-charcoal/45">{years}</span>
                 </div>
               </div>
               <span className="shrink-0 text-charcoal/35 transition group-hover:text-amber">

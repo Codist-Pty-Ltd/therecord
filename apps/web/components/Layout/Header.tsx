@@ -17,6 +17,7 @@ const DESKTOP_NAV_LINKS: ReadonlyArray<{
   { href: "/stories", label: "Stories" },
   { href: "/provinces", label: "Provinces" },
   { href: "/commissions", label: "Commissions" },
+  { href: "/accountability-bodies", label: "Special Units" },
   { href: "/siu", label: "SIU" },
   { href: "/laws", label: "Laws" },
   { href: "/people", label: "People" },

@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { AccountabilityBody, AccountabilityBodyStatus } from '../entities/accountability-body.entity';
 import { AdhocCommittee } from '../entities/adhoc_committee.entity';
-import { AccountabilityBody } from '../entities/accountability-body.entity';
 import { Commission } from '../entities/commission.entity';
 import { Law } from '../entities/law.entity';
 import { LawSection } from '../entities/law_section.entity';
@@ -452,7 +452,7 @@ export class SearchService {
         type: 'accountability_body' as const,
         id: b.id,
         name: b.popular_name,
-        subtitle: [b.abbreviation, String(b.body_type).replace(/_/g, ' ')]
+        subtitle: [b.abbreviation, this.formatBodyStatus(b.status)]
           .filter(Boolean)
           .join(' · '),
         slug: b.slug,
@@ -461,6 +461,12 @@ export class SearchService {
         plain_english: this.oneLine(b.plain_english_summary),
       },
     }));
+  }
+
+  private formatBodyStatus(s: AccountabilityBodyStatus): string {
+    return String(s)
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
   }
 
   private formatAgAuditOutcome(o: AgAuditOutcome): string {

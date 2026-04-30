@@ -7,6 +7,7 @@ export type SearchFilterId =
   | "people"
   | "commissions"
   | "adhoc"
+  | "special_units"
   | "siu"
   | "laws"
   | "provinces";
@@ -20,6 +21,7 @@ export const FILTER_CHIPS: ReadonlyArray<{
   { id: "people", label: "People" },
   { id: "commissions", label: "Commissions" },
   { id: "adhoc", label: "Ad Hoc" },
+  { id: "special_units", label: "Special Units" },
   { id: "siu", label: "SIU" },
   { id: "laws", label: "Laws" },
   { id: "provinces", label: "Provinces" },
@@ -35,6 +37,7 @@ export function filterIdToTypesParam(
     people: "people",
     commissions: "commissions",
     adhoc: "committees",
+    special_units: "accountability_bodies",
     siu: "siu",
     laws: "laws,law_sections",
     provinces: "province,municipality",
@@ -62,6 +65,9 @@ export function typesParamToFilterId(
   }
   if (partSet.size === 1 && partSet.has("province")) return "provinces";
   if (partSet.size === 1 && partSet.has("municipality")) return "provinces";
+
+  if (partSet.size === 1 && partSet.has("accountability_bodies"))
+    return "special_units";
 
   const t = types.trim().toLowerCase();
   if (t === "stories" || t === "story") return "stories";
@@ -94,7 +100,7 @@ const GROUP_HEADER: Record<SearchResultType, string> = {
   commission: "COMMISSIONS",
   committee: "AD HOC COMMITTEES",
   siu: "SIU",
-  accountability_body: "ACCOUNTABILITY BODIES",
+  accountability_body: "SPECIAL UNITS",
   law: "LAWS",
   law_section: "LAW SECTIONS",
   province: "PROVINCES",
@@ -142,7 +148,7 @@ export function typeBadgeClass(type: SearchResultType): string {
     case "siu":
       return "bg-charge-red/[0.08] text-charge-red";
     case "accountability_body":
-      return "bg-indigo-500/10 text-indigo-800";
+      return "bg-charcoal text-cream";
     case "law":
       return "bg-amber/12 text-amber";
     case "law_section":
@@ -169,7 +175,7 @@ export function typeBadgeLabel(type: SearchResultType): string {
     case "siu":
       return "SIU";
     case "accountability_body":
-      return "Body";
+      return "Special Unit";
     case "law":
       return "Law";
     case "law_section":

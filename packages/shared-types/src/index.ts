@@ -145,6 +145,74 @@ export interface AccountabilityBodyCase {
   created_at: string;
 }
 
+/**
+ * Compact body row when joined on commissions (`subject_body`) and stories
+ * (`accountability_body`).
+ */
+export interface AccountabilityBodyEmbed {
+  id: string;
+  slug: string;
+  popular_name: string;
+  abbreviation: string;
+  name: string;
+  body_type: AccountabilityBodyType;
+  status: AccountabilityBodyStatus;
+  mandate_summary: string;
+  legacy_summary: string | null;
+}
+
+/** Commission that investigated this unit (`GET /api/accountability-bodies/:slug`). */
+export interface AccountabilityBodyRelatedCommission {
+  id: string;
+  slug: string;
+  popular_name: string;
+  full_name: string;
+  status: string;
+  outcome_summary: string | null;
+}
+
+/** Story rows linked to a body on detail responses. */
+export interface AccountabilityBodyLinkedStoryBrief {
+  id: string;
+  title: string;
+  slug: string;
+  domain: string;
+  status: string;
+  summary: string | null;
+}
+
+export interface AccountabilityBodyComparisonContext {
+  successor: AccountabilityBodyEmbed | null;
+  predecessor: AccountabilityBodyEmbed | null;
+  peer_slugs: string[];
+}
+
+/** Full dossier from `GET /api/accountability-bodies/:slug`. */
+export interface AccountabilityBodyDetail extends AccountabilityBody {
+  cases: AccountabilityBodyCase[];
+  related_commissions: AccountabilityBodyRelatedCommission[];
+  linked_stories: AccountabilityBodyLinkedStoryBrief[];
+  comparison: AccountabilityBodyComparisonContext;
+}
+
+/** One column in `GET /api/accountability-bodies/compare`. */
+export interface AccountabilityBodyCompareRow {
+  name: string;
+  abbreviation: string;
+  status: AccountabilityBodyStatus;
+  conviction_rate_percentage: string | null;
+  total_investigations: number | null;
+  total_convictions: number | null;
+  assets_seized_rands: string | null;
+  parent_organisation: string | null;
+  years_active: number | null;
+  was_political_disbanding: boolean | null;
+}
+
+export interface AccountabilityBodyCompareResponse {
+  bodies: AccountabilityBodyCompareRow[];
+}
+
 export type MunicipalityType = "metropolitan" | "local" | "district";
 
 export type AgAuditOutcome =
@@ -208,6 +276,28 @@ export type EventType =
   | "other";
 
 export type EventSignificance = "low" | "medium" | "high" | "critical";
+
+/** Timeline event merged from linked stories (`GET /api/accountability-bodies/:slug/timeline`). */
+export interface AccountabilityBodyTimelineEvent {
+  id: string;
+  story_id: string;
+  story_title: string;
+  story_slug: string;
+  event_date: string;
+  event_type: EventType;
+  title: string;
+  description: string;
+  plain_english: string | null;
+  significance: EventSignificance;
+}
+
+export interface AccountabilityBodyTimelineResponse {
+  events: AccountabilityBodyTimelineEvent[];
+}
+
+export interface AccountabilityBodyCasesListResponse {
+  data: AccountabilityBodyCase[];
+}
 
 export type PersonStatus =
   | "active"
@@ -633,8 +723,8 @@ export interface Story {
   total_amount_rands: string | null;
   created_at: string;
   updated_at: string;
-  /** Optional — when the API joins an {@link AccountabilityBody}. */
-  accountability_body?: AccountabilityBody | null;
+  /** Optional — when the API joins an {@link AccountabilityBodyEmbed}. */
+  accountability_body?: AccountabilityBodyEmbed | null;
   province?: Province | null;
   /** Optional — when the API joins municipality scope. */
   municipality?: Municipality | null;
@@ -792,8 +882,8 @@ export interface Commission {
   /** Null for commissions established by a provincial Premier or statutory body. */
   president_who_established: string | null;
   subject_body_id: string | null;
-  /** Optional — when the API joins the commission’s subject {@link AccountabilityBody}. */
-  subject_body?: AccountabilityBody | null;
+  /** Optional — when the API joins the commission’s subject {@link AccountabilityBodyEmbed}. */
+  subject_body?: AccountabilityBodyEmbed | null;
   created_at: string;
   updated_at: string;
 }

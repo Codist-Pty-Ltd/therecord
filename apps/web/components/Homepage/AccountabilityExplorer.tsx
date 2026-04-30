@@ -6,12 +6,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   AdhocRowList,
+  BodiesRowList,
   CommissionsRowList,
   SiuProclamationsRowList,
 } from "@/components/Accountability/ExplorerRowLists";
 import { getPersonInitials, getStatusColour } from "@/lib/format";
 
 import type {
+  AccountabilityBody,
   AdhocCommitteeSummary,
   CommissionSummary,
   LawSummary,
@@ -29,6 +31,7 @@ export interface PeopleExplorerRow {
 export interface AccountabilityExplorerProps {
   commissions: CommissionSummary[];
   committees: AdhocCommitteeSummary[];
+  accountabilityBodies: AccountabilityBody[];
   siuProclamations: SiuProclamationSummary[];
   peopleRows: PeopleExplorerRow[];
   laws: LawSummary[];
@@ -37,6 +40,7 @@ export interface AccountabilityExplorerProps {
 const TABS: { id: ExplorerTab; label: string }[] = [
   { id: "commissions", label: "Commissions" },
   { id: "adhoc", label: "Ad Hoc" },
+  { id: "special_units", label: "Special Units" },
   { id: "siu", label: "SIU" },
   { id: "people", label: "People" },
   { id: "laws", label: "Laws" },
@@ -45,6 +49,7 @@ const TABS: { id: ExplorerTab; label: string }[] = [
 export default function AccountabilityExplorer({
   commissions,
   committees,
+  accountabilityBodies,
   siuProclamations,
   peopleRows,
   laws,
@@ -68,6 +73,8 @@ export default function AccountabilityExplorer({
         return commissions.length;
       case "adhoc":
         return committees.length;
+      case "special_units":
+        return accountabilityBodies.length;
       case "siu":
         return siuProclamations.length;
       case "people":
@@ -77,7 +84,7 @@ export default function AccountabilityExplorer({
       default:
         return 0;
     }
-  }, [tab, commissions, committees, siuProclamations, peopleRows, laws]);
+  }, [tab, commissions, committees, accountabilityBodies, siuProclamations, peopleRows, laws]);
 
   return (
     <section
@@ -129,6 +136,7 @@ export default function AccountabilityExplorer({
                 <CommissionsRowList rows={commissions} />
               )}
               {tab === "adhoc" && <AdhocRowList rows={committees} />}
+              {tab === "special_units" && <BodiesRowList rows={accountabilityBodies} />}
               {tab === "siu" && <SiuProclamationsRowList rows={siuProclamations} />}
               {tab === "people" && <PeopleList rows={peopleRows} />}
               {tab === "laws" && <LawsList rows={laws} />}

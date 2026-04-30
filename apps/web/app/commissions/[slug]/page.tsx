@@ -17,6 +17,7 @@ import CommissionOutcome from "@/components/Commissions/CommissionOutcome";
 import CommissionPeopleByRole from "@/components/Commissions/CommissionPeopleByRole";
 import CommissionPlainEnglish from "@/components/Commissions/CommissionPlainEnglish";
 import CommissionStoriesStrip from "@/components/Commissions/CommissionStoriesStrip";
+import CommissionSubjectBody from "@/components/Commissions/CommissionSubjectBody";
 import CommissionTimeline from "@/components/Commissions/CommissionTimeline";
 import EnablingLegislationPanel from "@/components/Commissions/EnablingLegislationPanel";
 import RelatedCommissions from "@/components/Commissions/RelatedCommissions";
@@ -139,6 +140,10 @@ export default async function CommissionDetailPage({
         <div className="pb-6 md:pb-10">
           <CommissionPlainEnglish text={commission.plain_english_summary} />
         </div>
+      </div>
+
+      <div className="w-full max-w-6xl mx-auto px-4 md:px-8">
+        <CommissionSubjectBody commission={commission} />
       </div>
 
       <ReportsSection

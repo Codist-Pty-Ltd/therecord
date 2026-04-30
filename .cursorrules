@@ -236,6 +236,35 @@ SABC cross-link: Proclamation R01/2019 links to adhoc-sabc-board-2017
 Transnet/Eskom cross-links: Both proclamations link to zondo-commission-state-capture
 ACSA Proclamation R228/2024 also links to zondo-commission-state-capture
 
+## Accountability Bodies (Special Units)
+Special investigative/prosecutorial units that are neither Commissions nor the SIU. Entity: AccountabilityBody (accountability_bodies table).
+
+Current bodies tracked:
+  Scorpions (DSO) — disbanded 2009 — was within NPA — 93% conviction rate
+  Hawks (DPCI) — active — within SAPS — ~50% detection rate
+  IDAC — active — within NPA — too new for statistics
+
+The Scorpions are the most historically significant entry. Key facts:
+  Operational: 12 January 2001 to January 2009 (8 years)
+  Conviction rate: 82–94% (93.1% by Feb 2004)
+  Cases transferred on disbanding: 287
+  Convictions from those transferred cases: 38 (approx 13% — vs 93%)
+  Parent: NPA (Section 179(1) of Constitution)
+  Was disbanded at the same ANC conference where Jacob Zuma became ANC president — while the Scorpions were investigating him.
+
+The Khampepe Commission (2005/06) investigated the Scorpions and recommended they STAY within the NPA. The government ignored this and disbanded them anyway.
+  commission.subject_body links Khampepe → Scorpions
+
+AccountabilityBodyCase tracks individual high-profile cases:
+  Outcome enum includes 'transferred_to_hawks' — the saddest outcome.
+  Value field stores the financial amount involved where applicable.
+
+New route: /accountability-bodies/[slug]
+New route: /accountability-bodies (index + comparison table)
+New nav item: "Special Units" in both Header and MobileNav
+
+Seed: accountability-bodies.seed.ts runs after cape-town-stories.seed.ts
+
 ## Provincial & Municipal Accountability
 The Record tracks corruption and accountability at three geographic levels:
   National (commissions, SIU, Parliament) — existing

@@ -44,7 +44,7 @@ export function SearchResultRow({
             {r.subtitle}
           </span>
         ) : null}
-        {r.plain_english ? (
+        {r.type !== "accountability_body" && r.plain_english ? (
           <span className="block font-sans text-xs italic text-charcoal/45 line-clamp-1 mt-0.5">
             {r.plain_english}
           </span>
