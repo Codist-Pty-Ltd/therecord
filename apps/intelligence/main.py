@@ -25,11 +25,11 @@ from collections.abc import AsyncIterator
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
-# Load .env before reading any os.environ values downstream.
-load_dotenv()
+from routers import cluster, entities, legal, summary, youtube
+from services.nlp_service import get_nlp
 
-from routers import cluster, entities, legal, summary, youtube  # noqa: E402  — imports after load_dotenv
-from services.nlp_service import get_nlp  # noqa: E402
+# Load .env before logging and lifespan read os.environ.
+load_dotenv()
 
 logging.basicConfig(
     level=os.environ.get("LOG_LEVEL", "INFO").upper(),

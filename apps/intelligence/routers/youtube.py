@@ -304,9 +304,10 @@ def youtube_discover(body: DiscoverRequest) -> list[ScoredVideoOut]:
         sn = it.get("snippet") or {}
         cd = it.get("contentDetails") or {}
         st = it.get("statistics") or {}
-        vid = it.get("id")
-        if not vid:
+        vid_raw = it.get("id")
+        if not isinstance(vid_raw, str):
             continue
+        vid = vid_raw
         title = sn.get("title") or ""
         channel_id = sn.get("channelId")
         channel_title = sn.get("channelTitle")

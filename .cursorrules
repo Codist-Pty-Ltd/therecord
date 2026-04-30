@@ -9,6 +9,52 @@ read docs/PLATFORM_CONTEXT.md:
   - Port numbers
   - Deploy scripts
 
+## Session handoff — paste at new chat start (verbatim)
+
+CONTEXT: The Record — therecord.co.za
+Read .cursorrules before any changes.
+
+PROD FACTS (non-negotiable):
+- API container has only dist/ — no src/
+- DATABASE_URL needs # encoded as %23
+- docker restart does NOT reload .env — use compose down/up
+- All Next.js data pages need: export const dynamic = 'force-dynamic'
+- Domain: therecord.co.za (therecord.codist.co.za is retired)
+- Network: therecord-network | App dir: /opt/therecord/app
+- Migrations: node dist/database/run-migrations.js
+- Seeds: node dist/database/seeds/index.js (runs all in order)
+- spacy==3.7.4 (pinned — do not upgrade)
+- Ports: web=3090, api=3091, intel=8001
+- CORS includes therecord.co.za and therecord.codist.co.za
+
+SEED ORDER (FK-dependent — never reorder):
+  laws → people → commissions → adhoc → siu →
+  reports → recommendations → mkhwanazi
+
+SCHEMA: 27 entities confirmed. Key ones:
+  Story → Commission (FK), AdhocCommittee (FK), SiuProclamation (FK)
+  Recommendation → Commission (FK) or AdhocCommittee (FK)
+  YoutubeVideo → Commission/AdhocCommittee/Story/SiuProclamation
+  CommissionReport → Commission/AdhocCommittee/SiuProclamation
+
+ARCHITECTURE RULES:
+  cost_rands: bigint in DB → serializeCostRands() → number|null in TS
+  PlainEnglishBox: always 3 levels (child/layperson/legal)
+  YouTube: never auto-publish — review queue only (min score 0.4)
+  Search: always call /api/search — never client-side prop filter
+  Ingestion: guarded by x-ingestion-key header
+  Health full: guarded by x-health-key header
+
+ROUTES BUILT (no Coming Soon anywhere):
+  / /story/[slug] /commissions /commissions/[slug]
+  /adhoc-committees/[slug] /siu /people /person/[id]
+  /laws /laws/[id]/[sectionId] /constitution/[section]
+  /domain/[name] /search /about
+  + error.tsx on every route + not-found.tsx
+
+CI: .github/workflows/ci.yml runs typecheck+lint+smoke+python+build on PRs
+DEPLOY: .github/workflows/deploy.yml runs migration before rebuild on main push
+
 ## Canonical domains (non-negotiable)
 Production: https://therecord.co.za
 API:        https://therecord.co.za/api

@@ -203,7 +203,7 @@ async function upsertBlock(m: EntityManager, commission: Commission, block: Bloc
     const where = r.reference_number
       ? { commission_id: commission.id, reference_number: r.reference_number }
       : { commission_id: commission.id, title: r.title };
-    let existing = await repo.findOne({ where });
+    const existing = await repo.findOne({ where });
     const payload: Partial<Recommendation> = {
       commission_id: commission.id,
       adhoc_committee_id: null,
