@@ -56,6 +56,13 @@ export class CommissionSummaryDto {
   @ApiPropertyOptional({ nullable: true }) outcome_summary!: string | null;
   @ApiPropertyOptional({ nullable: true }) produced_prosecutions!: boolean | null;
   @ApiPropertyOptional({ nullable: true }) president_who_established!: string | null;
+  @ApiPropertyOptional({
+    nullable: true,
+    format: 'uuid',
+    description:
+      'When the commission’s subject is an accountability body (e.g. Khampepe / Scorpions).',
+  })
+  subject_body_id!: string | null;
 
   @ApiProperty({ format: 'date-time' }) created_at!: string;
   @ApiProperty({ format: 'date-time' }) updated_at!: string;

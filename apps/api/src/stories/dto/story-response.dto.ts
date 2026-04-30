@@ -47,6 +47,13 @@ export class StoryListItemDto {
     description: 'SIU proclamation scope, when applicable.',
   })
   siu_proclamation_id!: string | null;
+  @ApiPropertyOptional({
+    nullable: true,
+    format: 'uuid',
+    description:
+      'Accountability body scope (Scorpions, Hawks, IDAC, AFU, etc.), when applicable.',
+  })
+  accountability_body_id!: string | null;
   @ApiPropertyOptional({ nullable: true, format: 'uuid' })
   province_id!: string | null;
   @ApiPropertyOptional({ nullable: true, format: 'uuid' })

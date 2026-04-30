@@ -3,9 +3,13 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  JoinColumn,
+  ManyToOne,
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
+import { AccountabilityBody } from './accountability-body.entity';
 
 /**
  * Domain of public life a commission sits in. Superset of {@link StoryDomain}
@@ -145,6 +149,18 @@ export class Commission {
    */
   @Column({ type: 'varchar', length: 200, nullable: true })
   president_who_established!: string | null;
+
+  /**
+   * When the commission’s *subject* is an {@link AccountabilityBody} — e.g.
+   * the Khampepe Commission investigated the Scorpions / NPA.
+   */
+  @Index('commissions_subject_body_id_idx')
+  @Column({ type: 'uuid', nullable: true })
+  subject_body_id!: string | null;
+
+  @ManyToOne(() => AccountabilityBody, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'subject_body_id' })
+  subject_body!: AccountabilityBody | null;
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at!: Date;

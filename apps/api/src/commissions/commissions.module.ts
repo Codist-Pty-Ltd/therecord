@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AccountabilityBody } from '../entities/accountability-body.entity';
 import { CommissionReport } from '../entities/commission-report.entity';
 import { Commission } from '../entities/commission.entity';
 import { CommissionLawSection } from '../entities/commission_law_section.entity';
@@ -20,6 +21,7 @@ import { RecommendationsModule } from '../recommendations/recommendations.module
       CommissionPerson,
       Story,
       TimelineEvent,
+      AccountabilityBody,
     ]),
   ],
   controllers: [CommissionsController],

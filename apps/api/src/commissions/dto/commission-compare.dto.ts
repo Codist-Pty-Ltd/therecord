@@ -30,6 +30,12 @@ export class CommissionCompareSideDto {
   @ApiProperty({ enum: CommissionStatus }) status!: CommissionStatus;
   @ApiProperty() chair_name!: string;
   @ApiPropertyOptional({ nullable: true }) president_who_established!: string | null;
+  @ApiPropertyOptional({
+    nullable: true,
+    format: 'uuid',
+    description: 'Subject accountability body, when the commission examines that unit.',
+  })
+  subject_body_id!: string | null;
 
   @ApiPropertyOptional({ nullable: true, format: 'date' })
   announced_date!: string | null;

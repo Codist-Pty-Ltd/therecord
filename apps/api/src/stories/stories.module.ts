@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AccountabilityBody } from '../entities/accountability-body.entity';
+import { AccountabilityBodyCase } from '../entities/accountability-body-case.entity';
 import { Article } from '../entities/article.entity';
 import { EventLegalReference } from '../entities/event_legal_reference.entity';
 import { Investigation } from '../entities/investigation.entity';
@@ -26,6 +28,8 @@ import { StoriesService } from './stories.service';
       Municipality,
       PublicExpenditureRecord,
       SimilarStory,
+      AccountabilityBody,
+      AccountabilityBodyCase,
     ]),
   ],
   controllers: [StoriesController],

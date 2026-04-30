@@ -1,5 +1,16 @@
 export { Article } from './article.entity';
 export {
+  AccountabilityBody,
+  AccountabilityBodyLeadershipEntry,
+  AccountabilityBodyStatus,
+  AccountabilityBodyType,
+} from './accountability-body.entity';
+export {
+  AccountabilityBodyCase,
+  AccountabilityBodyCaseOutcome,
+  AccountabilityBodyCaseSignificance,
+} from './accountability-body-case.entity';
+export {
   ConstitutionSection,
 } from './constitution_section.entity';
 export { EventLegalReference } from './event_legal_reference.entity';

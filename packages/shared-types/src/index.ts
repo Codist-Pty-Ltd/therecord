@@ -46,6 +46,105 @@ export type StoryCategory =
   | "gang_linked_corruption"
   | "other";
 
+/** Matches `accountability_body_type` in the API / DB. */
+export type AccountabilityBodyType =
+  | "investigative_unit"
+  | "prosecutorial_unit"
+  | "asset_recovery_unit"
+  | "oversight_body"
+  | "hybrid";
+
+/** Matches `accountability_body_status`. */
+export type AccountabilityBodyStatus =
+  | "active"
+  | "disbanded"
+  | "restructured"
+  | "absorbed";
+
+/** Matches `accountability_body_case_outcome`. */
+export type CaseOutcome =
+  | "convicted"
+  | "acquitted"
+  | "charges_withdrawn"
+  | "transferred_to_hawks"
+  | "transferred_to_npa"
+  | "still_pending"
+  | "died_before_verdict"
+  | "fled_jurisdiction"
+  | "never_charged"
+  | "plea_deal";
+
+/** Matches `accountability_body_case_significance`. */
+export type CaseSignificance = "landmark" | "high" | "medium" | "low";
+
+export interface AccountabilityBodyLeadershipEntry {
+  name: string;
+  title: string;
+  period_start: string | null;
+  period_end: string | null;
+}
+
+/** Mirrors `accountability-body.entity.ts`. */
+export interface AccountabilityBody {
+  id: string;
+  name: string;
+  popular_name: string;
+  abbreviation: string;
+  slug: string;
+  body_type: AccountabilityBodyType;
+  parent_organisation: string | null;
+  enabling_legislation: string | null;
+  constitution_section: string | null;
+  status: AccountabilityBodyStatus;
+  established_date: string;
+  announced_date: string | null;
+  operational_date: string | null;
+  disbanded_date: string | null;
+  replaced_by: string | null;
+  disbanded_reason: string | null;
+  mandate_summary: string;
+  plain_english_summary: string;
+  plain_english_child: string;
+  tactics: string | null;
+  distinguishing_features: string | null;
+  leadership_history: AccountabilityBodyLeadershipEntry[] | null;
+  total_investigations: number | null;
+  total_prosecutions: number | null;
+  total_convictions: number | null;
+  conviction_rate_percentage: string | null;
+  total_arrests: number | null;
+  assets_seized_rands: string | null;
+  financial_losses_recovered_rands: string | null;
+  cases_transferred_on_dissolution: number | null;
+  staff_count_at_peak: number | null;
+  annual_budget_rands: string | null;
+  legacy_summary: string | null;
+  cases_outcome_after_transfer: string | null;
+  was_political_disbanding: boolean | null;
+  political_disbanding_evidence: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Mirrors `accountability-body-case.entity.ts`. */
+export interface AccountabilityBodyCase {
+  id: string;
+  body_id: string;
+  story_id: string | null;
+  case_name: string;
+  accused_names: string[];
+  charge_summary: string | null;
+  case_year_start: number;
+  case_year_end: number | null;
+  outcome: CaseOutcome;
+  outcome_detail: string | null;
+  significance: CaseSignificance;
+  value_rands: string | null;
+  plain_english: string | null;
+  law_sections_applied: string[];
+  created_at: string;
+}
+
 export type MunicipalityType = "metropolitan" | "local" | "district";
 
 export type AgAuditOutcome =
@@ -526,6 +625,7 @@ export interface Story {
    * touch the same matter.
    */
   siu_proclamation_id: string | null;
+  accountability_body_id: string | null;
   province_id: string | null;
   municipality_id: string | null;
   story_category: StoryCategory | null;
@@ -533,7 +633,8 @@ export interface Story {
   total_amount_rands: string | null;
   created_at: string;
   updated_at: string;
-  /** Optional — when the API joins province scope. */
+  /** Optional — when the API joins an {@link AccountabilityBody}. */
+  accountability_body?: AccountabilityBody | null;
   province?: Province | null;
   /** Optional — when the API joins municipality scope. */
   municipality?: Municipality | null;
@@ -690,6 +791,9 @@ export interface Commission {
   produced_prosecutions: boolean | null;
   /** Null for commissions established by a provincial Premier or statutory body. */
   president_who_established: string | null;
+  subject_body_id: string | null;
+  /** Optional — when the API joins the commission’s subject {@link AccountabilityBody}. */
+  subject_body?: AccountabilityBody | null;
   created_at: string;
   updated_at: string;
 }

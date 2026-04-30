@@ -8,6 +8,7 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { AccountabilityBody } from './accountability-body.entity';
 import { AdhocCommittee } from './adhoc_committee.entity';
 import { Commission } from './commission.entity';
 import { Municipality } from './municipality.entity';
@@ -133,6 +134,18 @@ export class Story {
   @ManyToOne(() => SiuProclamation, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'siu_proclamation_id' })
   siu_proclamation!: SiuProclamation | null;
+
+  /**
+   * Optional link to an {@link AccountabilityBody} (Scorpions, Hawks, IDAC, AFU)
+   * when the story is centered on that unit’s mandate or a case it handled.
+   */
+  @Index('stories_accountability_body_id_idx')
+  @Column({ type: 'uuid', nullable: true })
+  accountability_body_id!: string | null;
+
+  @ManyToOne(() => AccountabilityBody, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'accountability_body_id' })
+  accountability_body!: AccountabilityBody | null;
 
   /**
    * Optional geographic scope — province-level accountability (e.g. AG water
