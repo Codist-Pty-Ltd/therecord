@@ -53,10 +53,14 @@
  *      water sector, SASSA). Runs after mkhwanazi so similar_stories can
  *      link to slug mkhwanazi-madlanga-commission.
  *
- *   6. accountability-bodies.seed.ts
+ *   6. impact-sectors.seed.ts
+ *      Human-impact reference sectors + StoryImpactSector / CommissionImpactSector
+ *      links + expenditure what_it_should_have_funded patches.
+ *
+ *   7. accountability-bodies.seed.ts
  *      Scorpions (DSO), Hawks (DPCI), IDAC; Scorpions cases; Khampepe
  *      commission subject_body link; Scorpions timeline story. Runs after
- *      cape-town (depends on commissions-master + migrations for
+ *      impact-sectors (depends on commissions-master + migrations for
  *      accountability_bodies tables).
  *
  * Run with (inside apps/api):
@@ -72,6 +76,7 @@ import { run as runAccountabilityBodies } from './accountability-bodies.seed';
 import { run as runAdhocCommittees } from './adhoc-committees.seed';
 import { run as runCapeTownStories } from './cape-town-stories.seed';
 import { run as runCommissionsMaster } from './commissions-master.seed';
+import { run as runImpactSectors } from './impact-sectors.seed';
 import { run as runMkhwanazi } from './mkhwanazi.seed';
 import { run as runRecommendations } from './recommendations.seed';
 import { run as runReports } from './reports.seed';
@@ -89,6 +94,7 @@ async function main(): Promise<void> {
   await runSiu();
   await runMkhwanazi();
   await runCapeTownStories();
+  await runImpactSectors();
   await runAccountabilityBodies();
 
   console.log('\n═══════════════════════════════════════════════');

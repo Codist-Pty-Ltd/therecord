@@ -32,6 +32,7 @@
     "seed:recommendations": "ts-node src/database/seeds/recommendations.seed.ts",
     "seed:adhoc": "ts-node src/database/seeds/adhoc-committees.seed.ts",
     "seed:siu": "ts-node src/database/seeds/siu.seed.ts",
+    "seed:impact-sectors": "node dist/database/seeds/impact-sectors.seed.js",
     "seed:all": "ts-node src/database/seeds/index.ts",
     "seed:cape-town": "node dist/database/seeds/cape-town-stories.seed.js",
     "seed:accountability-bodies": "node dist/database/seeds/accountability-bodies.seed.js",
