@@ -10,9 +10,22 @@ export {
 } from './investigation.entity';
 export { Law, LawCategory } from './law.entity';
 export { LawSection } from './law_section.entity';
+export {
+  AgAuditOutcome,
+  Municipality,
+  MunicipalityType,
+} from './municipality.entity';
+export {
+  AmountQualifier,
+  ExpenditureSector,
+  ExpenditureType,
+  PublicExpenditureRecord,
+} from './public-expenditure-record.entity';
 export { Person, PersonStatus } from './person.entity';
-export { Story, StoryDomain, StoryStatus } from './story.entity';
+export { Province } from './province.entity';
+export { Story, StoryCategory, StoryDomain, StoryStatus } from './story.entity';
 export { StoryPerson } from './story_person.entity';
+export { SimilarityReason, SimilarStory } from './similar-story.entity';
 export {
   TakedownRequest,
   TakedownRequestStatus,

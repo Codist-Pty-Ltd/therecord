@@ -10,7 +10,7 @@ import {
 } from '../../entities/investigation.entity';
 import { LawCategory } from '../../entities/law.entity';
 import { PersonStatus } from '../../entities/person.entity';
-import { StoryDomain, StoryStatus } from '../../entities/story.entity';
+import { StoryDomain, StoryStatus, StoryCategory } from '../../entities/story.entity';
 
 /* ------------------------------------------------------------------ list */
 
@@ -28,6 +28,29 @@ export class StoryListItemDto {
     description: 'When set, links the story to a commission of inquiry. Null for standalone stories.',
   })
   commission_id!: string | null;
+  @ApiPropertyOptional({
+    nullable: true,
+    format: 'uuid',
+    description: 'Parliamentary ad hoc committee scope, when applicable.',
+  })
+  adhoc_committee_id!: string | null;
+  @ApiPropertyOptional({
+    nullable: true,
+    format: 'uuid',
+    description: 'SIU proclamation scope, when applicable.',
+  })
+  siu_proclamation_id!: string | null;
+  @ApiPropertyOptional({ nullable: true, format: 'uuid' })
+  province_id!: string | null;
+  @ApiPropertyOptional({ nullable: true, format: 'uuid' })
+  municipality_id!: string | null;
+  @ApiPropertyOptional({ enum: StoryCategory, nullable: true })
+  story_category!: StoryCategory | null;
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Cached sum of expenditure records (whole rands, string for bigint).',
+  })
+  total_amount_rands!: string | null;
   @ApiPropertyOptional({
     nullable: true,
     description: 'Most recent timeline event date (YYYY-MM-DD). Null when the story has no events.',

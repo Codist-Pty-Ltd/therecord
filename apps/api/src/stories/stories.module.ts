@@ -3,6 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Article } from '../entities/article.entity';
 import { EventLegalReference } from '../entities/event_legal_reference.entity';
 import { Investigation } from '../entities/investigation.entity';
+import { Municipality } from '../entities/municipality.entity';
+import { Province } from '../entities/province.entity';
+import { PublicExpenditureRecord } from '../entities/public-expenditure-record.entity';
+import { SimilarStory } from '../entities/similar-story.entity';
 import { Story } from '../entities/story.entity';
 import { StoryPerson } from '../entities/story_person.entity';
 import { TimelineEvent } from '../entities/timeline_event.entity';
@@ -18,6 +22,10 @@ import { StoriesService } from './stories.service';
       Investigation,
       Article,
       EventLegalReference,
+      Province,
+      Municipality,
+      PublicExpenditureRecord,
+      SimilarStory,
     ]),
   ],
   controllers: [StoriesController],

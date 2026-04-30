@@ -10,6 +10,8 @@ import {
 } from 'typeorm';
 import { AdhocCommittee } from './adhoc_committee.entity';
 import { Commission } from './commission.entity';
+import { Municipality } from './municipality.entity';
+import { Province } from './province.entity';
 import { SiuProclamation } from './siu_proclamation.entity';
 
 export enum StoryDomain {
@@ -24,6 +26,22 @@ export enum StoryStatus {
   ACTIVE = 'active',
   RESOLVED = 'resolved',
   DORMANT = 'dormant',
+}
+
+export enum StoryCategory {
+  TENDER_FRAUD = 'tender_fraud',
+  HOUSING_CORRUPTION = 'housing_corruption',
+  CONSTRUCTION_MAFIA = 'construction_mafia',
+  WATER_SANITATION = 'water_sanitation',
+  HEALTH_CORRUPTION = 'health_corruption',
+  EDUCATION_CORRUPTION = 'education_corruption',
+  SOCIAL_GRANTS_FRAUD = 'social_grants_fraud',
+  POLICE_MISCONDUCT = 'police_misconduct',
+  ENERGY_CORRUPTION = 'energy_corruption',
+  STATE_CAPTURE = 'state_capture',
+  WHISTLEBLOWER = 'whistleblower',
+  GANG_LINKED_CORRUPTION = 'gang_linked_corruption',
+  OTHER = 'other',
 }
 
 @Entity('stories')
@@ -115,6 +133,48 @@ export class Story {
   @ManyToOne(() => SiuProclamation, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'siu_proclamation_id' })
   siu_proclamation!: SiuProclamation | null;
+
+  /**
+   * Optional geographic scope — province-level accountability (e.g. AG water
+   * sector losses reported per province).
+   */
+  @Index('stories_province_id_idx')
+  @Column({ type: 'uuid', nullable: true })
+  province_id!: string | null;
+
+  @ManyToOne(() => Province, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'province_id' })
+  province!: Province | null;
+
+  /**
+   * Optional municipal scope — metro, local or district municipality linked
+   * to this story (Cape Town contracts, eThekwini, etc.).
+   */
+  @Index('stories_municipality_id_idx')
+  @Column({ type: 'uuid', nullable: true })
+  municipality_id!: string | null;
+
+  @ManyToOne(() => Municipality, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'municipality_id' })
+  municipality!: Municipality | null;
+
+  /**
+   * Editorial taxonomy for provincial / municipal corruption and related threads.
+   */
+  @Column({
+    type: 'enum',
+    enum: StoryCategory,
+    enumName: 'story_category',
+    nullable: true,
+  })
+  story_category!: StoryCategory | null;
+
+  /**
+   * Cached sum of {@link PublicExpenditureRecord} amounts for this story
+   * (whole rands). Maintained when expenditure rows are written.
+   */
+  @Column({ type: 'bigint', nullable: true })
+  total_amount_rands!: string | null;
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at!: Date;

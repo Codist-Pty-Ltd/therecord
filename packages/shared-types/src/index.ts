@@ -31,6 +31,69 @@ export type StoryDomain =
 
 export type StoryStatus = "active" | "resolved" | "dormant";
 
+export type StoryCategory =
+  | "tender_fraud"
+  | "housing_corruption"
+  | "construction_mafia"
+  | "water_sanitation"
+  | "health_corruption"
+  | "education_corruption"
+  | "social_grants_fraud"
+  | "police_misconduct"
+  | "energy_corruption"
+  | "state_capture"
+  | "whistleblower"
+  | "gang_linked_corruption"
+  | "other";
+
+export type MunicipalityType = "metropolitan" | "local" | "district";
+
+export type AgAuditOutcome =
+  | "clean"
+  | "unqualified_with_findings"
+  | "qualified"
+  | "adverse"
+  | "disclaimer"
+  | "outstanding";
+
+export type AmountQualifier =
+  | "exact"
+  | "approximate"
+  | "minimum"
+  | "maximum"
+  | "under_investigation";
+
+export type ExpenditureType =
+  | "stolen"
+  | "allegedly_stolen"
+  | "fruitless_wasteful"
+  | "irregular"
+  | "under_investigation"
+  | "recovered"
+  | "prevented";
+
+export type ExpenditureSector =
+  | "housing"
+  | "construction_roads"
+  | "water_sanitation"
+  | "health"
+  | "education"
+  | "social_grants"
+  | "police_security"
+  | "energy"
+  | "transport"
+  | "other_procurement"
+  | "state_owned_enterprise"
+  | "other";
+
+export type SimilarityReason =
+  | "same_province"
+  | "same_municipality"
+  | "same_sector"
+  | "same_accused"
+  | "same_category"
+  | "same_pattern";
+
 export type EventType =
   | "incident"
   | "press_conference"
@@ -176,6 +239,69 @@ export type TimelineEventType = EventType;
 //      - `date`        → `YYYY-MM-DD`
 // -----------------------------------------------------------------------------
 
+/** Mirrors `province.entity.ts`. */
+export interface Province {
+  id: string;
+  name: string;
+  slug: string;
+  abbreviation: string | null;
+  capital: string | null;
+  premier_name: string | null;
+  corruption_watch_complaint_percentage: string | null;
+  auditor_general_irregular_expenditure_rands: string | null;
+  ag_report_year: string | null;
+  created_at: string;
+}
+
+/** Mirrors `municipality.entity.ts`. */
+export interface Municipality {
+  id: string;
+  name: string;
+  short_name: string;
+  slug: string;
+  municipality_type: MunicipalityType;
+  province_id: string;
+  mayor_name: string | null;
+  governing_party: string | null;
+  annual_budget_rands: string | null;
+  ag_audit_outcome: AgAuditOutcome | null;
+  ag_audit_year: string | null;
+  ag_irregular_expenditure_rands: string | null;
+  plain_english_audit_outcome: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Mirrors `public-expenditure-record.entity.ts`. */
+export interface PublicExpenditureRecord {
+  id: string;
+  story_id: string;
+  province_id: string | null;
+  municipality_id: string | null;
+  amount_rands: string;
+  amount_qualifier: AmountQualifier;
+  expenditure_type: ExpenditureType;
+  sector: ExpenditureSector;
+  description: string;
+  plain_english: string | null;
+  source_document: string | null;
+  source_url: string | null;
+  reference_date: string | null;
+  is_verified: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Mirrors `similar-story.entity.ts`. */
+export interface SimilarStory {
+  id: string;
+  story_id: string;
+  similar_story_id: string;
+  similarity_reason: SimilarityReason;
+  similarity_note: string | null;
+  created_at: string;
+}
+
 /** Mirrors `story.entity.ts`. */
 export interface Story {
   id: string;
@@ -203,11 +329,22 @@ export interface Story {
    * touch the same matter.
    */
   siu_proclamation_id: string | null;
+  province_id: string | null;
+  municipality_id: string | null;
+  story_category: StoryCategory | null;
+  /** Cached sum of expenditure records (whole rands); serialized as string. */
+  total_amount_rands: string | null;
   created_at: string;
   updated_at: string;
+  /** Optional — when the API joins province scope. */
+  province?: Province | null;
+  /** Optional — when the API joins municipality scope. */
+  municipality?: Municipality | null;
+  /** Optional — loaded on story detail when expenditure rows are included. */
+  expenditure_records?: PublicExpenditureRecord[];
+  /** Optional — editorial “similar threads” links. */
+  similar_stories?: SimilarStory[];
 }
-
-/** Mirrors `timeline_event.entity.ts`. */
 export interface TimelineEvent {
   id: string;
   story_id: string;
