@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { HumanImpactModule } from '../human-impact/human-impact.module';
 import { AccountabilityBody } from '../entities/accountability-body.entity';
 import { AccountabilityBodyCase } from '../entities/accountability-body-case.entity';
 import { Article } from '../entities/article.entity';
@@ -17,6 +18,7 @@ import { StoriesService } from './stories.service';
 
 @Module({
   imports: [
+    HumanImpactModule,
     TypeOrmModule.forFeature([
       Story,
       TimelineEvent,

@@ -428,6 +428,63 @@ export type TimelineEventType = EventType;
 //      - `date`        → `YYYY-MM-DD`
 // -----------------------------------------------------------------------------
 
+/** Matches `impact_severity` enum / `ImpactSeverity` in the API. */
+export type ImpactSeverity = "low" | "medium" | "high" | "critical";
+
+/** Mirrors `impact-sector.entity.ts` — reference table (8 civic-life lenses). */
+export interface ImpactSector {
+  id: string;
+  slug: string;
+  name: string;
+  icon: string | null;
+  constitutional_right: string | null;
+  what_was_promised: string;
+  ground_reality: string;
+  plain_english_child: string;
+  stat_headline: string | null;
+  stat_value: string | null;
+  stat_label: string | null;
+  stat_source: string | null;
+  stat_year: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Mirrors `story-impact-sector.entity.ts`. */
+export interface StoryImpactSector {
+  id: string;
+  story_id: string;
+  sector_id: string;
+  sector?: ImpactSector;
+  impact_chain: string[];
+  impact_severity: ImpactSeverity;
+  amount_diverted_rands: string | null;
+  people_affected_estimate: string | null;
+  plain_english_impact: string | null;
+  created_at: string;
+}
+
+/** Mirrors `expenditure-impact-sector.entity.ts`. */
+export interface ExpenditureImpactSector {
+  id: string;
+  expenditure_record_id: string;
+  sector_id: string;
+  sector?: ImpactSector;
+  what_was_not_built: string;
+  alternative_use_description: string | null;
+  created_at: string;
+}
+
+/** Mirrors `commission-impact-sector.entity.ts`. */
+export interface CommissionImpactSector {
+  id: string;
+  commission_id: string;
+  sector_id: string;
+  sector?: ImpactSector;
+  impact_summary: string;
+  created_at: string;
+}
+
 /** Mirrors `province.entity.ts`. */
 export interface Province {
   id: string;
@@ -478,6 +535,8 @@ export interface PublicExpenditureRecord {
   reference_date: string | null;
   is_verified: boolean;
   is_primary_record: boolean;
+  /** Human-impact copy — what this money could have funded instead. */
+  what_it_should_have_funded: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -719,6 +778,8 @@ export interface Story {
    */
   siu_proclamation_id: string | null;
   accountability_body_id: string | null;
+  /** Editorial primary human-impact lens (FK to impact_sectors). */
+  primary_impact_sector_id: string | null;
   province_id: string | null;
   municipality_id: string | null;
   story_category: StoryCategory | null;
@@ -728,6 +789,10 @@ export interface Story {
   updated_at: string;
   /** Optional — when the API joins an {@link AccountabilityBodyEmbed}. */
   accountability_body?: AccountabilityBodyEmbed | null;
+  /** Optional — primary impact sector row when joined on detail/list. */
+  primary_impact_sector?: ImpactSector | null;
+  /** Optional — sector-level causal chains when joined on story detail. */
+  impact_sectors?: StoryImpactSector[];
   province?: Province | null;
   /** Optional — when the API joins municipality scope. */
   municipality?: Municipality | null;

@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { AccountabilityBody } from './accountability-body.entity';
+import { ImpactSector } from './impact-sector.entity';
 import { AdhocCommittee } from './adhoc_committee.entity';
 import { Commission } from './commission.entity';
 import { Municipality } from './municipality.entity';
@@ -146,6 +147,18 @@ export class Story {
   @ManyToOne(() => AccountabilityBody, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'accountability_body_id' })
   accountability_body!: AccountabilityBody | null;
+
+  /**
+   * Editorial “headline” sector for quick UI — the single most affected lens
+   * from {@link ImpactSector}. Detail rows live in `story_impact_sectors`.
+   */
+  @Index('stories_primary_impact_sector_id_idx')
+  @Column({ type: 'uuid', nullable: true })
+  primary_impact_sector_id!: string | null;
+
+  @ManyToOne(() => ImpactSector, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'primary_impact_sector_id' })
+  primary_impact_sector!: ImpactSector | null;
 
   /**
    * Optional geographic scope — province-level accountability (e.g. AG water

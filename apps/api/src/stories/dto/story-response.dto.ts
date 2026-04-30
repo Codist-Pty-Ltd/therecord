@@ -19,6 +19,7 @@ import {
 } from '../../entities/public-expenditure-record.entity';
 import { SimilarityReason } from '../../entities/similar-story.entity';
 import { StoryDomain, StoryStatus, StoryCategory } from '../../entities/story.entity';
+import { ImpactSeverity } from '../../entities/story-impact-sector.entity';
 
 /* ------------------------------------------------------------------ list */
 
@@ -61,6 +62,12 @@ export class StoryListItemDto {
   municipality_id!: string | null;
   @ApiPropertyOptional({ enum: StoryCategory, nullable: true })
   story_category!: StoryCategory | null;
+  @ApiPropertyOptional({
+    nullable: true,
+    format: 'uuid',
+    description: 'Editorial primary human-impact lens (see impact_sectors.reference table).',
+  })
+  primary_impact_sector_id!: string | null;
   @ApiPropertyOptional({
     nullable: true,
     description: 'Cached sum of expenditure records (whole rands, string for bigint).',
@@ -194,6 +201,44 @@ export class MunicipalityBriefForStoryDto {
   @ApiProperty({ enum: MunicipalityType }) municipality_type!: MunicipalityType;
 }
 
+/** Full {@link ImpactSector} row — reference data for human-impact UI. */
+export class ImpactSectorDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiProperty() slug!: string;
+  @ApiProperty() name!: string;
+  @ApiPropertyOptional({ nullable: true }) icon!: string | null;
+  @ApiPropertyOptional({ nullable: true }) constitutional_right!: string | null;
+  @ApiProperty() what_was_promised!: string;
+  @ApiProperty() ground_reality!: string;
+  @ApiProperty() plain_english_child!: string;
+  @ApiPropertyOptional({ nullable: true }) stat_headline!: string | null;
+  @ApiPropertyOptional({ nullable: true }) stat_value!: string | null;
+  @ApiPropertyOptional({ nullable: true }) stat_label!: string | null;
+  @ApiPropertyOptional({ nullable: true }) stat_source!: string | null;
+  @ApiPropertyOptional({ nullable: true }) stat_year!: string | null;
+  @ApiProperty({ format: 'date-time' }) created_at!: string;
+  @ApiProperty({ format: 'date-time' }) updated_at!: string;
+}
+
+export class StoryImpactSectorDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiProperty({ format: 'uuid' }) story_id!: string;
+  @ApiProperty({ format: 'uuid' }) sector_id!: string;
+  @ApiProperty({ type: ImpactSectorDto }) sector!: ImpactSectorDto;
+  @ApiProperty({ type: [String], description: 'Ordered causal chain from diversion to lived harm.' })
+  impact_chain!: string[];
+  @ApiProperty({ enum: ImpactSeverity }) impact_severity!: ImpactSeverity;
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Portion of story money affecting this sector (whole rands, string).',
+  })
+  amount_diverted_rands!: string | null;
+  @ApiPropertyOptional({ nullable: true, description: 'Estimated people who lost the service / outcome.' })
+  people_affected_estimate!: string | null;
+  @ApiPropertyOptional({ nullable: true }) plain_english_impact!: string | null;
+  @ApiProperty({ format: 'date-time' }) created_at!: string;
+}
+
 export class PublicExpenditureRecordBriefDto {
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ format: 'uuid' }) story_id!: string;
@@ -204,6 +249,11 @@ export class PublicExpenditureRecordBriefDto {
   @ApiProperty({ enum: ExpenditureType }) expenditure_type!: ExpenditureType;
   @ApiProperty({ enum: ExpenditureSector }) sector!: ExpenditureSector;
   @ApiProperty() description!: string;
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Human-impact line: what this money could have funded instead.',
+  })
+  what_it_should_have_funded!: string | null;
   @ApiPropertyOptional({ nullable: true }) plain_english!: string | null;
   @ApiPropertyOptional({ nullable: true }) source_document!: string | null;
   @ApiPropertyOptional({ nullable: true }) source_url!: string | null;
@@ -241,6 +291,15 @@ export class SimilarStoryBriefDto {
 export class StoryDetailResponseDto extends StoryListItemDto {
   @ApiPropertyOptional({ type: AccountabilityBodyEmbedDto, nullable: true })
   accountability_body!: AccountabilityBodyEmbedDto | null;
+
+  @ApiPropertyOptional({ type: ImpactSectorDto, nullable: true })
+  primary_impact_sector!: ImpactSectorDto | null;
+
+  @ApiProperty({
+    type: [StoryImpactSectorDto],
+    description: 'How this story connects to human-impact sectors (causal chains).',
+  })
+  impact_sectors!: StoryImpactSectorDto[];
 
   @ApiProperty({ type: [TimelineEventBriefDto] })
   timeline_events!: TimelineEventBriefDto[];

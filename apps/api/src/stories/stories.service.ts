@@ -18,12 +18,15 @@ import { Person } from '../entities/person.entity';
 import { Province } from '../entities/province.entity';
 import { PublicExpenditureRecord } from '../entities/public-expenditure-record.entity';
 import { SimilarStory } from '../entities/similar-story.entity';
+import { ImpactSector } from '../entities/impact-sector.entity';
+import { StoryImpactSector, ImpactSeverity } from '../entities/story-impact-sector.entity';
 import { Story, StoryDomain, StoryStatus } from '../entities/story.entity';
 import { StoryPerson } from '../entities/story_person.entity';
 import { TimelineEvent } from '../entities/timeline_event.entity';
 import { CreateStoryDto } from './dto/create-story.dto';
 import {
   ArticleBriefDto,
+  ImpactSectorDto,
   InvestigationBriefDto,
   LawSectionBriefDto,
   LegalReferenceBriefDto,
@@ -33,6 +36,7 @@ import {
   PublicExpenditureRecordBriefDto,
   SimilarStoryBriefDto,
   StoryDetailResponseDto,
+  StoryImpactSectorDto,
   StoryListItemDto,
   StoryListResponseDto,
   StoryPersonBriefDto,
@@ -46,7 +50,15 @@ const MAX_SLUG_COLLISIONS = 1000;
 interface StoryWithLatestEvent extends Story {
   commission_id: string | null;
   latest_event_date: string | null;
+  primary_impact_sector_id: string | null;
 }
+
+const IMPACT_SEVERITY_RANK: Record<ImpactSeverity, number> = {
+  [ImpactSeverity.CRITICAL]: 0,
+  [ImpactSeverity.HIGH]: 1,
+  [ImpactSeverity.MEDIUM]: 2,
+  [ImpactSeverity.LOW]: 3,
+};
 
 @Injectable()
 export class StoriesService {
@@ -67,6 +79,8 @@ export class StoriesService {
     @InjectRepository(PublicExpenditureRecord)
     private readonly expenditureRepo: Repository<PublicExpenditureRecord>,
     @InjectRepository(SimilarStory) private readonly similarStoryRepo: Repository<SimilarStory>,
+    @InjectRepository(StoryImpactSector)
+    private readonly storyImpactSectorRepo: Repository<StoryImpactSector>,
   ) {}
 
   /* ---------------------------------------------------------------- list */
@@ -96,6 +110,7 @@ export class StoriesService {
         'story.province_id AS province_id',
         'story.municipality_id AS municipality_id',
         'story.story_category AS story_category',
+        'story.primary_impact_sector_id AS primary_impact_sector_id',
         'story.total_amount_rands AS total_amount_rands',
         'story.created_at AS created_at',
         'story.updated_at AS updated_at',
@@ -236,13 +251,13 @@ export class StoriesService {
   async findBySlug(slug: string): Promise<StoryDetailResponseDto> {
     const story = await this.storyRepo.findOne({
       where: { slug },
-      relations: ['accountability_body'],
+      relations: ['accountability_body', 'primary_impact_sector'],
     });
     if (!story) {
       throw new NotFoundException(`Story with slug "${slug}" not found.`);
     }
 
-    const [timelineEvents, storyPeople, investigations, articles, expenditureRows, similarStories] =
+    const [timelineEvents, storyPeople, investigations, articles, expenditureRows, similarStories, impactLinks] =
       await Promise.all([
         this.timelineRepo.find({
           where: { story_id: story.id },
@@ -266,6 +281,10 @@ export class StoriesService {
           order: { amount_rands: 'DESC', created_at: 'DESC' },
         }),
         this.findSimilarForStory(story),
+        this.storyImpactSectorRepo.find({
+          where: { story_id: story.id },
+          relations: ['sector'],
+        }),
       ]);
 
     const [provinceEntity, municipalityEntity] = await Promise.all([
@@ -307,9 +326,18 @@ export class StoriesService {
         }
       : null;
 
+    const impactLinksSorted = [...impactLinks].sort(
+      (a, b) =>
+        IMPACT_SEVERITY_RANK[a.impact_severity] - IMPACT_SEVERITY_RANK[b.impact_severity],
+    );
+
     return {
       ...this.mapEntityToListItem(story, latestEventDate),
       accountability_body: this.mapAccountabilityBodyEmbed(story.accountability_body),
+      primary_impact_sector: story.primary_impact_sector
+        ? this.mapImpactSector(story.primary_impact_sector)
+        : null,
+      impact_sectors: impactLinksSorted.map((row) => this.mapStoryImpactSectorRow(row)),
       timeline_events: timelineEvents.map((e) =>
         this.mapTimelineEvent(e, legalRefsByEvent.get(e.id) ?? []),
       ),
@@ -508,6 +536,7 @@ export class StoriesService {
       province_id: story.province_id,
       municipality_id: story.municipality_id,
       story_category: story.story_category,
+      primary_impact_sector_id: story.primary_impact_sector_id,
       total_amount_rands: story.total_amount_rands,
       latest_event_date: latestEventDate,
       created_at: story.created_at.toISOString(),
@@ -531,6 +560,7 @@ export class StoriesService {
       province_id: row.province_id,
       municipality_id: row.municipality_id,
       story_category: row.story_category,
+      primary_impact_sector_id: row.primary_impact_sector_id ?? null,
       total_amount_rands: row.total_amount_rands ?? null,
       latest_event_date: row.latest_event_date,
       created_at: new Date(row.created_at as unknown as string).toISOString(),
@@ -598,6 +628,41 @@ export class StoriesService {
     };
   }
 
+  private mapImpactSector(s: ImpactSector): ImpactSectorDto {
+    return {
+      id: s.id,
+      slug: s.slug,
+      name: s.name,
+      icon: s.icon,
+      constitutional_right: s.constitutional_right,
+      what_was_promised: s.what_was_promised,
+      ground_reality: s.ground_reality,
+      plain_english_child: s.plain_english_child,
+      stat_headline: s.stat_headline,
+      stat_value: s.stat_value,
+      stat_label: s.stat_label,
+      stat_source: s.stat_source,
+      stat_year: s.stat_year,
+      created_at: s.created_at.toISOString(),
+      updated_at: s.updated_at.toISOString(),
+    };
+  }
+
+  private mapStoryImpactSectorRow(row: StoryImpactSector): StoryImpactSectorDto {
+    return {
+      id: row.id,
+      story_id: row.story_id,
+      sector_id: row.sector_id,
+      sector: this.mapImpactSector(row.sector),
+      impact_chain: row.impact_chain,
+      impact_severity: row.impact_severity,
+      amount_diverted_rands: row.amount_diverted_rands,
+      people_affected_estimate: row.people_affected_estimate,
+      plain_english_impact: row.plain_english_impact,
+      created_at: row.created_at.toISOString(),
+    };
+  }
+
   private mapExpenditureRecord(e: PublicExpenditureRecord): PublicExpenditureRecordBriefDto {
     return {
       id: e.id,
@@ -610,6 +675,7 @@ export class StoriesService {
       sector: e.sector,
       description: e.description,
       plain_english: e.plain_english,
+      what_it_should_have_funded: e.what_it_should_have_funded,
       source_document: e.source_document,
       source_url: e.source_url,
       reference_date: e.reference_date,

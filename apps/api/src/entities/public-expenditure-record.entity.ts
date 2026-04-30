@@ -108,6 +108,12 @@ export class PublicExpenditureRecord {
   @Column({ type: 'text' })
   description!: string;
 
+  /**
+   * Human-impact copy: what this money could have funded (often computed at seed time).
+   */
+  @Column({ type: 'text', nullable: true })
+  what_it_should_have_funded!: string | null;
+
   @Column({ type: 'text', nullable: true })
   plain_english!: string | null;
 

@@ -17,6 +17,11 @@ export class PublicExpenditureRecordResponseDto {
   @ApiProperty({ enum: ExpenditureType }) expenditure_type!: ExpenditureType;
   @ApiProperty({ enum: ExpenditureSector }) sector!: ExpenditureSector;
   @ApiProperty() description!: string;
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Human-impact line: what this money could have funded instead.',
+  })
+  what_it_should_have_funded!: string | null;
   @ApiPropertyOptional({ nullable: true }) plain_english!: string | null;
   @ApiPropertyOptional({ nullable: true }) source_document!: string | null;
   @ApiPropertyOptional({ nullable: true }) source_url!: string | null;

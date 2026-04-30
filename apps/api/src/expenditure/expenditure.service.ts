@@ -53,6 +53,7 @@ export class ExpenditureService {
       sector: e.sector,
       description: e.description,
       plain_english: e.plain_english,
+      what_it_should_have_funded: e.what_it_should_have_funded,
       source_document: e.source_document,
       source_url: e.source_url,
       reference_date: e.reference_date,
