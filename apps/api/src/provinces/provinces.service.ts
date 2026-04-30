@@ -10,11 +10,7 @@ import {
   ExpenditureType,
   PublicExpenditureRecord,
 } from '../entities/public-expenditure-record.entity';
-import {
-  Story,
-  StoryCategory,
-  StoryStatus,
-} from '../entities/story.entity';
+import { Story, StoryCategory } from '../entities/story.entity';
 import { ProvinceStoriesQueryDto, ProvinceStorySortField } from './dto/province-stories-query.dto';
 import {
   ExpenditureSectorBreakdownDto,
