@@ -15,6 +15,7 @@
 import 'reflect-metadata';
 
 import type { EntityManager } from 'typeorm';
+import { IsNull } from 'typeorm';
 
 import {
   AccountabilityBody,
@@ -30,6 +31,12 @@ import { Commission } from '../../entities/commission.entity';
 import { EventLegalReference } from '../../entities/event_legal_reference.entity';
 import { Law, LawCategory } from '../../entities/law.entity';
 import { LawSection } from '../../entities/law_section.entity';
+import {
+  AmountQualifier,
+  ExpenditureSector,
+  ExpenditureType,
+  PublicExpenditureRecord,
+} from '../../entities/public-expenditure-record.entity';
 import {
   Story,
   StoryCategory,
@@ -717,7 +724,98 @@ export async function run(): Promise<void> {
         }
       }
 
+      const expenditureRepo = m.getRepository(PublicExpenditureRecord);
+
+      const scorpionsMoneySeeds: Array<{
+        amount_rands: string;
+        amount_qualifier: AmountQualifier;
+        expenditure_type: ExpenditureType;
+        sector: ExpenditureSector;
+        description: string;
+        reference_date: string | null;
+        source_document: string | null;
+        is_verified: boolean;
+        is_primary_record: boolean;
+      }> = [
+        {
+          amount_rands: '2000000000',
+          amount_qualifier: AmountQualifier.APPROXIMATE,
+          expenditure_type: ExpenditureType.RECOVERED,
+          sector: ExpenditureSector.OTHER_PROCUREMENT,
+          description:
+            'Assets and contraband seized by the Scorpions between 2005 and 2007 — R1 billion in assets plus R1 billion in contraband.',
+          source_document: 'Wikipedia / Scorpions annual statistics',
+          is_verified: true,
+          reference_date: '2007-12-31',
+          is_primary_record: true,
+        },
+        {
+          amount_rands: '70000000000',
+          amount_qualifier: AmountQualifier.APPROXIMATE,
+          expenditure_type: ExpenditureType.UNDER_INVESTIGATION,
+          sector: ExpenditureSector.STATE_OWNED_ENTERPRISE,
+          description:
+            'Total value of the Strategic Defence Package (Arms Deal) investigated by the Scorpions from 2001 to 2009. This is the total deal value, not the confirmed corruption amount. The Scorpions never concluded this investigation — it was transferred and then dropped.',
+          source_document: null,
+          is_verified: true,
+          reference_date: '2009-01-01',
+          is_primary_record: false,
+        },
+        {
+          amount_rands: '35000000',
+          amount_qualifier: AmountQualifier.APPROXIMATE,
+          expenditure_type: ExpenditureType.STOLEN,
+          sector: ExpenditureSector.OTHER_PROCUREMENT,
+          description:
+            'Parliamentary travel voucher fraud investigated and prosecuted by the Scorpions in the Travelgate affair. More than 30 MPs convicted.',
+          source_document: null,
+          is_verified: true,
+          reference_date: null,
+          is_primary_record: true,
+        },
+      ];
+
+      for (const seed of scorpionsMoneySeeds) {
+        let expRow = await expenditureRepo.findOne({
+          where: {
+            story_id: arcStory.id,
+            amount_rands: seed.amount_rands,
+            expenditure_type: seed.expenditure_type,
+            sector: seed.sector,
+            reference_date: seed.reference_date === null ? IsNull() : seed.reference_date,
+          },
+        });
+
+        const expPayload = {
+          story_id: arcStory.id,
+          province_id: null as string | null,
+          municipality_id: null as string | null,
+          amount_rands: seed.amount_rands,
+          amount_qualifier: seed.amount_qualifier,
+          expenditure_type: seed.expenditure_type,
+          sector: seed.sector,
+          description: seed.description,
+          plain_english: null as string | null,
+          source_document: seed.source_document,
+          source_url: null as string | null,
+          reference_date: seed.reference_date,
+          is_verified: seed.is_verified,
+          is_primary_record: seed.is_primary_record,
+        };
+
+        if (!expRow) {
+          expRow = expenditureRepo.create(expPayload);
+        } else {
+          Object.assign(expRow, expPayload);
+        }
+        await expenditureRepo.save(expRow);
+      }
+
+      arcStory.total_amount_rands = '72035000000';
+      await storyRepo.save(arcStory);
+
       console.log(`  · Upserted ${eventSpecs.length} timeline events on ${STORY_SLUG}`);
+      console.log(`  · Upserted ${scorpionsMoneySeeds.length} expenditure rows on ${STORY_SLUG}`);
 
       console.log('──────────────────────────────────────────────');
       console.log('✓ Accountability bodies seed complete.\n');

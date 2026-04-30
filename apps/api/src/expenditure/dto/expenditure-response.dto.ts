@@ -22,6 +22,12 @@ export class PublicExpenditureRecordResponseDto {
   @ApiPropertyOptional({ nullable: true }) source_url!: string | null;
   @ApiPropertyOptional({ nullable: true, format: 'date' }) reference_date!: string | null;
   @ApiProperty() is_verified!: boolean;
+  @ApiProperty({
+    description:
+      'When false, excluded from the national money counter sum (story still shows the row).',
+    default: true,
+  })
+  is_primary_record!: boolean;
   @ApiProperty({ format: 'date-time' }) created_at!: string;
   @ApiProperty({ format: 'date-time' }) updated_at!: string;
 }
@@ -64,6 +70,18 @@ export class ExpenditureCounterResponseDto {
     description: 'Latest expenditure record update timestamp',
   })
   updated_at!: string;
+
+  @ApiProperty({
+    description:
+      'Required legal framing for the homepage counter — always returned verbatim from the API.',
+  })
+  disclaimer!: string;
+
+  @ApiProperty({
+    description: 'In-app path to the methodology explainer (Money tracking).',
+    example: '/about#money-tracking',
+  })
+  methodology_url!: string;
 }
 
 export class ExpenditureByStoryResponseDto {

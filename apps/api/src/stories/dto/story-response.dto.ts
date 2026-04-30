@@ -209,6 +209,11 @@ export class PublicExpenditureRecordBriefDto {
   @ApiPropertyOptional({ nullable: true }) source_url!: string | null;
   @ApiPropertyOptional({ nullable: true, format: 'date' }) reference_date!: string | null;
   @ApiProperty() is_verified!: boolean;
+  @ApiProperty({
+    description:
+      'When false, excluded from the national money counter sum (story still lists the row).',
+  })
+  is_primary_record!: boolean;
   @ApiProperty({ format: 'date-time' }) created_at!: string;
   @ApiProperty({ format: 'date-time' }) updated_at!: string;
 }

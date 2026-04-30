@@ -614,6 +614,7 @@ export class StoriesService {
       source_url: e.source_url,
       reference_date: e.reference_date,
       is_verified: e.is_verified,
+      is_primary_record: e.is_primary_record,
       created_at: e.created_at.toISOString(),
       updated_at: e.updated_at.toISOString(),
     };

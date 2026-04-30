@@ -116,6 +116,11 @@ function SingleRecordPanel({ record }: { record: PublicExpenditureRecord }) {
         <span className="inline-flex rounded-full border border-charcoal/15 bg-cream px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-charcoal/80">
           {expenditureSectorLabel(record.sector)}
         </span>
+        {record.is_primary_record === false ? (
+          <span className="inline-flex rounded-full border border-charcoal/20 bg-charcoal/[0.04] px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-charcoal/55">
+            Story context only — not in national total
+          </span>
+        ) : null}
       </div>
       {record.description ? (
         <p className="mt-4 text-sm leading-relaxed text-charcoal/75">
@@ -150,6 +155,11 @@ function MultiRecordRow({ record }: { record: PublicExpenditureRecord }) {
           <span className="inline-flex rounded border border-charcoal/12 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-charcoal/70">
             {expenditureSectorLabel(record.sector)}
           </span>
+          {record.is_primary_record === false ? (
+            <span className="inline-flex rounded border border-charcoal/15 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-charcoal/55">
+              National total: excluded
+            </span>
+          ) : null}
         </div>
       </div>
       {record.description ? (

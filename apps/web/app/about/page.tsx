@@ -105,6 +105,33 @@ export default function AboutPage() {
           </p>
         </section>
 
+        <section
+          id="money-tracking"
+          className="flex flex-col gap-5 scroll-mt-24"
+        >
+          <h2 className="font-serif text-2xl md:text-3xl text-charcoal">
+            Money tracking on the homepage
+          </h2>
+          <p>
+            The homepage counter shows a single national total of Rand amounts we
+            link to stories — described as tracked, not asserted as stolen. Each
+            figure keeps its qualifier (exact, approximate, under investigation, and
+            so on) on the story page.
+          </p>
+          <p>
+            To avoid double-counting the same scandal across several stories, only
+            rows marked as the primary record for that amount feed the national total.
+            Other rows may still appear on a story for context (for example, the same
+            deal value investigated under different bodies).
+          </p>
+          <p>
+            Amounts are grouped by how we classify them (under investigation,
+            allegedly stolen, confirmed stolen where charged or convicted, recovered,
+            fruitless and wasteful, and prevented). The disclaimer on the homepage
+            matches the API and is always shown with the counter.
+          </p>
+        </section>
+
         <section className="flex flex-col gap-5 pt-4 border-t border-charcoal/10">
           <h2 className="font-sans text-base font-medium tracking-[0.02em] uppercase text-charcoal">
             Legal &amp; editorial

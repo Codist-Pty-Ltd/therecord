@@ -209,6 +209,44 @@ curl https://therecord.co.za/api/expenditure/counter | jq '{
 
 If a check fails, inspect API logs on the server (`docker logs therecord-api --tail 100`) before escalating.
 
+## Money Counter Integrity
+
+Check money counter data quality:
+
+```bash
+docker exec therecord-postgres psql -U therecord -d therecord_db -c "
+  SELECT
+    expenditure_type,
+    COUNT(*) as records,
+    SUM(amount_rands) as total
+  FROM public_expenditure_records
+  WHERE is_primary_record = true
+  GROUP BY expenditure_type
+  ORDER BY total DESC;"
+```
+
+Check for data errors (wrong type combinations):
+
+```bash
+docker exec therecord-postgres psql -U therecord -d therecord_db -c "
+  SELECT id, amount_rands, expenditure_type, amount_qualifier
+  FROM public_expenditure_records
+  WHERE (amount_qualifier = 'under_investigation' AND expenditure_type = 'stolen')
+     OR amount_rands IS NULL
+     OR amount_rands = 0;"
+```
+
+Verify total:
+
+```bash
+curl https://therecord.co.za/api/expenditure/counter | jq '{
+  tracked: .total_tracked_rands,
+  under_investigation: .total_under_investigation_rands,
+  recovered: .total_recovered_rands,
+  disclaimer: .disclaimer
+}'
+```
+
 ## YouTube discovery
 
 Videos are **never** auto-published: the intelligence service scores candidates; the API persists rows as `pending` until an operator approves them.

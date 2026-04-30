@@ -123,6 +123,14 @@ export class PublicExpenditureRecord {
   @Column({ type: 'boolean', default: false })
   is_verified!: boolean;
 
+  /**
+   * When false, the row is kept for story-level transparency but excluded from the
+   * national {@link ExpenditureService.getCounter} aggregates (avoids double-counting
+   * the same headline figure across multiple stories).
+   */
+  @Column({ type: 'boolean', default: true })
+  is_primary_record!: boolean;
+
   @CreateDateColumn({ type: 'timestamptz' })
   created_at!: Date;
 

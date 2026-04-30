@@ -18,6 +18,20 @@ import {
   PublicExpenditureRecordResponseDto,
 } from './dto/expenditure-response.dto';
 
+/**
+ * Predicate for rows that feed the national homepage counter. Qualifier does not
+ * affect inclusion — every primary row with a positive amount counts toward the
+ * total and toward its expenditure_type bucket.
+ */
+const COUNTER_ROW_SQL = `is_primary_record = true AND amount_rands IS NOT NULL AND amount_rands > 0`;
+
+const COUNTER_ROW_SQL_P = `p.is_primary_record = true AND p.amount_rands IS NOT NULL AND p.amount_rands > 0`;
+
+export const EXPENDITURE_COUNTER_DISCLAIMER =
+  'Figures reflect alleged or estimated amounts under investigation. The Record does not confirm these as proven losses or thefts. See each story for source attribution and qualifiers.';
+
+export const EXPENDITURE_COUNTER_METHODOLOGY_URL = '/about#money-tracking';
+
 @Injectable()
 export class ExpenditureService {
   constructor(
@@ -43,23 +57,24 @@ export class ExpenditureService {
       source_url: e.source_url,
       reference_date: e.reference_date,
       is_verified: e.is_verified,
+      is_primary_record: e.is_primary_record,
       created_at: e.created_at.toISOString(),
       updated_at: e.updated_at.toISOString(),
     };
   }
 
   async getCounter(): Promise<ExpenditureCounterResponseDto> {
-    const totalRow = await this.expRepo
-      .createQueryBuilder('per')
-      .select('COALESCE(SUM(per.amount_rands::numeric), 0)', 'sum')
-      .getRawOne<{ sum: string }>();
+    const totalRow = await this.expRepo.manager.query<{ sum: string }[]>(
+      `SELECT COALESCE(SUM(amount_rands::numeric), 0)::text AS sum
+         FROM public_expenditure_records
+        WHERE ${COUNTER_ROW_SQL}`,
+    );
 
-    const typeSums = await this.expRepo.manager.query<
-      { expenditure_type: string; sum: string }[]
-    >(
+    const typeSums = await this.expRepo.manager.query<{ expenditure_type: string; sum: string }[]>(
       `SELECT expenditure_type::text AS expenditure_type,
               COALESCE(SUM(amount_rands::numeric), 0)::text AS sum
          FROM public_expenditure_records
+        WHERE ${COUNTER_ROW_SQL}
         GROUP BY expenditure_type`,
     );
 
@@ -68,10 +83,11 @@ export class ExpenditureService {
       return bigIntStringToNumber(row?.sum);
     };
 
-    const storyCountRow = await this.expRepo
-      .createQueryBuilder('per')
-      .select('COUNT(DISTINCT per.story_id)', 'c')
-      .getRawOne<{ c: string }>();
+    const storyCountRow = await this.expRepo.manager.query<{ c: string }[]>(
+      `SELECT COUNT(DISTINCT story_id)::text AS c
+         FROM public_expenditure_records
+        WHERE ${COUNTER_ROW_SQL}`,
+    );
 
     const provinceRows = await this.expRepo.manager.query<
       { province_name: string; slug: string; total_rands: string; story_count: string }[]
@@ -83,6 +99,7 @@ export class ExpenditureService {
          FROM public_expenditure_records p
          INNER JOIN stories s ON s.id = p.story_id
          INNER JOIN provinces pr ON pr.id = COALESCE(p.province_id, s.province_id)
+        WHERE ${COUNTER_ROW_SQL_P}
         GROUP BY pr.id, pr.name, pr.slug
         ORDER BY SUM(p.amount_rands::numeric) DESC`,
     );
@@ -94,6 +111,7 @@ export class ExpenditureService {
               COALESCE(SUM(amount_rands::numeric), 0)::text AS total_rands,
               COUNT(DISTINCT story_id)::text AS story_count
          FROM public_expenditure_records
+        WHERE ${COUNTER_ROW_SQL}
         GROUP BY sector
         ORDER BY SUM(amount_rands::numeric) DESC`,
     );
@@ -102,13 +120,15 @@ export class ExpenditureService {
       `SELECT COUNT(DISTINCT pr.id)::text AS c
          FROM public_expenditure_records p
          INNER JOIN stories s ON s.id = p.story_id
-         INNER JOIN provinces pr ON pr.id = COALESCE(p.province_id, s.province_id)`,
+         INNER JOIN provinces pr ON pr.id = COALESCE(p.province_id, s.province_id)
+        WHERE ${COUNTER_ROW_SQL_P}`,
     );
 
-    const updatedRow = await this.expRepo
-      .createQueryBuilder('per')
-      .select('MAX(per.updated_at)', 'mx')
-      .getRawOne<{ mx: Date | null }>();
+    const updatedRow = await this.expRepo.manager.query<{ mx: Date | null }[]>(
+      `SELECT MAX(updated_at) AS mx
+         FROM public_expenditure_records
+        WHERE ${COUNTER_ROW_SQL}`,
+    );
 
     const byProvince: ExpenditureCounterProvinceRowDto[] = provinceRows.map((r) => ({
       province_name: r.province_name,
@@ -124,18 +144,20 @@ export class ExpenditureService {
     }));
 
     return {
-      total_tracked_rands: bigIntStringToNumber(totalRow?.sum),
+      total_tracked_rands: bigIntStringToNumber(totalRow[0]?.sum),
       total_under_investigation_rands: sumByType(ExpenditureType.UNDER_INVESTIGATION),
       total_allegedly_stolen_rands: sumByType(ExpenditureType.ALLEGEDLY_STOLEN),
       total_confirmed_stolen_rands: sumByType(ExpenditureType.STOLEN),
       total_recovered_rands: sumByType(ExpenditureType.RECOVERED),
       total_prevented_rands: sumByType(ExpenditureType.PREVENTED),
       total_fruitless_wasteful_rands: sumByType(ExpenditureType.FRUITLESS_WASTEFUL),
-      story_count: Number(storyCountRow?.c ?? 0),
+      story_count: Number(storyCountRow[0]?.c ?? 0),
       province_count: Number(provinceCountRow[0]?.c ?? 0),
       by_province: byProvince,
       by_sector: bySector,
-      updated_at: (updatedRow?.mx ?? new Date()).toISOString(),
+      updated_at: (updatedRow[0]?.mx ?? new Date()).toISOString(),
+      disclaimer: EXPENDITURE_COUNTER_DISCLAIMER,
+      methodology_url: EXPENDITURE_COUNTER_METHODOLOGY_URL,
     };
   }
 

@@ -254,6 +254,8 @@ interface ExpenditureSeed {
   reference_date: string | null;
   province_slug?: string | null;
   municipality_slug?: string | null;
+  /** When false, row is excluded from the national money counter (default true). */
+  is_primary_record?: boolean;
 }
 
 interface StoryBundle {
@@ -1477,6 +1479,7 @@ async function upsertExpenditure(
       source_url: seed.source_url ?? null,
       reference_date: seed.reference_date,
       is_verified: seed.is_verified,
+      is_primary_record: seed.is_primary_record ?? true,
     };
 
     if (!row) {

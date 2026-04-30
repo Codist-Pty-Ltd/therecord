@@ -79,12 +79,18 @@ export default function MoneyCounter({ counter }: MoneyCounterProps) {
             Public money tracked
           </p>
           <p
-            className="mt-3 font-serif text-amber tabular-nums tracking-tight"
+            className="mt-3 flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 font-serif text-amber tabular-nums tracking-tight"
             style={{ fontSize: "clamp(2.5rem, 8vw, 4.5rem)", lineHeight: 1.05 }}
           >
-            {headlineDisplay}
+            <span>{headlineDisplay}</span>
+            <span className="font-serif text-[0.42em] font-normal tracking-tight text-cream/90">
+              tracked
+            </span>
           </p>
-          <p className="mt-4 font-mono text-[11px] text-cream/50">
+          <p className="mt-4 max-w-xl mx-auto font-sans text-sm leading-relaxed text-cream/60">
+            Includes amounts under investigation, alleged, and confirmed — each labelled separately.
+          </p>
+          <p className="mt-3 font-mono text-[11px] text-cream/50">
             across {storyCount.toLocaleString("en-ZA")} stories in{" "}
             {provinceCount.toLocaleString("en-ZA")}{" "}
             {provinceCount === 1 ? "province" : "provinces"}
@@ -115,10 +121,14 @@ export default function MoneyCounter({ counter }: MoneyCounterProps) {
         </div>
 
         <div className="mt-10 rounded-md border border-white/[0.08] border-l-4 border-l-amber bg-black/20 px-4 py-3 md:px-5 md:py-4">
-          <p className="font-sans text-sm leading-relaxed text-cream/70">
-            Figures reflect amounts under investigation or alleged — not confirmed losses. The
-            Record tracks allegations and findings separately. Confirmed recoveries are shown in
-            green.
+          <p className="font-sans text-sm leading-relaxed text-cream/70">{counter.disclaimer}</p>
+          <p className="mt-3 font-mono text-[11px] text-cream/45">
+            <Link
+              href={counter.methodology_url}
+              className="text-amber underline-offset-2 transition hover:underline"
+            >
+              Methodology
+            </Link>
           </p>
         </div>
 

@@ -477,6 +477,7 @@ export interface PublicExpenditureRecord {
   source_url: string | null;
   reference_date: string | null;
   is_verified: boolean;
+  is_primary_record: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -504,6 +505,8 @@ export interface ExpenditureCounter {
     story_count: number;
   }[];
   updated_at: string;
+  disclaimer: string;
+  methodology_url: string;
 }
 
 // --- Provinces & municipalities (API projections) ---------------------------------
