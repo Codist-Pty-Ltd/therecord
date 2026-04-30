@@ -1,7 +1,21 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { AgAuditOutcome, MunicipalityType } from '../../entities/municipality.entity';
+import {
+  ExpenditureSector,
+  ExpenditureType,
+} from '../../entities/public-expenditure-record.entity';
 import { StoryListBriefForProvinceDto } from '../../provinces/dto/province-response.dto';
+
+export class MunicipalityExpenditureTypeBreakdownDto {
+  @ApiProperty({ enum: ExpenditureType }) expenditure_type!: ExpenditureType;
+  @ApiProperty() total_rands!: number;
+}
+
+export class MunicipalitySectorAmountDto {
+  @ApiProperty({ enum: ExpenditureSector }) sector!: ExpenditureSector;
+  @ApiProperty() amount!: number;
+}
 
 export class AgAuditHistoryRowDto {
   @ApiPropertyOptional({ nullable: true }) ag_audit_year!: string | null;
@@ -49,4 +63,8 @@ export class MunicipalityDetailDto {
   ag_audit_history!: AgAuditHistoryRowDto[];
   @ApiProperty({ type: [StoryListBriefForProvinceDto] })
   stories!: StoryListBriefForProvinceDto[];
+  @ApiProperty({ type: [MunicipalityExpenditureTypeBreakdownDto] })
+  expenditure_by_type!: MunicipalityExpenditureTypeBreakdownDto[];
+  @ApiProperty({ type: [MunicipalitySectorAmountDto] })
+  expenditure_by_sector!: MunicipalitySectorAmountDto[];
 }

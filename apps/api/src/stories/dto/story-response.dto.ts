@@ -216,6 +216,11 @@ export class SimilarStoryBriefDto {
   similarity_reason?: SimilarityReason;
   @ApiPropertyOptional({ nullable: true }) similarity_note?: string | null;
   @ApiProperty({ enum: SIMILAR_MATCH }) match_type!: SimilarStoryMatchType;
+  @ApiPropertyOptional({ enum: StoryCategory, nullable: true })
+  story_category?: StoryCategory | null;
+  @ApiPropertyOptional({ nullable: true }) province_name?: string | null;
+  @ApiPropertyOptional({ nullable: true }) province_slug?: string | null;
+  @ApiPropertyOptional({ nullable: true }) province_abbreviation?: string | null;
 }
 
 /* ------------------------------------------------------------------ detail */

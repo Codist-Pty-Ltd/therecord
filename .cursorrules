@@ -50,6 +50,7 @@ ROUTES BUILT (no Coming Soon anywhere):
   /adhoc-committees/[slug] /siu /people /person/[id]
   /laws /laws/[id]/[sectionId] /constitution/[section]
   /domain/[name] /search /about
+  /provinces /provinces/[slug] /municipality/[slug]
   + error.tsx on every route + not-found.tsx
 
 CI: .github/workflows/ci.yml runs typecheck+lint+smoke+python+build on PRs

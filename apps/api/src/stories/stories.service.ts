@@ -202,7 +202,29 @@ export class StoriesService {
       });
     }
 
+    await this.attachProvinceContextToSimilar(out);
+
     return out;
+  }
+
+  private async attachProvinceContextToSimilar(briefs: SimilarStoryBriefDto[]): Promise<void> {
+    if (briefs.length === 0) return;
+    const slugs = [...new Set(briefs.map((b) => b.slug))];
+    const rows = await this.storyRepo.find({
+      where: { slug: In(slugs) },
+      relations: ['province'],
+    });
+    const bySlug = new Map(rows.map((s) => [s.slug, s]));
+    for (const b of briefs) {
+      const s = bySlug.get(b.slug);
+      if (!s) continue;
+      b.story_category = s.story_category;
+      if (s.province) {
+        b.province_name = s.province.name;
+        b.province_slug = s.province.slug;
+        b.province_abbreviation = s.province.abbreviation;
+      }
+    }
   }
 
   /* ---------------------------------------------------------------- slug */

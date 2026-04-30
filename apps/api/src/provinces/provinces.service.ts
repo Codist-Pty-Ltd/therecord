@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 
 import { bigIntStringToNumber } from '../common/utils/money.util';
 import { ExpenditureService } from '../expenditure/expenditure.service';
-import { Municipality } from '../entities/municipality.entity';
+import { AgAuditOutcome, Municipality } from '../entities/municipality.entity';
 import { Province } from '../entities/province.entity';
 import {
   ExpenditureType,
@@ -24,6 +24,24 @@ import {
   StoryListBriefForProvinceDto,
 } from './dto/province-response.dto';
 
+const AG_OUTCOME_SEVERITY: Record<AgAuditOutcome, number> = {
+  [AgAuditOutcome.CLEAN]: 0,
+  [AgAuditOutcome.UNQUALIFIED_WITH_FINDINGS]: 1,
+  [AgAuditOutcome.OUTSTANDING]: 2,
+  [AgAuditOutcome.QUALIFIED]: 3,
+  [AgAuditOutcome.ADVERSE]: 4,
+  [AgAuditOutcome.DISCLAIMER]: 5,
+};
+
+function moreSevereAgOutcome(
+  a: AgAuditOutcome | null | undefined,
+  b: AgAuditOutcome | null | undefined,
+): AgAuditOutcome | null {
+  if (a == null) return b ?? null;
+  if (b == null) return a;
+  return AG_OUTCOME_SEVERITY[b] >= AG_OUTCOME_SEVERITY[a] ? b : a;
+}
+
 @Injectable()
 export class ProvincesService {
   constructor(
@@ -38,16 +56,32 @@ export class ProvincesService {
 
   async findAll(): Promise<ProvinceListItemDto[]> {
     const provinces = await this.provinceRepo.find({ order: { name: 'ASC' } });
+    const munRows = await this.municipalityRepo.find({
+      select: ['province_id', 'ag_audit_outcome'],
+    });
+    const worstByProvince = new Map<string, AgAuditOutcome | null>();
+    for (const m of munRows) {
+      if (m.ag_audit_outcome == null) continue;
+      const prev = worstByProvince.get(m.province_id) ?? null;
+      worstByProvince.set(m.province_id, moreSevereAgOutcome(prev, m.ag_audit_outcome));
+    }
+
     const out: ProvinceListItemDto[] = [];
 
     for (const p of provinces) {
-      const [stories_count, totalExp, categories] = await Promise.all([
+      const [stories_count, totalExp, categories, featured] = await Promise.all([
         this.storyRepo.count({ where: { province_id: p.id } }),
         this.sumExpenditureForProvince(p.id),
         this.storyCategoriesBreakdown(p.id),
+        this.storyRepo.findOne({
+          where: { province_id: p.id },
+          order: { updated_at: 'DESC' },
+          select: ['title', 'slug', 'story_category'],
+        }),
       ]);
 
       out.push({
+        id: p.id,
         name: p.name,
         slug: p.slug,
         abbreviation: p.abbreviation,
@@ -58,6 +92,14 @@ export class ProvincesService {
         ag_irregular_expenditure_rands: p.auditor_general_irregular_expenditure_rands,
         ag_report_year: p.ag_report_year,
         corruption_watch_complaint_percentage: p.corruption_watch_complaint_percentage,
+        worst_municipality_ag_outcome: worstByProvince.get(p.id) ?? null,
+        featured_story: featured
+          ? {
+              title: featured.title,
+              slug: featured.slug,
+              story_category: featured.story_category,
+            }
+          : null,
       });
     }
 
@@ -162,7 +204,21 @@ export class ProvincesService {
       ag_irregular_expenditure_rands: m.ag_irregular_expenditure_rands,
     }));
 
+    let worstAg: AgAuditOutcome | null = null;
+    for (const m of munDtos) {
+      worstAg = moreSevereAgOutcome(worstAg, m.ag_audit_outcome);
+    }
+    const featured =
+      stories.length > 0
+        ? {
+            title: stories[0].title,
+            slug: stories[0].slug,
+            story_category: stories[0].story_category,
+          }
+        : null;
+
     return {
+      id: province.id,
       name: province.name,
       slug: province.slug,
       abbreviation: province.abbreviation,
@@ -173,6 +229,9 @@ export class ProvincesService {
       ag_irregular_expenditure_rands: province.auditor_general_irregular_expenditure_rands,
       ag_report_year: province.ag_report_year,
       corruption_watch_complaint_percentage: province.corruption_watch_complaint_percentage,
+      worst_municipality_ag_outcome: worstAg,
+      featured_story: featured,
+      premier_name: province.premier_name,
       municipalities: munDtos,
       stories: stories.map((s) => this.mapStoryBrief(s)),
       expenditure_by_type,

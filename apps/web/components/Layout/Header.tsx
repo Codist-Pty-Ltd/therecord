@@ -15,6 +15,7 @@ const DESKTOP_NAV_LINKS: ReadonlyArray<{
   readonly label: string;
 }> = [
   { href: "/stories", label: "Stories" },
+  { href: "/provinces", label: "Provinces" },
   { href: "/commissions", label: "Commissions" },
   { href: "/siu", label: "SIU" },
   { href: "/laws", label: "Laws" },

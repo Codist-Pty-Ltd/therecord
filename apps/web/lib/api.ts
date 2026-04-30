@@ -21,13 +21,19 @@ import type {
   LawSectionDetail,
   LawSummary,
   LawWithSections,
+  MunicipalityDetail,
   PersonDetail,
   PersonSummary,
+  ProvinceDetail,
+  ProvinceListItem,
+  ProvinceMoneySummary,
+  ProvinceStoriesPage,
   SiuOverviewResponse,
   SiuProclamationDetail,
   SiuProclamationSummary,
   SpecialTribunalOverviewResponse,
   SearchResponse,
+  StoryCategory,
   StoryDetail,
   StoryDomain,
   StorySummary,
@@ -611,6 +617,72 @@ export const listYoutubeVideosForAdhoc = cache(
       },
     );
     return r ?? [];
+  },
+);
+
+// -----------------------------------------------------------------------------
+// Provinces & municipalities
+// -----------------------------------------------------------------------------
+
+export const listProvinces = cache(async (): Promise<ProvinceListItem[]> => {
+  const r = await apiGet<ProvinceListItem[]>(`/api/provinces`, {
+    revalidate: REVALIDATE_SEMI_STABLE_SECONDS,
+    tags: ["provinces:list"],
+  });
+  return r ?? [];
+});
+
+export const getProvince = cache(async (slug: string): Promise<ProvinceDetail | null> => {
+  const enc = encodeURIComponent(slug);
+  return apiGet<ProvinceDetail>(`/api/provinces/${enc}`, {
+    revalidate: REVALIDATE_SEMI_STABLE_SECONDS,
+    tags: [`province:${slug}`],
+  });
+});
+
+export const getProvinceMoney = cache(
+  async (slug: string): Promise<ProvinceMoneySummary | null> => {
+    const enc = encodeURIComponent(slug);
+    return apiGet<ProvinceMoneySummary>(`/api/provinces/${enc}/money`, {
+      revalidate: REVALIDATE_SEMI_STABLE_SECONDS,
+      tags: [`province:money:${slug}`],
+    });
+  },
+);
+
+export type ProvinceStoriesQuery = {
+  page?: number;
+  limit?: number;
+  story_category?: StoryCategory;
+  status?: string;
+  sector?: string;
+};
+
+export const getProvinceStoriesPage = cache(
+  async (slug: string, query?: ProvinceStoriesQuery): Promise<ProvinceStoriesPage | null> => {
+    const enc = encodeURIComponent(slug);
+    const q = new URLSearchParams();
+    if (query?.page != null) q.set("page", String(query.page));
+    if (query?.limit != null) q.set("limit", String(query.limit));
+    if (query?.story_category != null) q.set("story_category", query.story_category);
+    if (query?.status != null) q.set("status", query.status);
+    if (query?.sector != null) q.set("sector", query.sector);
+    const qs = q.toString();
+    const path = `/api/provinces/${enc}/stories${qs ? `?${qs}` : ""}`;
+    return apiGet<ProvinceStoriesPage>(path, {
+      revalidate: REVALIDATE_STORIES_SECONDS,
+      tags: [`province:stories:${slug}`],
+    });
+  },
+);
+
+export const getMunicipality = cache(
+  async (slug: string): Promise<MunicipalityDetail | null> => {
+    const enc = encodeURIComponent(slug);
+    return apiGet<MunicipalityDetail>(`/api/municipalities/${enc}`, {
+      revalidate: REVALIDATE_SEMI_STABLE_SECONDS,
+      tags: [`municipality:${slug}`],
+    });
   },
 );
 

@@ -4,7 +4,11 @@ import { Repository } from 'typeorm';
 
 import { bigIntStringToNumber } from '../common/utils/money.util';
 import { Municipality } from '../entities/municipality.entity';
-import { PublicExpenditureRecord } from '../entities/public-expenditure-record.entity';
+import {
+  ExpenditureSector,
+  ExpenditureType,
+  PublicExpenditureRecord,
+} from '../entities/public-expenditure-record.entity';
 import { Story } from '../entities/story.entity';
 import { MunicipalityListQueryDto } from './dto/municipality-list-query.dto';
 import { MunicipalityDetailDto, MunicipalityListItemDto } from './dto/municipality-response.dto';
@@ -94,6 +98,27 @@ export class MunicipalitiesService {
 
     const total = bigIntStringToNumber(row[0]?.s);
 
+    const typeRows = await this.expRepo.manager.query<{ expenditure_type: string; total: string }[]>(
+      `SELECT p.expenditure_type::text AS expenditure_type,
+              COALESCE(SUM(p.amount_rands::numeric), 0)::text AS total
+         FROM public_expenditure_records p
+         INNER JOIN stories s ON s.id = p.story_id
+        WHERE COALESCE(p.municipality_id, s.municipality_id) = $1
+        GROUP BY p.expenditure_type`,
+      [m.id],
+    );
+
+    const sectorRows = await this.expRepo.manager.query<{ sector: string; total: string }[]>(
+      `SELECT p.sector::text AS sector,
+              COALESCE(SUM(p.amount_rands::numeric), 0)::text AS total
+         FROM public_expenditure_records p
+         INNER JOIN stories s ON s.id = p.story_id
+        WHERE COALESCE(p.municipality_id, s.municipality_id) = $1
+        GROUP BY p.sector
+        ORDER BY SUM(p.amount_rands::numeric) DESC`,
+      [m.id],
+    );
+
     return {
       id: m.id,
       name: m.name,
@@ -127,6 +152,14 @@ export class MunicipalitiesService {
         story_category: s.story_category,
         total_amount_rands: s.total_amount_rands,
         updated_at: s.updated_at.toISOString(),
+      })),
+      expenditure_by_type: typeRows.map((r) => ({
+        expenditure_type: r.expenditure_type as ExpenditureType,
+        total_rands: bigIntStringToNumber(r.total),
+      })),
+      expenditure_by_sector: sectorRows.map((r) => ({
+        sector: r.sector as ExpenditureSector,
+        amount: bigIntStringToNumber(r.total),
       })),
     };
   }

@@ -20,7 +20,14 @@ export class StoryCategoryCountDto {
   @ApiProperty() count!: number;
 }
 
+export class FeaturedStoryBriefDto {
+  @ApiProperty() title!: string;
+  @ApiProperty() slug!: string;
+  @ApiPropertyOptional({ enum: StoryCategory, nullable: true }) story_category!: StoryCategory | null;
+}
+
 export class ProvinceListItemDto extends ProvinceSummaryDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty() stories_count!: number;
   @ApiProperty({ description: 'Sum of all expenditure records attributed to this province' })
   total_expenditure_rands!: number;
@@ -31,6 +38,14 @@ export class ProvinceListItemDto extends ProvinceSummaryDto {
   @ApiPropertyOptional({ nullable: true }) ag_report_year!: string | null;
   @ApiPropertyOptional({ nullable: true, description: 'Corruption Watch % from province row' })
   corruption_watch_complaint_percentage!: string | null;
+  @ApiPropertyOptional({
+    nullable: true,
+    enum: AgAuditOutcome,
+    description: 'Most severe AG outcome among this province’s municipalities (when any)',
+  })
+  worst_municipality_ag_outcome!: AgAuditOutcome | null;
+  @ApiPropertyOptional({ type: FeaturedStoryBriefDto, nullable: true })
+  featured_story!: FeaturedStoryBriefDto | null;
 }
 
 export class MunicipalityBriefDto {
@@ -67,6 +82,7 @@ export class ExpenditureSectorBreakdownDto {
 }
 
 export class ProvinceDetailDto extends ProvinceListItemDto {
+  @ApiPropertyOptional({ nullable: true }) premier_name!: string | null;
   @ApiProperty({ type: [MunicipalityBriefDto] })
   municipalities!: MunicipalityBriefDto[];
   @ApiProperty({ type: [StoryListBriefForProvinceDto] })

@@ -317,6 +317,178 @@ export interface ExpenditureCounter {
   updated_at: string;
 }
 
+// --- Provinces & municipalities (API projections) ---------------------------------
+
+export interface ProvinceStoryCategoryCount {
+  story_category: StoryCategory;
+  count: number;
+}
+
+export interface FeaturedStoryBrief {
+  title: string;
+  slug: string;
+  story_category: StoryCategory | null;
+}
+
+/** `GET /api/provinces` row */
+export interface ProvinceListItem {
+  id: string;
+  name: string;
+  slug: string;
+  abbreviation: string | null;
+  capital: string | null;
+  stories_count: number;
+  total_expenditure_rands: number;
+  story_categories: ProvinceStoryCategoryCount[];
+  ag_irregular_expenditure_rands: string | null;
+  ag_report_year: string | null;
+  corruption_watch_complaint_percentage: string | null;
+  worst_municipality_ag_outcome: AgAuditOutcome | null;
+  featured_story: FeaturedStoryBrief | null;
+}
+
+export interface MunicipalityBrief {
+  id: string;
+  name: string;
+  short_name: string;
+  slug: string;
+  municipality_type: MunicipalityType;
+  mayor_name: string | null;
+  ag_audit_outcome: AgAuditOutcome | null;
+  ag_audit_year: string | null;
+  ag_irregular_expenditure_rands: string | null;
+}
+
+/** Story row embedded in province/municipality views */
+export interface StoryBriefForProvince {
+  id: string;
+  title: string;
+  slug: string;
+  domain: StoryDomain;
+  status: StoryStatus;
+  story_category: StoryCategory | null;
+  total_amount_rands: string | null;
+  updated_at: string;
+}
+
+export interface ExpenditureTypeBreakdown {
+  expenditure_type: ExpenditureType;
+  total_rands: number;
+}
+
+export interface ExpenditureSectorBreakdown {
+  sector: ExpenditureSector;
+  total_rands: number;
+}
+
+/** `GET /api/provinces/:slug` */
+export interface ProvinceDetail extends ProvinceListItem {
+  premier_name: string | null;
+  municipalities: MunicipalityBrief[];
+  stories: StoryBriefForProvince[];
+  expenditure_by_type: ExpenditureTypeBreakdown[];
+  expenditure_by_sector: ExpenditureSectorBreakdown[];
+  top_expenditure_records: PublicExpenditureRecord[];
+}
+
+/** `GET /api/provinces/:slug/stories` */
+export interface ProvinceStoriesPage {
+  data: StoryBriefForProvince[];
+  page: number;
+  limit: number;
+  total: number;
+}
+
+/** `GET /api/provinces/:slug/money` */
+export interface ProvinceMoneySummary {
+  province: string;
+  total_under_investigation: number;
+  total_allegedly_stolen: number;
+  total_confirmed_stolen: number;
+  total_recovered: number;
+  total_fruitless_wasteful: number;
+  by_sector: { sector: string; amount: number }[];
+  largest_single_record: PublicExpenditureRecord | null;
+  story_count: number;
+}
+
+export interface AgAuditHistoryRow {
+  ag_audit_year: string | null;
+  ag_audit_outcome: AgAuditOutcome | null;
+  ag_irregular_expenditure_rands: string | null;
+}
+
+export interface MunicipalityListItem {
+  id: string;
+  name: string;
+  short_name: string;
+  slug: string;
+  municipality_type: MunicipalityType;
+  province_slug: string;
+  province_name: string;
+  ag_audit_outcome: AgAuditOutcome | null;
+  ag_audit_year: string | null;
+  ag_irregular_expenditure_rands: string | null;
+  stories_count: number;
+}
+
+export interface MunicipalityExpenditureTypeBreakdown {
+  expenditure_type: ExpenditureType;
+  total_rands: number;
+}
+
+export interface MunicipalitySectorAmount {
+  sector: ExpenditureSector;
+  amount: number;
+}
+
+/** `GET /api/municipalities/:slug` */
+export interface MunicipalityDetail {
+  id: string;
+  name: string;
+  short_name: string;
+  slug: string;
+  municipality_type: MunicipalityType;
+  province_id: string;
+  province_name: string;
+  province_slug: string;
+  mayor_name: string | null;
+  governing_party: string | null;
+  plain_english_audit_outcome: string | null;
+  ag_audit_outcome: AgAuditOutcome | null;
+  ag_audit_year: string | null;
+  ag_irregular_expenditure_rands: string | null;
+  annual_budget_rands: string | null;
+  total_money_tracked_rands: number;
+  ag_audit_history: AgAuditHistoryRow[];
+  stories: StoryBriefForProvince[];
+  expenditure_by_type: MunicipalityExpenditureTypeBreakdown[];
+  expenditure_by_sector: MunicipalitySectorAmount[];
+}
+
+/** Match provenance for {@link SimilarStoryBrief} rows from `GET /api/stories/:slug`. */
+export type SimilarStoryMatchType =
+  | "explicit_table"
+  | "fallback_province"
+  | "fallback_category"
+  | "fallback_recent";
+
+/**
+ * Denormalised related story row on story detail (and `GET /api/stories/:slug/similar`).
+ */
+export interface SimilarStoryBrief {
+  title: string;
+  slug: string;
+  total_amount_rands?: string | null;
+  similarity_reason?: SimilarityReason;
+  similarity_note?: string | null;
+  match_type: SimilarStoryMatchType;
+  story_category?: StoryCategory | null;
+  province_name?: string | null;
+  province_slug?: string | null;
+  province_abbreviation?: string | null;
+}
+
 /** Mirrors `similar-story.entity.ts`. */
 export interface SimilarStory {
   id: string;
@@ -367,8 +539,8 @@ export interface Story {
   municipality?: Municipality | null;
   /** Optional — loaded on story detail when expenditure rows are included. */
   expenditure_records?: PublicExpenditureRecord[];
-  /** Optional — editorial “similar threads” links. */
-  similar_stories?: SimilarStory[];
+  /** Optional — editorial “similar threads” on story detail (`SimilarStoryBriefDto`). */
+  similar_stories?: SimilarStoryBrief[];
 }
 export interface TimelineEvent {
   id: string;
@@ -643,6 +815,8 @@ export interface StoryDetail extends Story {
   people: StoryPersonWithPerson[];
   investigations: Investigation[];
   articles: Article[];
+  /** Distinct law sections cited by this story’s timeline (sidebar). */
+  law_sections?: LawSection[];
 }
 
 /**

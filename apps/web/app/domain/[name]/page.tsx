@@ -11,6 +11,7 @@ import DomainStoryRowList from "@/components/Domain/DomainStoryRowList";
 import {
   listAdhocCommittees,
   listCommissions,
+  listProvinces,
   listSiuProclamations,
   listStories,
 } from "@/lib/api";
@@ -71,16 +72,17 @@ export default async function DomainPage({ params }: DomainPageProps) {
 
   const emptyStories = {
     data: [] as StorySummary[],
-    meta: { page: 1, limit: 10, total: 0, total_pages: 0 },
+    meta: { page: 1, limit: 100, total: 0, total_pages: 0 },
   };
 
-  const [commRes, adhocRes, siuRes, storyRes] = await Promise.all([
+  const [commRes, adhocRes, siuRes, storyRes, provinces] = await Promise.all([
     listCommissions(1, 20, { domain: apiDomain }),
     listAdhocCommittees(1, 10, { domain: apiDomain }),
     listSiuProclamations(1, 10, { domain: apiDomain }),
     storyDomain
-      ? listStories(1, 10, { domain: storyDomain })
+      ? listStories(1, 100, { domain: storyDomain })
       : Promise.resolve(emptyStories),
+    listProvinces(),
   ]);
 
   const cRows = commRes.data;
@@ -95,6 +97,26 @@ export default async function DomainPage({ params }: DomainPageProps) {
   const total = nComm + nAdhoc + nSiu + nStories;
 
   const label = domainPageTitleLabel(name);
+
+  const storiesByProvince = (() => {
+    const counts = new Map<string, number>();
+    for (const s of tRows) {
+      if (!s.province_id) continue;
+      counts.set(s.province_id, (counts.get(s.province_id) ?? 0) + 1);
+    }
+    const idToProvince = new Map(provinces.map((p) => [p.id, p]));
+    return [...counts.entries()]
+      .map(([id, count]) => {
+        const p = idToProvince.get(id);
+        if (!p) return null;
+        return { province: p, count };
+      })
+      .filter(
+        (row): row is { province: (typeof provinces)[number]; count: number } =>
+          row !== null,
+      )
+      .sort((a, b) => b.count - a.count);
+  })();
 
   if (total === 0) {
     return (
@@ -206,6 +228,34 @@ export default async function DomainPage({ params }: DomainPageProps) {
             Stories
           </h2>
           <DomainStoryRowList stories={tRows} />
+        </section>
+      ) : null}
+
+      {storiesByProvince.length > 0 ? (
+        <section
+          className="max-w-6xl mx-auto px-4 md:px-8 pt-10 md:pt-12"
+          aria-label="Stories in this domain by province"
+        >
+          <h2 className="label-smallcaps text-charcoal/55 mb-4 md:mb-5">
+            In this domain by province
+          </h2>
+          <ul className="divide-y divide-charcoal/10 border-t border-charcoal/10">
+            {storiesByProvince.map(({ province: p, count }) => (
+              <li key={p.id}>
+                <Link
+                  href={`/provinces/${p.slug}`}
+                  className="group flex min-h-[48px] items-center justify-between gap-3 py-3 transition hover:bg-amber/[0.04] first:pt-0"
+                >
+                  <span className="font-serif text-base text-charcoal group-hover:text-amber">
+                    {p.name}
+                  </span>
+                  <span className="shrink-0 font-mono text-xs text-charcoal/50 tabular-nums">
+                    {count} {count === 1 ? "story" : "stories"}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
       ) : null}
     </div>

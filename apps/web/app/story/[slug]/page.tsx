@@ -5,6 +5,8 @@ import InvestigationsBar from "@/components/Story/InvestigationsBar";
 import KeyPeopleStrip from "@/components/Story/KeyPeopleStrip";
 import LegalFramework from "@/components/Story/LegalFramework";
 import RecentArticles from "@/components/Story/RecentArticles";
+import ExpenditureSection from "@/components/Story/ExpenditureSection";
+import SimilarStoriesStrip from "@/components/Story/SimilarStoriesStrip";
 import StoryHeader from "@/components/Story/StoryHeader";
 import StoryTimeline from "@/components/Timeline/StoryTimeline";
 import VideoSection from "@/components/Resources/VideoSection";
@@ -117,8 +119,16 @@ export default async function StoryPage({ params }: StoryPageProps) {
           {/* Timeline */}
           <section
             aria-label="Timeline"
-            className="lg:col-start-1 -mx-4 md:-mx-8 lg:mx-0"
+            className="lg:col-start-1 -mx-4 md:-mx-8 lg:mx-0 flex flex-col gap-12 md:gap-14"
           >
+            <ExpenditureSection
+              records={story.expenditure_records ?? []}
+              storyTitle={story.title}
+            />
+            <SimilarStoriesStrip
+              stories={story.similar_stories ?? []}
+              currentSlug={story.slug}
+            />
             <StoryTimeline
               events={story.timeline_events}
               storySlug={story.slug}

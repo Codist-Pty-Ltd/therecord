@@ -1,7 +1,20 @@
+import Link from "next/link";
+
 import type { Story, StoryDomain } from "@the-record/shared-types";
 
 import StaleBadge from "@/components/ui/StaleBadge";
 import StatusBadge from "@/components/ui/StatusBadge";
+
+type ProvinceChip = {
+  name: string;
+  slug: string;
+  abbreviation: string | null;
+};
+
+type MunicipalityChip = {
+  name: string;
+  slug: string;
+};
 
 interface StoryHeaderProps {
   story: Pick<
@@ -12,7 +25,10 @@ interface StoryHeaderProps {
     | "summary"
     | "plain_english_summary"
     | "updated_at"
-  >;
+  > & {
+    province?: ProvinceChip | null;
+    municipality?: MunicipalityChip | null;
+  };
 }
 
 const DOMAIN_LABELS: Record<StoryDomain, string> = {
@@ -33,6 +49,29 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
         </span>
         <StaleBadge lastUpdatedAt={story.updated_at} staleThresholdHours={24} />
       </div>
+
+      {story.province || story.municipality ? (
+        <div className="flex flex-wrap items-center gap-2">
+          {story.province ? (
+            <Link
+              href={`/provinces/${story.province.slug}`}
+              className="inline-flex items-center gap-1.5 rounded-full border border-charcoal/12 bg-cream px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-charcoal/75 transition hover:border-amber/40 hover:text-amber"
+            >
+              <span aria-hidden>🌍</span>
+              {story.province.name}
+            </Link>
+          ) : null}
+          {story.municipality ? (
+            <Link
+              href={`/municipality/${story.municipality.slug}`}
+              className="inline-flex items-center gap-1.5 rounded-full border border-charcoal/12 bg-cream px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-charcoal/75 transition hover:border-amber/40 hover:text-amber"
+            >
+              <span aria-hidden>🏙️</span>
+              {story.municipality.name}
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
 
       <h1 className="font-serif text-[32px] md:text-5xl lg:text-[56px] leading-[1.05] tracking-[-0.01em] text-charcoal max-w-4xl">
         {story.title}

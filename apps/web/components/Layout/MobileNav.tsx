@@ -34,12 +34,14 @@ const NAV_LINKS: ReadonlyArray<{
   readonly label: string;
 }> = [
   { href: "/stories", label: "Stories" },
+  { href: "/provinces", label: "Provinces" },
   { href: "/commissions", label: "Commissions" },
   { href: "/siu", label: "SIU" },
   { href: "/laws", label: "Laws & Constitution" },
   { href: "/people", label: "People" },
   { href: "/about", label: "About" },
   { href: "/domains", label: "Domains" },
+  { href: "/#money-counter-anchor", label: "Money Tracker" },
 ];
 
 const LEGAL_LINKS: ReadonlyArray<{
