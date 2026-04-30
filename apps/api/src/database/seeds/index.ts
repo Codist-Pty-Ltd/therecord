@@ -48,6 +48,11 @@
  *      file (not by the master seed) because the story and the commission
  *      are a tightly coupled unit.
  *
+ *   5. cape-town-stories.seed.ts
+ *      Cape Town / provincial accountability stories (metros, schools,
+ *      water sector, SASSA). Runs after mkhwanazi so similar_stories can
+ *      link to slug mkhwanazi-madlanga-commission.
+ *
  * Run with (inside apps/api):
  *   npm run seed:all
  *
@@ -58,6 +63,7 @@
 import 'reflect-metadata';
 
 import { run as runAdhocCommittees } from './adhoc-committees.seed';
+import { run as runCapeTownStories } from './cape-town-stories.seed';
 import { run as runCommissionsMaster } from './commissions-master.seed';
 import { run as runMkhwanazi } from './mkhwanazi.seed';
 import { run as runRecommendations } from './recommendations.seed';
@@ -75,6 +81,7 @@ async function main(): Promise<void> {
   await runAdhocCommittees();
   await runSiu();
   await runMkhwanazi();
+  await runCapeTownStories();
 
   console.log('\n═══════════════════════════════════════════════');
   console.log('   ✓ All seeds complete.');
