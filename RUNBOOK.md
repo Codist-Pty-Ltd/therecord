@@ -247,6 +247,63 @@ curl https://therecord.co.za/api/expenditure/counter | jq '{
 }'
 ```
 
+## Phase 5 — Accountability bodies deploy (Scorpions, Hawks, IDAC)
+
+**Migration order:** in `apps/api/src/database/migrations`, `1746600000000-AddAccountabilityBodies.ts` runs before `1746900000000-AddExpenditurePrimaryRecordFlag.ts` (primary-record flag for the money counter). Both timestamps are after all existing migrations in the repo.
+
+**Pre-commit (developers, before pushing):**
+
+```bash
+npm run typecheck --workspaces --if-present
+npm run lint --workspaces --if-present
+cd apps/intelligence && ruff check . && mypy . --ignore-missing-imports
+```
+
+**Post-deploy (SSH as `therecord` user on production):**
+
+```bash
+# Migrations (compiled runner in production image)
+docker exec therecord-api node dist/database/run-migrations.js
+
+# Accountability bodies + Scorpions story, cases, Khampepe link, expenditure rows
+docker exec therecord-api node dist/database/seeds/accountability-bodies.seed.js
+
+# Verify bodies
+docker exec therecord-postgres psql -U therecord -d therecord_db \
+  -c "SELECT popular_name, status, conviction_rate_percentage FROM accountability_bodies;"
+# Expect: The Scorpions (disbanded, 93.10), The Hawks (active, 50.00), IDAC (active, null)
+
+# Verify cases
+docker exec therecord-postgres psql -U therecord -d therecord_db \
+  -c "SELECT case_name, outcome FROM accountability_body_cases ORDER BY case_year_start;"
+# Expect 7 Scorpions cases
+
+# Verify Khampepe link
+docker exec therecord-postgres psql -U therecord -d therecord_db \
+  -c "SELECT c.popular_name, ab.popular_name AS subject_body
+      FROM commissions c
+      LEFT JOIN accountability_bodies ab ON c.subject_body_id = ab.id
+      WHERE ab.id IS NOT NULL;"
+# Expect: Khampepe Commission → The Scorpions
+
+# Money counter disclaimer (must not be null)
+curl http://127.0.0.1:3091/api/expenditure/counter | jq '.disclaimer'
+
+# Smoke — web routes
+curl -s -o /dev/null -w "%{http_code}\n" \
+  https://therecord.co.za/accountability-bodies/scorpions-dso
+# Expect 200
+
+curl -s -o /dev/null -w "%{http_code}\n" \
+  https://therecord.co.za/accountability-bodies
+# Expect 200
+
+# Comparison API
+curl "https://therecord.co.za/api/accountability-bodies/compare?bodies=scorpions-dso,hawks-dpci,idac" \
+  | jq '[.bodies[] | {name: .popular_name, rate: .conviction_rate_percentage}]'
+# Expect Scorpions 93.1, Hawks 50.0, IDAC null
+```
+
 ## YouTube discovery
 
 Videos are **never** auto-published: the intelligence service scores candidates; the API persists rows as `pending` until an operator approves them.
