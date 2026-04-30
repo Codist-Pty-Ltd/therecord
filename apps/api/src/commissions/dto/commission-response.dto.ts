@@ -13,6 +13,7 @@ import {
 import { PersonStatus } from '../../entities/person.entity';
 import { PaginationMetaDto } from '../../common/dto/pagination-meta.dto';
 import { CommissionRecommendationBundleDto } from '../../recommendations/dto/recommendation.dto';
+import { AccountabilityBodyEmbedDto } from '../../accountability-bodies/dto/accountability-body.dto';
 
 // -----------------------------------------------------------------------------
 // Flat commission summary (used by list endpoint + as the base for detail)
@@ -200,6 +201,14 @@ export class LawSectionsByUsageDto {
 }
 
 export class CommissionDetailResponseDto extends CommissionSummaryDto {
+  @ApiPropertyOptional({
+    type: AccountabilityBodyEmbedDto,
+    nullable: true,
+    description:
+      'When the commission’s subject is an accountability body (e.g. Khampepe → Scorpions).',
+  })
+  subject_body!: AccountabilityBodyEmbedDto | null;
+
   @ApiProperty({ type: [CommissionStoryBriefDto] })
   stories!: CommissionStoryBriefDto[];
 

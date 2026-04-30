@@ -2,8 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AccountabilityBody } from './entities/accountability-body.entity';
-import { AccountabilityBodyCase } from './entities/accountability-body-case.entity';
+import { AccountabilityBodiesModule } from './accountability-bodies/accountability-bodies.module';
 import { AdhocCommitteesModule } from './adhoc-committees/adhoc-committees.module';
 import { CommissionsModule } from './commissions/commissions.module';
 import { ExpenditureModule } from './expenditure/expenditure.module';
@@ -42,7 +41,7 @@ import { RecommendationsModule } from './recommendations/recommendations.module'
         logging: config.get<string>('NODE_ENV') === 'development' ? ['error', 'warn'] : ['error'],
       }),
     }),
-    TypeOrmModule.forFeature([AccountabilityBody, AccountabilityBodyCase]),
+    AccountabilityBodiesModule,
     AdhocCommitteesModule,
     CommissionsModule,
     ExpenditureModule,

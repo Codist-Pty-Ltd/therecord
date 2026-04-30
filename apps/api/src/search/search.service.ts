@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { AdhocCommittee } from '../entities/adhoc_committee.entity';
+import { AccountabilityBody } from '../entities/accountability-body.entity';
 import { Commission } from '../entities/commission.entity';
 import { Law } from '../entities/law.entity';
 import { LawSection } from '../entities/law_section.entity';
@@ -27,6 +28,7 @@ const ALL_TYPE_KEYS = [
   'law_sections',
   'province',
   'municipality',
+  'accountability_bodies',
 ] as const;
 
 type TypeKey = (typeof ALL_TYPE_KEYS)[number];
@@ -48,6 +50,8 @@ export class SearchService {
     @InjectRepository(LawSection) private readonly lawSectionRepo: Repository<LawSection>,
     @InjectRepository(Province) private readonly provinceRepo: Repository<Province>,
     @InjectRepository(Municipality) private readonly municipalityRepo: Repository<Municipality>,
+    @InjectRepository(AccountabilityBody)
+    private readonly accountabilityBodyRepo: Repository<AccountabilityBody>,
   ) {}
 
   async search(dto: SearchQueryDto): Promise<SearchResponseDto> {
@@ -85,6 +89,9 @@ export class SearchService {
     }
     if (activeTypes.has('municipality')) {
       tasks.push(this.searchMunicipalities(pat));
+    }
+    if (activeTypes.has('accountability_bodies')) {
+      tasks.push(this.searchAccountabilityBodies(pat));
     }
 
     const chunks = await Promise.all(tasks);
@@ -424,6 +431,34 @@ export class SearchService {
           .join(' · ') || 'Municipality',
         slug: m.slug,
         url: `/municipality/${m.slug}`,
+      },
+    }));
+  }
+
+  private async searchAccountabilityBodies(pat: string): Promise<InternalHit[]> {
+    const rows = await this.accountabilityBodyRepo
+      .createQueryBuilder('b')
+      .where(
+        '(b.popular_name ILIKE :pat OR b.name ILIKE :pat OR b.abbreviation ILIKE :pat)',
+        { pat },
+      )
+      .orderBy('b.established_date', 'ASC')
+      .take(PER_TYPE_LIMIT)
+      .getMany();
+
+    return rows.map((b) => ({
+      sortAt: b.updated_at.getTime(),
+      result: {
+        type: 'accountability_body' as const,
+        id: b.id,
+        name: b.popular_name,
+        subtitle: [b.abbreviation, String(b.body_type).replace(/_/g, ' ')]
+          .filter(Boolean)
+          .join(' · '),
+        slug: b.slug,
+        status: String(b.status),
+        url: `/accountability-bodies/${b.slug}`,
+        plain_english: this.oneLine(b.plain_english_summary),
       },
     }));
   }

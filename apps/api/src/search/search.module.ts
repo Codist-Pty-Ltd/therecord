@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AdhocCommittee } from '../entities/adhoc_committee.entity';
+import { AccountabilityBody } from '../entities/accountability-body.entity';
 import { Commission } from '../entities/commission.entity';
 import { Law } from '../entities/law.entity';
 import { LawSection } from '../entities/law_section.entity';
@@ -25,6 +26,7 @@ import { SearchService } from './search.service';
       LawSection,
       Province,
       Municipality,
+      AccountabilityBody,
     ]),
   ],
   controllers: [SearchController],

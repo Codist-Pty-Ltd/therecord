@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationMetaDto } from '../../common/dto/pagination-meta.dto';
+import { AccountabilityBodyEmbedDto } from '../../accountability-bodies/dto/accountability-body.dto';
 import {
   EventSignificance,
   EventType,
@@ -233,6 +234,9 @@ export class SimilarStoryBriefDto {
 /* ------------------------------------------------------------------ detail */
 
 export class StoryDetailResponseDto extends StoryListItemDto {
+  @ApiPropertyOptional({ type: AccountabilityBodyEmbedDto, nullable: true })
+  accountability_body!: AccountabilityBodyEmbedDto | null;
+
   @ApiProperty({ type: [TimelineEventBriefDto] })
   timeline_events!: TimelineEventBriefDto[];
 

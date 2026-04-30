@@ -11,6 +11,7 @@ import { slugify } from '../common/utils/slug.util';
 import { Article } from '../entities/article.entity';
 import { EventLegalReference } from '../entities/event_legal_reference.entity';
 import { Investigation } from '../entities/investigation.entity';
+import { AccountabilityBody } from '../entities/accountability-body.entity';
 import { LawSection } from '../entities/law_section.entity';
 import { Municipality } from '../entities/municipality.entity';
 import { Person } from '../entities/person.entity';
@@ -37,6 +38,7 @@ import {
   StoryPersonBriefDto,
   TimelineEventBriefDto,
 } from './dto/story-response.dto';
+import { AccountabilityBodyEmbedDto } from '../accountability-bodies/dto/accountability-body.dto';
 
 const MAX_ARTICLES_IN_DETAIL = 50;
 const MAX_SLUG_COLLISIONS = 1000;
@@ -232,7 +234,10 @@ export class StoriesService {
   /* ---------------------------------------------------------------- slug */
 
   async findBySlug(slug: string): Promise<StoryDetailResponseDto> {
-    const story = await this.storyRepo.findOne({ where: { slug } });
+    const story = await this.storyRepo.findOne({
+      where: { slug },
+      relations: ['accountability_body'],
+    });
     if (!story) {
       throw new NotFoundException(`Story with slug "${slug}" not found.`);
     }
@@ -304,6 +309,7 @@ export class StoriesService {
 
     return {
       ...this.mapEntityToListItem(story, latestEventDate),
+      accountability_body: this.mapAccountabilityBodyEmbed(story.accountability_body),
       timeline_events: timelineEvents.map((e) =>
         this.mapTimelineEvent(e, legalRefsByEvent.get(e.id) ?? []),
       ),
@@ -468,6 +474,21 @@ export class StoriesService {
   }
 
   /* ----------------------------------------------------------- mappers */
+
+  private mapAccountabilityBodyEmbed(
+    body: AccountabilityBody | null | undefined,
+  ): AccountabilityBodyEmbedDto | null {
+    if (!body) return null;
+    return {
+      id: body.id,
+      slug: body.slug,
+      popular_name: body.popular_name,
+      abbreviation: body.abbreviation,
+      name: body.name,
+      body_type: body.body_type,
+      status: body.status,
+    };
+  }
 
   private mapEntityToListItem(story: Story, latestEventDate: string | null): StoryListItemDto {
     return {

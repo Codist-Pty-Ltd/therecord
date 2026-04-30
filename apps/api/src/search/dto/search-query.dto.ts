@@ -22,8 +22,8 @@ export class SearchQueryDto {
 
   @ApiPropertyOptional({
     description:
-      'Comma-separated: stories, people, commissions, committees, siu, laws, law_sections. ' +
-      'Omit to search all types.',
+      'Comma-separated buckets: stories, people, commissions, committees, siu, laws, law_sections, ' +
+      'province, municipality, accountability_bodies. Omit to search all.',
   })
   @IsOptional()
   @IsString()

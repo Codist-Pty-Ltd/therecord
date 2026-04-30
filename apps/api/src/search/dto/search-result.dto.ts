@@ -10,6 +10,7 @@ const SEARCH_TYPES = [
   'law_section',
   'province',
   'municipality',
+  'accountability_body',
 ] as const;
 
 export class SearchResultDto {

@@ -81,6 +81,7 @@ const TYPE_ORDER: SearchResultType[] = [
   "commission",
   "committee",
   "siu",
+  "accountability_body",
   "law",
   "law_section",
   "province",
@@ -93,6 +94,7 @@ const GROUP_HEADER: Record<SearchResultType, string> = {
   commission: "COMMISSIONS",
   committee: "AD HOC COMMITTEES",
   siu: "SIU",
+  accountability_body: "ACCOUNTABILITY BODIES",
   law: "LAWS",
   law_section: "LAW SECTIONS",
   province: "PROVINCES",
@@ -139,6 +141,8 @@ export function typeBadgeClass(type: SearchResultType): string {
       return "bg-purple-500/10 text-purple-700";
     case "siu":
       return "bg-charge-red/[0.08] text-charge-red";
+    case "accountability_body":
+      return "bg-indigo-500/10 text-indigo-800";
     case "law":
       return "bg-amber/12 text-amber";
     case "law_section":
@@ -164,6 +168,8 @@ export function typeBadgeLabel(type: SearchResultType): string {
       return "Ad Hoc";
     case "siu":
       return "SIU";
+    case "accountability_body":
+      return "Body";
     case "law":
       return "Law";
     case "law_section":

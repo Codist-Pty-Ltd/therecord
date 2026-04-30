@@ -1885,7 +1885,8 @@ export type SearchResultType =
   | "law"
   | "law_section"
   | "province"
-  | "municipality";
+  | "municipality"
+  | "accountability_body";
 
 /**
  * A single match from the global search endpoint — one row in the

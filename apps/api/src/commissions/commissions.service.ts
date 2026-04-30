@@ -20,6 +20,7 @@ import {
 } from '../entities/commission_person.entity';
 import { Story } from '../entities/story.entity';
 import { TimelineEvent } from '../entities/timeline_event.entity';
+import { AccountabilityBody } from '../entities/accountability-body.entity';
 import { CommissionQueryDto } from './dto/commission-query.dto';
 import {
   CommissionCompareQueryDto,
@@ -38,6 +39,7 @@ import {
   CommissionTimelineEventDto,
   LawSectionsByUsageDto,
 } from './dto/commission-response.dto';
+import { AccountabilityBodyEmbedDto } from '../accountability-bodies/dto/accountability-body.dto';
 import { RecommendationsService } from '../recommendations/recommendations.service';
 
 interface StoryWithLatest {
@@ -116,7 +118,10 @@ export class CommissionsService {
   /* -------------------------------------------------------------- detail */
 
   async findBySlug(slug: string): Promise<CommissionDetailResponseDto> {
-    const commission = await this.commissionRepo.findOne({ where: { slug } });
+    const commission = await this.commissionRepo.findOne({
+      where: { slug },
+      relations: ['subject_body'],
+    });
     if (!commission) {
       throw new NotFoundException(`Commission with slug "${slug}" not found.`);
     }
@@ -136,6 +141,7 @@ export class CommissionsService {
 
     return {
       ...this.mapCommissionSummary(commission, stories.length),
+      subject_body: this.mapSubjectBody(commission.subject_body),
       stories,
       people,
       law_sections: this.groupLawSectionsByUsage(lawSections),
@@ -506,6 +512,21 @@ export class CommissionsService {
   }
 
   /* -------------------------------------------------------------- mapping */
+
+  /* -------------------------------------------------------------- mapping */
+
+  private mapSubjectBody(body: AccountabilityBody | null): AccountabilityBodyEmbedDto | null {
+    if (!body) return null;
+    return {
+      id: body.id,
+      slug: body.slug,
+      popular_name: body.popular_name,
+      abbreviation: body.abbreviation,
+      name: body.name,
+      body_type: body.body_type,
+      status: body.status,
+    };
+  }
 
   private mapCommissionSummary(
     c: Commission,
