@@ -485,6 +485,89 @@ export interface CommissionImpactSector {
   created_at: string;
 }
 
+/** `GET /api/impact/sectors` list row */
+export interface ImpactSectorListItem {
+  id: string;
+  slug: string;
+  name: string;
+  icon: string | null;
+  constitutional_right: string | null;
+  stat_headline: string | null;
+  stat_value: string | null;
+  stat_label: string | null;
+  story_count: number;
+  total_amount_affected_rands: number;
+}
+
+export interface ImpactSeverityDistribution {
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+}
+
+export interface ImpactWebSectorNode {
+  slug: string;
+  name: string;
+  icon: string | null;
+  stat_value: string | null;
+  stat_label: string | null;
+  story_count: number;
+  total_rands_affected: number;
+  severity_distribution: ImpactSeverityDistribution;
+}
+
+export interface ImpactConnection {
+  from_sector: string;
+  to_sector: string;
+  connection_note: string;
+  story_count: number;
+}
+
+export interface NationalStats {
+  poverty_headcount: number;
+  unemployment_expanded: number;
+  housing_backlog: number;
+  without_water: number;
+}
+
+export interface ImpactWeb {
+  sectors: ImpactWebSectorNode[];
+  connections: ImpactConnection[];
+  total_people_affected_estimate: number;
+  national_stats: NationalStats;
+}
+
+export interface MoneyToReality {
+  rdp_houses: number;
+  school_repairs: number;
+  water_connections: number;
+  child_support_grants: number;
+  old_age_grants: number;
+  hospital_beds: number;
+  teachers_per_year: number;
+}
+
+/** `GET /api/impact/story/:storyId` */
+export interface ImpactStorySummary {
+  story_id: string;
+  impacts: Array<{
+    slug: string;
+    name: string;
+    icon: string | null;
+    impact_chain: string[];
+    impact_severity: ImpactSeverity;
+    amount_diverted_rands: string | null;
+    people_affected_estimate: string | null;
+    plain_english_impact: string | null;
+  }>;
+  expenditures: Array<{
+    id: string;
+    amount_rands: string;
+    what_it_should_have_funded: string | null;
+  }>;
+}
+
 /** Mirrors `province.entity.ts`. */
 export interface Province {
   id: string;
@@ -550,6 +633,8 @@ export interface ExpenditureCounter {
   total_recovered_rands: number;
   total_prevented_rands: number;
   total_fruitless_wasteful_rands: number;
+  /** Primary expenditure amounts that include a human-impact “what it should have funded” line. */
+  total_tracked_rands_with_what_it_should_have_funded: number;
   story_count: number;
   province_count: number;
   by_province: {

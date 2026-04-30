@@ -2,7 +2,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  Index,
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -12,7 +11,6 @@ import {
  * Seeded by migration — not user-generated.
  */
 @Entity('impact_sectors')
-@Index('impact_sectors_slug_uidx', { unique: true })
 export class ImpactSector {
   @PrimaryColumn('uuid', { default: () => 'gen_random_uuid()' })
   id!: string;

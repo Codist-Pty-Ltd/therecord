@@ -60,6 +60,11 @@ export class ExpenditureCounterResponseDto {
   @ApiProperty() total_recovered_rands!: number;
   @ApiProperty() total_prevented_rands!: number;
   @ApiProperty() total_fruitless_wasteful_rands!: number;
+  @ApiProperty({
+    description:
+      'Sum of amount_rands for counter-eligible rows that also have a non‑empty what_it_should_have_funded narrative.',
+  })
+  total_tracked_rands_with_what_it_should_have_funded!: number;
   @ApiProperty() story_count!: number;
   @ApiProperty({
     description:

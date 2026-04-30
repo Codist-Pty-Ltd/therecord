@@ -90,6 +90,14 @@ export class ExpenditureService {
         WHERE ${COUNTER_ROW_SQL}`,
     );
 
+    const withNarrativeRow = await this.expRepo.manager.query<{ sum: string }[]>(
+      `SELECT COALESCE(SUM(amount_rands::numeric), 0)::text AS sum
+         FROM public_expenditure_records
+        WHERE ${COUNTER_ROW_SQL}
+          AND what_it_should_have_funded IS NOT NULL
+          AND TRIM(what_it_should_have_funded) <> ''`,
+    );
+
     const provinceRows = await this.expRepo.manager.query<
       { province_name: string; slug: string; total_rands: string; story_count: string }[]
     >(
@@ -152,6 +160,9 @@ export class ExpenditureService {
       total_recovered_rands: sumByType(ExpenditureType.RECOVERED),
       total_prevented_rands: sumByType(ExpenditureType.PREVENTED),
       total_fruitless_wasteful_rands: sumByType(ExpenditureType.FRUITLESS_WASTEFUL),
+      total_tracked_rands_with_what_it_should_have_funded: bigIntStringToNumber(
+        withNarrativeRow[0]?.sum,
+      ),
       story_count: Number(storyCountRow[0]?.c ?? 0),
       province_count: Number(provinceCountRow[0]?.c ?? 0),
       by_province: byProvince,
