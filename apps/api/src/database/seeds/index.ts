@@ -53,6 +53,12 @@
  *      water sector, SASSA). Runs after mkhwanazi so similar_stories can
  *      link to slug mkhwanazi-madlanga-commission.
  *
+ *   6. accountability-bodies.seed.ts
+ *      Scorpions (DSO), Hawks (DPCI), IDAC; Scorpions cases; Khampepe
+ *      commission subject_body link; Scorpions timeline story. Runs after
+ *      cape-town (depends on commissions-master + migrations for
+ *      accountability_bodies tables).
+ *
  * Run with (inside apps/api):
  *   npm run seed:all
  *
@@ -62,6 +68,7 @@
 
 import 'reflect-metadata';
 
+import { run as runAccountabilityBodies } from './accountability-bodies.seed';
 import { run as runAdhocCommittees } from './adhoc-committees.seed';
 import { run as runCapeTownStories } from './cape-town-stories.seed';
 import { run as runCommissionsMaster } from './commissions-master.seed';
@@ -82,6 +89,7 @@ async function main(): Promise<void> {
   await runSiu();
   await runMkhwanazi();
   await runCapeTownStories();
+  await runAccountabilityBodies();
 
   console.log('\n═══════════════════════════════════════════════');
   console.log('   ✓ All seeds complete.');
