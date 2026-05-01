@@ -81,6 +81,7 @@ import { run as runMkhwanazi } from './mkhwanazi.seed';
 import { run as runRecommendations } from './recommendations.seed';
 import { run as runReports } from './reports.seed';
 import { run as runSiu } from './siu.seed';
+import { run as runStateEntities } from './state-entities.seed';
 
 async function main(): Promise<void> {
   console.log('\n═══════════════════════════════════════════════');
@@ -95,6 +96,7 @@ async function main(): Promise<void> {
   await runMkhwanazi();
   await runCapeTownStories();
   await runImpactSectors();
+  await runStateEntities();
   await runAccountabilityBodies();
 
   console.log('\n═══════════════════════════════════════════════');
