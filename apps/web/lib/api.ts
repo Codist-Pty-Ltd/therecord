@@ -42,6 +42,9 @@ import type {
   SiuProclamationSummary,
   SpecialTribunalOverviewResponse,
   SearchResponse,
+  StateEntityDetailResponse,
+  StateEntityListResponse,
+  StateEntityStats,
   StoryCategory,
   StoryDetail,
   StoryDomain,
@@ -485,6 +488,41 @@ export const getLawSection = cache(
         tags: [`legal:law-section:${sectionId}`],
       },
     );
+  },
+);
+
+// -----------------------------------------------------------------------------
+// State-owned entities (SOEs)
+// -----------------------------------------------------------------------------
+
+export const getStateEntitiesStats = cache(
+  async (): Promise<StateEntityStats | null> => {
+    return apiGet<StateEntityStats>(`/api/state-entities/stats`, {
+      revalidate: REVALIDATE_SEMI_STABLE_SECONDS,
+      tags: ["state-entities:stats"],
+    });
+  },
+);
+
+export const listStateEntities = cache(
+  async (page = 1, limit = 30): Promise<StateEntityListResponse | null> => {
+    const q = new URLSearchParams();
+    q.set("page", String(page));
+    q.set("limit", String(limit));
+    return apiGet<StateEntityListResponse>(`/api/state-entities?${q.toString()}`, {
+      revalidate: REVALIDATE_SEMI_STABLE_SECONDS,
+      tags: ["state-entities:list"],
+    });
+  },
+);
+
+export const getStateEntity = cache(
+  async (slug: string): Promise<StateEntityDetailResponse | null> => {
+    const enc = encodeURIComponent(slug);
+    return apiGet<StateEntityDetailResponse>(`/api/state-entities/${enc}`, {
+      revalidate: REVALIDATE_SEMI_STABLE_SECONDS,
+      tags: [`state-entity:${slug}`],
+    });
   },
 );
 

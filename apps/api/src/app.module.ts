@@ -22,6 +22,7 @@ import { TakedownModule } from './takedown/takedown.module';
 import { TimelineModule } from './timeline/timeline.module';
 import { YoutubeModule } from './youtube/youtube.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
+import { StateEntitiesModule } from './state-entities/state-entities.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { RecommendationsModule } from './recommendations/recommendations.module'
     TimelineModule,
     YoutubeModule,
     RecommendationsModule,
+    StateEntitiesModule,
   ],
 })
 export class AppModule {}

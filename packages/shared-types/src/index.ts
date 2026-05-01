@@ -804,6 +804,106 @@ export interface StateEntityCommissionLink {
   created_at: string;
 }
 
+/** Single timeline row for API/UI — includes synthetic `event_date` for shared timeline components. */
+export interface StateEntityTimelineRow extends StateEntityTimeline {
+  /** ISO date (`YYYY-MM-DD`) derived from calendar year + sequence within that year. */
+  event_date: string;
+}
+
+/** Resolved accountability graph edge returned by `GET /api/state-entities/:slug`. */
+export interface StateEntityAccountabilityLink {
+  id: string;
+  relationship_type: StateEntityCommissionRelationshipType;
+  summary: string | null;
+  commission: { id: string; slug: string; popular_name: string } | null;
+  adhoc_committee: { id: string; slug: string; popular_name: string } | null;
+  siu_proclamation: {
+    id: string;
+    slug: string;
+    title: string;
+    proclamation_number: string;
+  } | null;
+  accountability_body: { id: string; slug: string; name: string } | null;
+}
+
+/** Story list row linked via `stories.state_entity_id`. */
+export interface StateEntityLinkedStoryBrief {
+  id: string;
+  title: string;
+  slug: string;
+  domain: StoryDomain;
+  status: StoryStatus;
+  summary: string | null;
+  total_amount_rands: string | null;
+  updated_at: string;
+}
+
+/** Row in `GET /api/state-entities` (list + card grid). */
+export interface StateEntityListItem {
+  name: string;
+  popular_name: string;
+  slug: string;
+  sector: StateEntitySector;
+  status: StateEntityStatus;
+  health_score: number | null;
+  is_in_crisis: boolean;
+  latest_annual_loss_rands: string | null;
+  total_bailouts_received_rands: string | null;
+  primary_impact_sector_slug: string;
+  related_story_count: number;
+}
+
+/** `GET /api/state-entities` envelope. */
+export interface StateEntityListResponse {
+  data: StateEntityListItem[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
+}
+
+/** Sector bucket in national SOE scorecard. */
+export interface StateEntityStatsBySectorRow {
+  sector: StateEntitySector;
+  count: number;
+  /** Mean health score among entities with non-null scores; null if none. */
+  avg_health: number | null;
+}
+
+/** `GET /api/state-entities/stats` aggregate scorecard. */
+export interface StateEntityStats {
+  total_entities: number;
+  in_crisis: number;
+  total_bailouts_rands: number;
+  total_debt_rands: number;
+  average_health_score: number | null;
+  /**
+   * Editorial headline figure: combined irregular expenditure cited in AG / oversight
+   * reporting for major utilities (Eskom + Transnet-class disclosures — illustrative).
+   */
+  irregular_expenditure_highlight_rands: number;
+  by_sector: StateEntityStatsBySectorRow[];
+  /** Lowest health scores first (most distressed). */
+  worst_performers: StateEntity[];
+}
+
+/** Full dossier from `GET /api/state-entities/:slug`. */
+export interface StateEntityDetailResponse extends StateEntity {
+  timeline: StateEntityTimelineRow[];
+  accountability_links: StateEntityAccountabilityLink[];
+  linked_stories: StateEntityLinkedStoryBrief[];
+  linked_impact_sectors: ImpactSector[];
+}
+
+/** `GET /api/state-entities/:slug/timeline` */
+export interface StateEntityTimelineOnlyResponse {
+  slug: string;
+  popular_name: string;
+  timeline: StateEntityTimelineRow[];
+}
+
 /** Response shape of `GET /api/expenditure/counter` (Nest `ExpenditureCounterResponseDto`). */
 export interface ExpenditureCounter {
   total_tracked_rands: number;

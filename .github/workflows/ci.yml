@@ -111,11 +111,11 @@ jobs:
           export PORT=3091
           nohup node dist/main.js > /tmp/therecord-api.log 2>&1 &
           echo $! > /tmp/therecord-api.pid
-          sleep 2
+          sleep 8
 
       - name: Wait for health
         run: |
-          curl -fsS --retry 10 --retry-delay 2 --retry-connrefused \
+          curl -fsS --retry 25 --retry-delay 2 --retry-connrefused \
             http://127.0.0.1:3091/api/health
 
       - name: Run smoke tests
@@ -196,11 +196,11 @@ jobs:
           export INGESTION_API_KEY=ci-build-placeholder
           nohup node dist/main.js > /tmp/ci-next-build-api.log 2>&1 &
           echo $! > /tmp/ci-next-build-api.pid
-          sleep 2
+          sleep 8
 
       - name: Wait for API
         run: |
-          curl -fsS --retry 10 --retry-delay 2 --retry-connrefused \
+          curl -fsS --retry 25 --retry-delay 2 --retry-connrefused \
             http://127.0.0.1:3091/api/health
 
       - name: Build web

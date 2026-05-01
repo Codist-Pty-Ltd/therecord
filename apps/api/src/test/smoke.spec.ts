@@ -123,6 +123,28 @@ describe('API Smoke Tests', () => {
     });
   });
 
+  describe('State entities', () => {
+    it('GET /api/state-entities returns paginated list', async () => {
+      const res = await req().get('/api/state-entities');
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('data');
+      expect(Array.isArray(res.body.data)).toBe(true);
+    });
+
+    it('GET /api/state-entities/stats returns scorecard shape', async () => {
+      const res = await req().get('/api/state-entities/stats');
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('total_entities');
+      expect(res.body).toHaveProperty('worst_performers');
+      expect(Array.isArray(res.body.worst_performers)).toBe(true);
+    });
+
+    it('GET /api/state-entities/nonexistent-slug-xyz returns 404', async () => {
+      const res = await req().get('/api/state-entities/nonexistent-slug-xyz');
+      expect(res.status).toBe(404);
+    });
+  });
+
   describe('Ingestion guard', () => {
     it('POST /api/ingestion/article without key returns 401', async () => {
       const res = await req().post('/api/ingestion/article').send({});

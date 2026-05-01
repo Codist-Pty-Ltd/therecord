@@ -92,6 +92,79 @@ const EVENT_MAP: Record<string, EventTypeStyle> = {
     bg: "bg-charcoal/10",
     text: "text-charcoal",
   },
+  // —— State-owned entity timeline (`state_entity_timeline`) ——
+  established: {
+    emoji: "🏛️",
+    label: "Established",
+    bg: "bg-legal-blue/10",
+    text: "text-legal-blue",
+  },
+  major_achievement: {
+    emoji: "✅",
+    label: "Achievement",
+    bg: "bg-timeline-green/15",
+    text: "text-timeline-green",
+  },
+  financial_crisis: {
+    emoji: "📉",
+    label: "Financial crisis",
+    bg: "bg-amber/15",
+    text: "text-amber",
+  },
+  corruption_exposed: {
+    emoji: "🔴",
+    label: "Corruption exposed",
+    bg: "bg-charge-red/10",
+    text: "text-charge-red",
+  },
+  bailout_received: {
+    emoji: "💰",
+    label: "Bailout",
+    bg: "bg-amber/15",
+    text: "text-amber",
+  },
+  leadership_change: {
+    emoji: "👤",
+    label: "Leadership",
+    bg: "bg-charcoal/10",
+    text: "text-charcoal",
+  },
+  restructuring: {
+    emoji: "🔧",
+    label: "Restructuring",
+    bg: "bg-legal-blue/10",
+    text: "text-legal-blue",
+  },
+  service_collapse: {
+    emoji: "⚠️",
+    label: "Service collapse",
+    bg: "bg-charge-red/10",
+    text: "text-charge-red",
+  },
+  legal_action: {
+    emoji: "⚖️",
+    label: "Legal action",
+    bg: "bg-legal-blue/10",
+    text: "text-legal-blue",
+  },
+  policy_change: {
+    emoji: "📜",
+    label: "Policy change",
+    bg: "bg-charcoal/[0.06]",
+    text: "text-charcoal",
+  },
+  privatisation_move: {
+    emoji: "🏗️",
+    label: "Privatisation move",
+    bg: "bg-legal-blue/15",
+    text: "text-legal-blue",
+  },
+  recovery: {
+    emoji: "🌱",
+    label: "Recovery",
+    bg: "bg-timeline-green/15",
+    text: "text-timeline-green",
+  },
 };
 
 const FALLBACK: EventTypeStyle = {
