@@ -15,6 +15,7 @@ import { Commission } from './commission.entity';
 import { Municipality } from './municipality.entity';
 import { Province } from './province.entity';
 import { SiuProclamation } from './siu_proclamation.entity';
+import { StateEntity } from './state-entity.entity';
 
 export enum StoryDomain {
   CRIMINAL_JUSTICE = 'criminal_justice',
@@ -159,6 +160,17 @@ export class Story {
   @ManyToOne(() => ImpactSector, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'primary_impact_sector_id' })
   primary_impact_sector!: ImpactSector | null;
+
+  /**
+   * Optional link to a {@link StateEntity} when the story is centred on that SOE / schedule entity.
+   */
+  @Index('stories_state_entity_id_idx')
+  @Column({ type: 'uuid', nullable: true })
+  state_entity_id!: string | null;
+
+  @ManyToOne(() => StateEntity, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'state_entity_id' })
+  state_entity!: StateEntity | null;
 
   /**
    * Optional geographic scope — province-level accountability (e.g. AG water

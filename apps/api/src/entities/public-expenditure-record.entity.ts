@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Municipality } from './municipality.entity';
 import { Province } from './province.entity';
+import { StateEntity } from './state-entity.entity';
 import { Story } from './story.entity';
 
 export enum AmountQualifier {
@@ -79,6 +80,14 @@ export class PublicExpenditureRecord {
   @ManyToOne(() => Municipality, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'municipality_id' })
   municipality!: Municipality | null;
+
+  @Index('public_expenditure_records_state_entity_id_idx')
+  @Column({ type: 'uuid', nullable: true })
+  state_entity_id!: string | null;
+
+  @ManyToOne(() => StateEntity, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'state_entity_id' })
+  state_entity!: StateEntity | null;
 
   @Column({ type: 'bigint' })
   amount_rands!: string;

@@ -641,6 +641,7 @@ export interface PublicExpenditureRecord {
   story_id: string;
   province_id: string | null;
   municipality_id: string | null;
+  state_entity_id: string | null;
   amount_rands: string;
   amount_qualifier: AmountQualifier;
   expenditure_type: ExpenditureType;
@@ -656,6 +657,151 @@ export interface PublicExpenditureRecord {
   what_it_should_have_funded: string | null;
   created_at: string;
   updated_at: string;
+  /** Optional — when the API joins {@link StateEntity}. */
+  state_entity?: StateEntity | null;
+}
+
+// -----------------------------------------------------------------------------
+// State-owned entities (SOEs / PFMA schedule bodies)
+// -----------------------------------------------------------------------------
+
+export type StateEntityPfmaSchedule =
+  | "schedule_2"
+  | "schedule_3a"
+  | "schedule_3b"
+  | "schedule_3c"
+  | "schedule_3d";
+
+export type StateEntitySector =
+  | "energy"
+  | "transport_rail"
+  | "transport_air"
+  | "transport_road"
+  | "logistics_ports"
+  | "communications"
+  | "broadcasting"
+  | "finance_development"
+  | "finance_grants"
+  | "water"
+  | "defence"
+  | "research"
+  | "education_funding"
+  | "healthcare"
+  | "forestry_agriculture"
+  | "other";
+
+export type StateEntityStatus =
+  | "operational"
+  | "business_rescue"
+  | "restructuring"
+  | "partially_privatised"
+  | "dissolved"
+  | "merged"
+  | "dormant";
+
+export type StateEntityFinancialHealth =
+  | "healthy"
+  | "under_pressure"
+  | "distressed"
+  | "insolvent"
+  | "unknown";
+
+export type StateEntityPrivatisationStatus =
+  | "not_discussed"
+  | "under_debate"
+  | "partial_privatisation_underway"
+  | "fully_privatised"
+  | "government_committed_against";
+
+export type StateEntityTimelineEventType =
+  | "established"
+  | "major_achievement"
+  | "financial_crisis"
+  | "corruption_exposed"
+  | "bailout_received"
+  | "leadership_change"
+  | "restructuring"
+  | "service_collapse"
+  | "legal_action"
+  | "policy_change"
+  | "privatisation_move"
+  | "recovery";
+
+export type StateEntityTimelineSignificance = "low" | "medium" | "high" | "critical";
+
+export type StateEntityCommissionRelationshipType =
+  | "investigated"
+  | "subject_of"
+  | "implicated"
+  | "reformed_by"
+  | "bailout_linked";
+
+/** Mirrors `state-entity.entity.ts`. */
+export interface StateEntity {
+  id: string;
+  name: string;
+  popular_name: string;
+  abbreviation: string;
+  slug: string;
+  sector: StateEntitySector;
+  pfma_schedule: StateEntityPfmaSchedule | null;
+  status: StateEntityStatus;
+  established_year: number;
+  established_by: string | null;
+  purpose_original: string;
+  purpose_plain_english: string;
+  why_it_matters_to_ordinary_people: string;
+  current_mandate_summary: string | null;
+  current_ceo: string | null;
+  supervising_ministry: string;
+  /** Decimal string e.g. "100.00" */
+  government_ownership_percentage: string;
+  latest_annual_loss_rands: string | null;
+  total_debt_rands: string | null;
+  total_bailouts_received_rands: string | null;
+  annual_budget_rands: string | null;
+  financial_health: StateEntityFinancialHealth;
+  financial_health_year: string | null;
+  health_score: number | null;
+  health_score_rationale: string | null;
+  is_in_crisis: boolean;
+  crisis_summary: string | null;
+  privatisation_debate: string | null;
+  privatisation_status: StateEntityPrivatisationStatus;
+  primary_impact_sector_slug: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Mirrors `state-entity-timeline.entity.ts`. */
+export interface StateEntityTimeline {
+  id: string;
+  state_entity_id: string;
+  year: number;
+  event_type: StateEntityTimelineEventType;
+  title: string;
+  description: string;
+  plain_english: string | null;
+  amount_rands: string | null;
+  source_url: string | null;
+  significance: StateEntityTimelineSignificance;
+  related_commission_slug: string | null;
+  related_siu_proclamation_slug: string | null;
+  related_story_slug: string | null;
+  created_at: string;
+}
+
+/** Mirrors `state-entity-commission-link.entity.ts`. */
+export interface StateEntityCommissionLink {
+  id: string;
+  state_entity_id: string;
+  commission_id: string | null;
+  adhoc_committee_id: string | null;
+  siu_proclamation_id: string | null;
+  accountability_body_id: string | null;
+  relationship_type: StateEntityCommissionRelationshipType;
+  summary: string | null;
+  created_at: string;
 }
 
 /** Response shape of `GET /api/expenditure/counter` (Nest `ExpenditureCounterResponseDto`). */
@@ -899,6 +1045,8 @@ export interface Story {
   accountability_body_id: string | null;
   /** Editorial primary human-impact lens (FK to impact_sectors). */
   primary_impact_sector_id: string | null;
+  /** Optional link to a state-owned / PFMA schedule entity. */
+  state_entity_id: string | null;
   province_id: string | null;
   municipality_id: string | null;
   story_category: StoryCategory | null;
@@ -910,6 +1058,8 @@ export interface Story {
   accountability_body?: AccountabilityBodyEmbed | null;
   /** Optional — primary impact sector row when joined on detail/list. */
   primary_impact_sector?: ImpactSector | null;
+  /** Optional — state entity when joined on detail/list. */
+  state_entity?: StateEntity | null;
   /** Optional — sector-level causal chains when joined on story detail. */
   impact_sectors?: StoryImpactSector[];
   province?: Province | null;
