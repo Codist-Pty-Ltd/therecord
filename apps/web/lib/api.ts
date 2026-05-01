@@ -23,6 +23,7 @@ import type {
   CommissionDetail,
   CommissionDomain,
   CommissionSummary,
+  ConstitutionSection,
   ImpactSectorDetail,
   ImpactSectorListItem,
   ImpactWeb,
@@ -436,6 +437,17 @@ export const listLaws = cache(async (): Promise<LawSummary[]> => {
   });
   return result ?? [];
 });
+
+/** All constitutional sections (Bill of Rights +), ordered by `section_number`. */
+export const listConstitutionSections = cache(
+  async (): Promise<ConstitutionSection[]> => {
+    const result = await apiGet<ConstitutionSection[]>(`/api/legal/constitution`, {
+      revalidate: REVALIDATE_STABLE_SECONDS,
+      tags: ["legal:constitution:list"],
+    });
+    return result ?? [];
+  },
+);
 
 /**
  * Fetch a single law + every section belonging to it (sections ordered by

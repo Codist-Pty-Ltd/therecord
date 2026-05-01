@@ -11,45 +11,12 @@ import { useEffect, useRef } from "react";
 
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 
-/**
- * Full-screen navigation drawer that slides in from the right on mobile.
- * Controlled by the parent (`Header`) via `open` / `onClose`.
- *
- * Behaviour:
- *  - Slide-in / slide-out via `AnimatePresence` (x: 100% → 0).
- *  - Nav items stagger in after the drawer finishes sliding.
- *  - Body scroll is locked while the drawer is mounted.
- *  - Escape closes the drawer.
- *  - Focus moves to the close button when the drawer opens.
- *  - Tapping any link closes the drawer before navigation.
- *  - Respects `prefers-reduced-motion` — animations collapse to instant.
- */
+import { MOBILE_NAV_SECTIONS, type NavItem } from "./nav-config";
+
 export interface MobileNavProps {
   open: boolean;
   onClose: () => void;
 }
-
-const NAV_LINKS: ReadonlyArray<{
-  readonly href: string;
-  readonly label: string;
-  readonly subtitle?: string;
-}> = [
-  { href: "/stories", label: "Stories" },
-  { href: "/provinces", label: "Provinces" },
-  { href: "/commissions", label: "Commissions" },
-  { href: "/accountability-bodies", label: "Special Units" },
-  { href: "/siu", label: "SIU" },
-  { href: "/laws", label: "Laws & Constitution" },
-  { href: "/people", label: "People" },
-  {
-    href: "/impact",
-    label: "The Real Cost",
-    subtitle: "How corruption affects you",
-  },
-  { href: "/about", label: "About" },
-  { href: "/domains", label: "Domains" },
-  { href: "/#money-counter-anchor", label: "Money Tracker" },
-];
 
 const LEGAL_LINKS: ReadonlyArray<{
   readonly href: string;
@@ -66,33 +33,56 @@ const drawerVariants: Variants = {
   visible: { x: 0 },
 };
 
-const listVariants: Variants = {
+const EASE_OUT_EDITORIAL = [0.22, 1, 0.36, 1] as const;
+
+const sectionListVariants: Variants = {
   hidden: {},
   visible: {
-    transition: {
-      // Let the drawer finish sliding before items begin staggering.
-      delayChildren: 0.18,
-      staggerChildren: 0.05,
-    },
+    transition: { staggerChildren: 0.04 },
   },
 };
 
-const itemVariants: Variants = {
-  hidden: { opacity: 0, x: 24 },
+const sectionItemVariants: Variants = {
+  hidden: { opacity: 0, x: 20 },
   visible: { opacity: 1, x: 0 },
 };
 
-// Editorial ease — a slightly-overshot cubic that lands firmly at rest.
-const EASE_OUT_EDITORIAL = [0.22, 1, 0.36, 1] as const;
+const legalListVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: { delayChildren: 0.12, staggerChildren: 0.05 },
+  },
+};
+
+const legalItemVariants: Variants = {
+  hidden: { opacity: 0, x: 24 },
+  visible: { opacity: 1, x: 0 },
+};
 
 export default function MobileNav({ open, onClose }: MobileNavProps) {
   const shouldReduceMotion = useReducedMotion() ?? false;
   const dialogRef = useRef<HTMLDivElement>(null);
   useFocusTrap(dialogRef, open);
 
-  // Lock body scroll while the drawer is open. We restore the previous
-  // value on unmount rather than force-set to `""` so we don't fight any
-  // other global scroll-lock source.
+  const sectionListActive: Variants = shouldReduceMotion
+    ? {
+        hidden: {},
+        visible: { transition: { staggerChildren: 0 } },
+      }
+    : sectionListVariants;
+  const sectionItemActive: Variants = shouldReduceMotion
+    ? {
+        hidden: { opacity: 1, x: 0 },
+        visible: { opacity: 1, x: 0 },
+      }
+    : sectionItemVariants;
+  const legalListActive: Variants = shouldReduceMotion
+    ? { hidden: {}, visible: { transition: { staggerChildren: 0 } } }
+    : legalListVariants;
+  const legalItemActive: Variants = shouldReduceMotion
+    ? { hidden: { opacity: 1, x: 0 }, visible: { opacity: 1, x: 0 } }
+    : legalItemVariants;
+
   useEffect(() => {
     if (!open) return;
     const { body } = document;
@@ -103,8 +93,6 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
     };
   }, [open]);
 
-  // Close on Escape. Only bound while the drawer is open so we don't stomp
-  // other keydown handlers across the app.
   useEffect(() => {
     if (!open) return;
     function handleKey(event: KeyboardEvent): void {
@@ -120,7 +108,7 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
 
   const itemTransition = shouldReduceMotion
     ? { duration: 0 }
-    : { duration: 0.4, ease: EASE_OUT_EDITORIAL };
+    : { duration: 0.35, ease: EASE_OUT_EDITORIAL };
 
   return (
     <AnimatePresence>
@@ -137,93 +125,115 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
           exit="hidden"
           variants={drawerVariants}
           transition={drawerTransition}
-          className="fixed inset-0 z-[100] bg-charcoal flex flex-col overflow-y-auto"
+          className="fixed inset-0 z-[100] flex flex-col overflow-y-auto bg-charcoal"
         >
-          {/* Close bar — mirrors the header's height so the X sits where
-              the hamburger was. Gives the user an unmistakable visual cue
-              that the drawer replaced (not added to) the header. */}
-          <div className="flex items-center justify-end px-4 md:px-8 h-14 md:h-16 shrink-0">
+          <div className="flex h-14 shrink-0 items-center justify-end px-4 md:h-16 md:px-8">
             <button
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="w-12 h-12 -mr-2 inline-flex items-center justify-center text-cream hover:text-amber transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber/60 rounded-sm"
+              className="-mr-2 inline-flex h-12 w-12 items-center justify-center rounded-sm text-cream transition-colors hover:text-amber focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber/60"
             >
               <CloseIcon />
             </button>
           </div>
 
-          {/* Nav list — staggered entrance */}
-          <motion.nav
-            aria-label="Site navigation"
-            className="flex-1 px-6 md:px-10 pt-8 md:pt-16 pb-10"
-            variants={shouldReduceMotion ? undefined : listVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <ul className="flex flex-col gap-5 md:gap-7">
-              {NAV_LINKS.map((link) => (
-                <motion.li
-                  key={link.href}
-                  variants={shouldReduceMotion ? undefined : itemVariants}
-                  transition={itemTransition}
-                >
-                  <Link
-                    href={link.href}
-                    onClick={onClose}
-                    className="inline-block font-serif text-[32px] md:text-[40px] leading-[1.1] text-cream hover:text-amber transition-colors focus-visible:outline-none focus-visible:text-amber"
-                  >
-                    {link.label}
-                    {link.subtitle ? (
-                      <span className="mt-2 block font-sans text-[15px] font-normal leading-snug text-cream/50">
-                        {link.subtitle}
-                      </span>
-                    ) : null}
-                  </Link>
-                </motion.li>
-              ))}
-            </ul>
-          </motion.nav>
+          <div className="flex-1 px-6 pb-8 pt-4 md:px-10 md:pb-10 md:pt-6">
+            {MOBILE_NAV_SECTIONS.map((section) => (
+              <motion.nav
+                key={section.sectionId}
+                aria-label={section.title}
+                className="mb-8 last:mb-4"
+                initial="hidden"
+                animate="visible"
+                variants={sectionListActive}
+              >
+                <p className="mb-2 px-1 font-mono text-[10px] uppercase tracking-[0.1em] text-cream/45">
+                  {section.title}
+                </p>
+                <ul className="flex flex-col gap-0">
+                  {section.items.map((item) => (
+                    <motion.li
+                      key={item.href}
+                      variants={sectionItemActive}
+                      transition={itemTransition}
+                    >
+                      <MobileNavItem item={item} onNavigate={onClose} />
+                    </motion.li>
+                  ))}
+                </ul>
+              </motion.nav>
+            ))}
 
-          <motion.nav
-            aria-label="Legal and policies"
-            className="px-6 md:px-10 pb-8 shrink-0"
-            variants={shouldReduceMotion ? undefined : listVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-amber/90 mb-4">
-              Legal
-            </p>
-            <ul className="flex flex-col gap-3">
-              {LEGAL_LINKS.map((link) => (
-                <motion.li
-                  key={link.href}
-                  variants={shouldReduceMotion ? undefined : itemVariants}
-                  transition={itemTransition}
-                >
-                  <Link
-                    href={link.href}
-                    onClick={onClose}
-                    className="inline-block font-sans text-[15px] text-cream/75 hover:text-amber transition-colors focus-visible:outline-none focus-visible:text-amber"
+            <motion.nav
+              aria-label="Legal and policies"
+              initial="hidden"
+              animate="visible"
+              variants={legalListActive}
+              className="border-t border-white/[0.08] pt-8"
+            >
+              <p className="font-mono text-[10px] tracking-[0.2em] text-amber/90 mb-4 uppercase">
+                Legal
+              </p>
+              <ul className="flex flex-col gap-3">
+                {LEGAL_LINKS.map((link) => (
+                  <motion.li
+                    key={link.href}
+                    variants={legalItemActive}
+                    transition={itemTransition}
                   >
-                    {link.label}
-                  </Link>
-                </motion.li>
-              ))}
-            </ul>
-          </motion.nav>
+                    <Link
+                      href={link.href}
+                      onClick={onClose}
+                      className="inline-block rounded-md px-2 py-1 font-sans text-[15px] text-cream/75 transition-colors hover:bg-white/5 hover:text-amber focus-visible:outline-none focus-visible:text-amber"
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.li>
+                ))}
+              </ul>
+            </motion.nav>
+          </div>
 
-          {/* Footer — domain wordmark. Sits at the bottom, pushed down by
-              the `flex-1` on <motion.nav> above. */}
-          <div className="px-6 md:px-10 pb-10 md:pb-12 shrink-0">
-            <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-amber">
+          <div className="shrink-0 px-6 pb-10 md:px-10 md:pb-12">
+            <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-amber">
               therecord.co.za
             </span>
           </div>
         </motion.div>
       ) : null}
     </AnimatePresence>
+  );
+}
+
+function MobileNavItem({
+  item,
+  onNavigate,
+}: {
+  item: NavItem;
+  onNavigate: () => void;
+}) {
+  return (
+    <Link
+      href={item.href}
+      onClick={onNavigate}
+      className="flex min-h-[48px] items-start gap-3 rounded-md px-2 py-[11px] transition-colors hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber/50"
+    >
+      <span
+        className="w-5 shrink-0 text-center text-[15px] leading-none"
+        aria-hidden
+      >
+        {item.icon}
+      </span>
+      <span className="min-w-0">
+        <span className="block font-sans text-sm leading-[1.2] text-cream">
+          {item.name}
+        </span>
+        <span className="mt-0.5 block font-sans text-[11px] leading-snug text-cream/50">
+          {item.desc}
+        </span>
+      </span>
+    </Link>
   );
 }
 
