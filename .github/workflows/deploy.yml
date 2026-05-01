@@ -64,6 +64,7 @@ jobs:
             docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
             # Run migrations (env vars already in container from compose)
             docker exec therecord-api node dist/database/run-migrations.js
+            docker exec therecord-api node dist/database/seeds/state-entities.seed.js
             # Wait for API container to be ready
             for i in $(seq 1 10); do
               if docker exec therecord-api node -e "process.exit(0)" 2>/dev/null; then

@@ -39,6 +39,7 @@ import {
 import { Law, LawCategory } from '../../entities/law.entity';
 import { LawSection } from '../../entities/law_section.entity';
 import { Person, PersonStatus } from '../../entities/person.entity';
+import { SimilarityReason } from '../../entities/similar-story.entity';
 import { Story, StoryDomain, StoryStatus } from '../../entities/story.entity';
 import { StoryPerson } from '../../entities/story_person.entity';
 import {
@@ -47,6 +48,7 @@ import {
   TimelineEvent,
 } from '../../entities/timeline_event.entity';
 import { AppDataSource } from '../data-source';
+import { upsertSimilarPair } from './cape-town-stories.seed';
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Seed input data
@@ -1290,6 +1292,15 @@ export async function run(): Promise<void> {
       await upsertInvestigations(m, story);
       await upsertTimelineEvents(m, story, lawSections, constitutionSections);
       await linkCommissionPeople(m, commission, people);
+
+      // Cape Town seed runs before this in seed:all; pair needs Mkhwanazi story row.
+      await upsertSimilarPair(
+        m,
+        'malusi-booi-housing-tender-fraud-2023',
+        'mkhwanazi-madlanga-commission',
+        SimilarityReason.SAME_PATTERN,
+        'Both allege organised criminal networks embedded in government procurement.',
+      );
     });
 
     console.log('──────────────────────────────────────────────');

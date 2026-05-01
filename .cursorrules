@@ -27,9 +27,10 @@ PROD FACTS (non-negotiable):
 - Ports: web=3090, api=3091, intel=8001
 - CORS includes therecord.co.za and therecord.codist.co.za
 
-SEED ORDER (FK-dependent — never reorder):
-  laws → people → commissions → adhoc → siu →
-  reports → recommendations → mkhwanazi → cape-town-stories
+SEED ORDER (FK-dependent — never reorder; see seeds/index.ts):
+  commissions-master → reports → recommendations → adhoc → siu →
+  impact-sectors → state-entities → accountability-bodies →
+  cape-town-stories → mkhwanazi (always last)
 
 SCHEMA: 27 entities confirmed. Key ones:
   Story → Commission (FK), AdhocCommittee (FK), SiuProclamation (FK)
@@ -51,10 +52,12 @@ ROUTES BUILT (no Coming Soon anywhere):
   /laws /laws/[id]/[sectionId] /constitution/[section]
   /domain/[name] /search /about
   /provinces /provinces/[slug] /municipality/[slug]
+  /state-entities /state-entities/[slug]
+  /accountability-bodies /accountability-bodies/[slug]
   + error.tsx on every route + not-found.tsx
 
 CI: .github/workflows/ci.yml runs typecheck+lint+smoke+python+build on PRs
-DEPLOY: .github/workflows/deploy.yml runs migration before rebuild on main push
+DEPLOY: .github/workflows/deploy.yml runs migrations, SOE seed, then health check on main push
 
 ## Canonical domains (non-negotiable)
 Production: https://therecord.co.za
@@ -143,6 +146,67 @@ Presentation rules:
     "These figures show the scale of service delivery failures.
      Not all are caused solely by corruption — but all are worsened by it."
 
+## Navigation Architecture
+The nav has 3 dropdown groups + 2 direct links. Never add a flat top-level item.
+New features must fit into one of these groups or the group structure must
+be updated with justification.
+
+Groups:
+  Investigate: Stories, Provinces, State Entities, Human Impact
+  Accountability: Commissions, Ad Hoc Committees, SIU, Special Units
+  The Law: Laws & Acts, Constitution
+
+Direct links: People, About
+
+Routes:
+  /state-entities           ← SOE index
+  /state-entities/[slug]    ← SOE detail
+
+Mobile nav is GROUPED (4 sections: Investigate, Accountability, The Law, More).
+Never revert to a flat mobile nav list.
+
+## State-Owned Entities (SOEs)
+10 major SOEs tracked. Governed by PFMA Schedule 2 and 3.
+Entity: StateEntity (state_entities table)
+Timeline: StateEntityTimeline (state_entity_timeline table)
+Links: StateEntityCommissionLink (state_entity_commission_links table)
+
+Detail API (`GET /api/state-entities/:slug`) serializes link rows as `accountability_links`
+(same underlying `state_entity_commission_links` table).
+
+The privatisation debate MUST always be presented fairly with both sides.
+The Record does not take a position on privatisation.
+Never use language that advocates for or against privatisation.
+Present: arguments for state ownership, arguments for privatisation,
+  and the platform's neutral stance.
+
+Health score (0-100):
+  70-100 → healthy (green)
+  40-69  → under pressure (amber)
+  0-39   → distressed/crisis (red)
+  Display as an animated horizontal bar.
+
+SOE cross-links:
+  StateEntity → Commission (via StateEntityCommissionLink)
+  StateEntity → SiuProclamation (via StateEntityCommissionLink)
+  StateEntity → AdhocCommittee (via StateEntityCommissionLink)
+  StateEntity → Story (story.state_entity FK)
+  StateEntity → ImpactSector (via primary_impact_sector_slug)
+
+Seed order (updated):
+  1. laws + constitution_sections
+  2. people
+  3. commissions-master.seed.ts
+  4. adhoc-committees.seed.ts
+  5. siu.seed.ts
+  6. reports.seed.ts
+  7. recommendations.seed.ts
+  8. impact-sectors.seed.ts    ← must run before state-entities
+  9. state-entities.seed.ts    ← new
+  10. accountability-bodies.seed.ts
+  11. cape-town-stories.seed.ts
+  12. mkhwanazi.seed.ts        ← always last
+
 ## Data Architecture — Commissions
 The Record tracks 22 South African national commissions of inquiry since 1994.
 21 are seeded in commissions-master.seed.ts. The 22nd (Madlanga Commission)
@@ -209,14 +273,10 @@ in South African history that a Chapter 9 institution head was removed
 through the constitutional mechanism. Always treat this as historically 
 significant when displaying that committee.
 
-Seed order (with ad hoc committees added):
-  1. laws + law_sections (all enabling legislation)
-  2. constitution_sections
-  3. people (all key figures)
-  4. commissions-master.seed.ts (22 commissions)
-  5. adhoc-committees.seed.ts (10 committees — must run after commissions 
-     because Mkhwanazi committee links to Madlanga Commission)
-  6. mkhwanazi.seed.ts (links to both — must run last)
+Seed order (with ad hoc committees added — subset):
+  For ad hoc + Mkhwanazi cross-links only: commissions-master → adhoc →
+  mkhwanazi (Madlanga commission is owned by mkhwanazi.seed.ts).
+  Full database orchestration: see **Provincial & Municipal Accountability → Seed order**.
 
 API endpoints for ad hoc committees:
   GET /api/adhoc-committees
@@ -287,7 +347,7 @@ API endpoints:
   GET /api/siu/tribunal/:caseNumber    ← single case
   GET /api/siu/stats                   ← aggregate financial stats
 
-Full database seed orchestration (npm run seed:all): see **Provincial & Municipal Accountability → Seed order** below (includes cape-town-stories after mkhwanazi).
+Full database seed orchestration (npm run seed:all): see **Provincial & Municipal Accountability → Seed order** below (mkhwanazi always last).
 
 SABC cross-link: Proclamation R01/2019 links to adhoc-sabc-board-2017
   (the Ad Hoc Committee found the board unfit; the SIU then recovered money)
@@ -321,7 +381,8 @@ New route: /accountability-bodies/[slug]
 New route: /accountability-bodies (index + comparison table)
 New nav item: "Special Units" in both Header and MobileNav
 
-Seed: accountability-bodies.seed.ts runs after cape-town-stories.seed.ts
+Seed: accountability-bodies.seed.ts runs after impact-sectors and state-entities
+  (before cape-town-stories); see Provincial seed order.
 
 ## Provincial & Municipal Accountability
 The Record tracks corruption and accountability at three geographic levels:
@@ -365,16 +426,19 @@ New routes:
   /provinces/[slug]            ← province detail
   /municipality/[slug]        ← municipality detail
 
-Seed order (updated):
-  1. laws + constitution_sections
-  2. people
+Seed order (updated — orchestrated in apps/api/src/database/seeds/index.ts):
+  1. laws + constitution_sections (created across commission/SIU/adhoc/mkhwanazi seeds — no standalone script)
+  2. people (commissions-master + later seeds)
   3. commissions-master.seed.ts
   4. adhoc-committees.seed.ts
   5. siu.seed.ts
   6. reports.seed.ts
   7. recommendations.seed.ts
-  8. mkhwanazi.seed.ts
-  9. cape-town-stories.seed.ts   ← NEW (after mkhwanazi, needs province seeded)
+  8. impact-sectors.seed.ts    ← must run before state-entities
+  9. state-entities.seed.ts
+  10. accountability-bodies.seed.ts
+  11. cape-town-stories.seed.ts
+  12. mkhwanazi.seed.ts        ← always last (Madlanga story + similar_stories backfill for cape-town pairs)
 
 SimilarStory algorithm (for auto-linking):
   Manual: seeded via similar-stories join table
@@ -390,11 +454,8 @@ SimilarStory algorithm (for auto-linking):
   --   corruption       = substantive corrupt acts (state capture, arms deal, tender fraud)
 
 ## Commissions seed order (important — foreign keys must exist first):
-  1. laws + law_sections (all enabling legislation)
-  2. constitution_sections
-  3. people (all key figures across all commissions)
-  4. commissions-master.seed.ts (all 22 commissions)
-  5. mkhwanazi.seed.ts (Mkhwanazi story — links to Madlanga commission which now exists)
+  Historic summary: commission rows need enabling laws/people from seeds.
+  Runnable order is **Provincial & Municipal Accountability → Seed order** and `seeds/index.ts`.
 
 ## The "produced_prosecutions" boolean is important business logic:
   It answers the question every South African asks: "Did anything actually happen?"

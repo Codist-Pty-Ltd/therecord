@@ -1492,7 +1492,7 @@ async function upsertExpenditure(
   }
 }
 
-async function upsertSimilarPair(
+export async function upsertSimilarPair(
   m: EntityManager,
   slugA: string,
   slugB: string,

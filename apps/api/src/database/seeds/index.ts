@@ -6,68 +6,40 @@
  * Runs every seed in the correct dependency order inside a single process
  * so that every DataSource lifecycle (init → use → destroy) is explicit.
  *
- * Order matters:
+ * Order (see also .cursorrules → State-Owned Entities / Provincial seed order):
  *   1. commissions-master.seed.ts
- *      Seeds all historical commissions + their enabling laws + the cross-
- *      commission people (presidents, repeat chairs, repeat subjects).
+ *      Seeds historical commissions + enabling laws + cross-commission people.
  *
- *   1b. reports.seed.ts
- *      Official report / PDF metadata for commissions with known public URLs.
- *      Depends on commissions-master (lookup by slug).
+ *   2. reports.seed.ts — commission reports (slug lookup).
+ *   3. recommendations.seed.ts — after reports.
  *
- *   1c. recommendations.seed.ts
- *      Key recommendations + implementation status (commission slug lookup).
- *      Runs after reports.seed.ts.
+ *   4. adhoc-committees.seed.ts
+ *      Ad Hoc Committees + people + law links. Before mkhwanazi in isolation;
+ *      full run finishes mkhwanazi last so Madlanga + committee back-links converge.
  *
- *   2. adhoc-committees.seed.ts
- *      Seeds all National Assembly Ad Hoc Committees + their people and
- *      enabling / investigated / being-processed / amended law sections.
- *      Runs BEFORE mkhwanazi so the Mkhwanazi story can link to its
- *      committee at creation time. The Madlanga ↔ Mkhwanazi-committee
- *      back-link is left null here and patched by mkhwanazi.seed.ts
- *      below (Madlanga is owned there), so the chain converges regardless
- *      of which seed runs first on subsequent runs.
- *
- *   3. siu.seed.ts
- *      Seeds the Special Investigating Unit corpus: the SIU body and
- *      Special Tribunal singletons, nine major Presidential Proclamations
- *      (PPE, VBS, Transnet, SASSA, Eskom, PRASA, Gauteng schools, ACSA,
- *      SABC), their financial outcomes, headline Special Tribunal cases,
- *      and links to SIU-implicated individuals. Runs AFTER both the
- *      commissions-master and adhoc-committees seeds because the
- *      Transnet / Eskom / ACSA proclamations back-link to the Zondo
- *      Commission and the SABC proclamation back-links to the SABC Board
- *      Inquiry committee. Missing back-links are left null and a deferred
- *      warning is logged.
- *
- *   4. mkhwanazi.seed.ts
- *      Seeds the Mkhwanazi story AND the Madlanga Commission it belongs
- *      to. Also patches the Mkhwanazi ad hoc committee's
- *      related_commission_id back at Madlanga and sets
- *      story.adhoc_committee_id. Madlanga is deliberately owned by this
- *      file (not by the master seed) because the story and the commission
- *      are a tightly coupled unit.
- *
- *   5. cape-town-stories.seed.ts
- *      Cape Town / provincial accountability stories (metros, schools,
- *      water sector, SASSA). Runs after mkhwanazi so similar_stories can
- *      link to slug mkhwanazi-madlanga-commission.
+ *   5. siu.seed.ts — SIU corpus + proclamation back-links to commissions/ad hoc.
  *
  *   6. impact-sectors.seed.ts
- *      Human-impact reference sectors + StoryImpactSector / CommissionImpactSector
- *      links + expenditure what_it_should_have_funded patches.
+ *      Human-impact sectors + joins. MUST run before state-entities
+ *      (primary_impact_sector_slug FK to sector slugs).
  *
- *   7. accountability-bodies.seed.ts
- *      Scorpions (DSO), Hawks (DPCI), IDAC; Scorpions cases; Khampepe
- *      commission subject_body link; Scorpions timeline story. Runs after
- *      impact-sectors (depends on commissions-master + migrations for
- *      accountability_bodies tables).
+ *   7. state-entities.seed.ts — SOEs + timeline + commission/SIU/ad hoc links.
+ *
+ *   8. accountability-bodies.seed.ts — Scorpions / Hawks / IDAC (uses commissions + migrations).
+ *
+ *   9. cape-town-stories.seed.ts
+ *      Provincial stories, expenditure, similar_stories (needs state-entities patches
+ *      for water-sector / gauteng-sassa stories). Pairs that reference
+ *      mkhwanazi-madlanga-commission are finalized when mkhwanazi runs last.
+ *
+ *   10. mkhwanazi.seed.ts (always last)
+ *       Madlanga Commission + Mkhwanazi story + timeline; patches ad hoc ↔ commission;
+ *       backfills similar_story row(s) that reference this slug after cape-town ran.
  *
  * Run with (inside apps/api):
  *   npm run seed:all
  *
- * `npm run seed` still points at mkhwanazi.seed.ts for backwards
- * compatibility with existing dev-workflow scripts.
+ * `npm run seed` still points at mkhwanazi.seed.ts for backwards compatibility.
  */
 
 import 'reflect-metadata';
@@ -93,11 +65,11 @@ async function main(): Promise<void> {
   await runRecommendations();
   await runAdhocCommittees();
   await runSiu();
-  await runMkhwanazi();
-  await runCapeTownStories();
   await runImpactSectors();
   await runStateEntities();
   await runAccountabilityBodies();
+  await runCapeTownStories();
+  await runMkhwanazi();
 
   console.log('\n═══════════════════════════════════════════════');
   console.log('   ✓ All seeds complete.');

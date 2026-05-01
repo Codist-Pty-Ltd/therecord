@@ -63,7 +63,7 @@ docker exec therecord-api npm run migration:run
 
 ### Run seeds (first time or after reset)
 
-After migrations, the recommended one-shot import is the orchestrated index (correct order: commissions master → ad hoc → SIU → Mkhwanazi story and related entities — see `apps/api/src/database/seeds/index.ts`):
+After migrations, the recommended one-shot import is the orchestrated index (order: commissions master → reports → recommendations → ad hoc → SIU → impact-sectors → state-entities → accountability-bodies → cape-town → **mkhwanazi last** — see `apps/api/src/database/seeds/index.ts`):
 
 ```bash
 docker exec therecord-api npm run seed:all
@@ -302,6 +302,79 @@ curl -s -o /dev/null -w "%{http_code}\n" \
 curl "https://therecord.co.za/api/accountability-bodies/compare?bodies=scorpions-dso,hawks-dpci,idac" \
   | jq '[.bodies[] | {name: .popular_name, rate: .conviction_rate_percentage}]'
 # Expect Scorpions 93.1, Hawks 50.0, IDAC null
+```
+
+## State Entities
+
+SOE rows (`state_entities`), timelines (`state_entity_timeline`), and cross-links (`state_entity_commission_links`) ship in a dedicated seed. Run after migrations and after `impact-sectors` if importing manually; **`npm run seed:all`** already runs the correct order.
+
+**Run SOE seed only** (production image — compiled path):
+
+```bash
+docker exec therecord-api node dist/database/seeds/state-entities.seed.js
+```
+
+**Verify rows and health scores:**
+
+```bash
+docker exec therecord-postgres psql -U therecord -d therecord_db \
+  -c "SELECT popular_name, health_score, is_in_crisis, status FROM state_entities ORDER BY health_score ASC;"
+```
+
+**Stats endpoint** (on-host API):
+
+```bash
+curl http://127.0.0.1:3091/api/state-entities/stats | jq '{
+  total: .total_entities,
+  in_crisis: .in_crisis,
+  total_bailouts: .total_bailouts_rands
+}'
+```
+
+### Post-deploy (production)
+
+After `docker compose … up` and migrations:
+
+```bash
+docker exec therecord-api node dist/database/run-migrations.js
+docker exec therecord-api node dist/database/seeds/state-entities.seed.js
+```
+
+**Verify 10 SOEs loaded:**
+
+```bash
+docker exec therecord-postgres psql -U therecord -d therecord_db \
+  -c "SELECT COUNT(*) FROM state_entities;"
+# Expect 10
+```
+
+**Verify Eskom timeline:**
+
+```bash
+docker exec therecord-postgres psql -U therecord -d therecord_db \
+  -c "SELECT year, title FROM state_entity_timeline
+      WHERE state_entity_id = (SELECT id FROM state_entities WHERE slug='eskom')
+      ORDER BY year;"
+```
+
+**Verify commission / SIU / ad hoc links on the API** (detail payload uses `accountability_links`):
+
+```bash
+curl http://127.0.0.1:3091/api/state-entities/eskom | jq '.accountability_links | length'
+# Should be > 0
+```
+
+**Verify public SOE routes:**
+
+```bash
+curl -s -o /dev/null -w "%{http_code}" https://therecord.co.za/state-entities
+# 200
+
+curl -s -o /dev/null -w "%{http_code}" https://therecord.co.za/state-entities/eskom
+# 200
+
+curl -s -o /dev/null -w "%{http_code}" https://therecord.co.za/state-entities/prasa
+# 200
 ```
 
 ## YouTube discovery
