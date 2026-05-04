@@ -89,8 +89,56 @@ export class StoriesService {
     page: number,
     limit: number,
     domain?: StoryDomain,
+    sort: 'latest_event' | 'updated_at' = 'latest_event',
+    order: 'ASC' | 'DESC' = 'DESC',
   ): Promise<StoryListResponseDto> {
     const offset = (page - 1) * limit;
+
+    const countQb = this.storyRepo
+      .createQueryBuilder('story')
+      .where('story.status = :status', { status: StoryStatus.ACTIVE });
+    if (domain) {
+      countQb.andWhere('story.domain = :domain', { domain });
+    }
+    const total = await countQb.getCount();
+
+    if (sort === 'updated_at') {
+      const listQb = this.storyRepo
+        .createQueryBuilder('story')
+        .where('story.status = :status', { status: StoryStatus.ACTIVE });
+      if (domain) {
+        listQb.andWhere('story.domain = :domain', { domain });
+      }
+      const ord = order === 'ASC' ? 'ASC' : 'DESC';
+      const stories = await listQb
+        .orderBy('story.updated_at', ord)
+        .addOrderBy('story.created_at', ord)
+        .offset(offset)
+        .limit(limit)
+        .getMany();
+
+      const ids = stories.map((s) => s.id);
+      const latestById = new Map<string, string | null>();
+      if (ids.length > 0) {
+        const raw = await this.timelineRepo
+          .createQueryBuilder('te')
+          .select('te.story_id', 'story_id')
+          .addSelect('MAX(te.event_date)', 'latest')
+          .where('te.story_id IN (:...ids)', { ids })
+          .groupBy('te.story_id')
+          .getRawMany<{ story_id: string; latest: string | null }>();
+        for (const row of raw) {
+          latestById.set(row.story_id, row.latest);
+        }
+      }
+
+      return {
+        data: stories.map((s) =>
+          this.mapEntityToListItem(s, latestById.get(s.id) ?? null),
+        ),
+        meta: buildPaginationMeta(page, limit, total),
+      };
+    }
 
     const listQb = this.storyRepo
       .createQueryBuilder('story')
@@ -122,21 +170,18 @@ export class StoriesService {
       listQb.andWhere('story.domain = :domain', { domain });
     }
 
+    const eventOrd = order === 'ASC' ? 'ASC' : 'DESC';
+    const createdOrd = order === 'ASC' ? 'ASC' : 'DESC';
+    const nulls =
+      order === 'ASC' ? 'NULLS FIRST' : 'NULLS LAST';
+
     const rows = await listQb
       .groupBy('story.id')
-      .orderBy('MAX(te.event_date)', 'DESC', 'NULLS LAST')
-      .addOrderBy('story.created_at', 'DESC')
+      .orderBy('MAX(te.event_date)', eventOrd, nulls)
+      .addOrderBy('story.created_at', createdOrd)
       .offset(offset)
       .limit(limit)
       .getRawMany<StoryWithLatestEvent>();
-
-    const countQb = this.storyRepo
-      .createQueryBuilder('story')
-      .where('story.status = :status', { status: StoryStatus.ACTIVE });
-    if (domain) {
-      countQb.andWhere('story.domain = :domain', { domain });
-    }
-    const total = await countQb.getCount();
 
     return {
       data: rows.map((row) => this.mapRawRowToListItem(row)),

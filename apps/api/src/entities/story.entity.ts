@@ -23,6 +23,8 @@ export enum StoryDomain {
   ORGANISED_CRIME = 'organised_crime',
   BUSINESS = 'business',
   LABOUR = 'labour',
+  /** Bribery, procurement capture, syndicate looting (aligns with commission `corruption` domain). */
+  CORRUPTION = 'corruption',
 }
 
 export enum StoryStatus {

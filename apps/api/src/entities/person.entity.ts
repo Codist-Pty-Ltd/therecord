@@ -14,6 +14,7 @@ export enum PersonStatus {
   ACQUITTED = 'acquitted',
   RESIGNED = 'resigned',
   UNKNOWN = 'unknown',
+  DECEASED = 'deceased',
 }
 
 @Entity('people')

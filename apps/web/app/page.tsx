@@ -15,13 +15,17 @@ import HomeHero from "@/components/Homepage/HomeHero";
 import HowItWorks from "@/components/Homepage/HowItWorks";
 import LiveTicker from "@/components/Homepage/LiveTicker";
 import MoneyCounter from "@/components/Homepage/MoneyCounter";
-import PeopleStrip from "@/components/Homepage/PeopleStrip";
+import PeopleStrip, { type PeopleStripRow } from "@/components/Homepage/PeopleStrip";
 import SiuMoneyBanner from "@/components/Homepage/SiuMoneyBanner";
 import SmartSearch from "@/components/Homepage/SmartSearch";
 import StatsBar from "@/components/Homepage/StatsBar";
 import { formatRands, formatRandsCompact } from "@/lib/format";
-import { getImpactWeb, listAccountabilityBodies } from "@/lib/api";
-import { MKHWANAZI_SLUG } from "@/lib/placeholders";
+import { getImpactWeb, listAccountabilityBodies, listStories } from "@/lib/api";
+import {
+  MEDICARE24_STORY_SLUG,
+  MKHWANAZI_SLUG,
+  TEMBISA_HOSPITAL_STORY_SLUG,
+} from "@/lib/placeholders";
 
 import type {
   AdhocCommitteeSummary,
@@ -103,12 +107,53 @@ function daysSinceHearingOrAnnouncement(c: MadlangaCommission | null): number {
   return Math.max(1, d);
 }
 
-function peopleStripFromStory(story: StoryDetail | null) {
-  if (!story) return [];
-  return story.people
-    .filter((sp) => sp.is_key_figure)
-    .map((sp) => ({ person: sp.person, role: sp.role_in_story }))
-    .sort((a, b) => a.person.full_name.localeCompare(b.person.full_name));
+const BABITA_FULL_NAME = "Babita Deokaran";
+const BABITA_STRIP_ROLE = "Whistleblower · Assassinated 2021";
+
+/** Merge key figures from multiple dossiers (e.g. Mkhwanazi + Tembisa); Babita first. */
+function peopleStripFromStories(
+  stories: (StoryDetail | null)[],
+): PeopleStripRow[] {
+  const byId = new Map<string, PeopleStripRow>();
+  for (const story of stories) {
+    if (!story) continue;
+    for (const sp of story.people.filter((p) => p.is_key_figure)) {
+      const id = sp.person.id;
+      const isBabita = sp.person.full_name === BABITA_FULL_NAME;
+      const role = isBabita ? BABITA_STRIP_ROLE : sp.role_in_story;
+      if (!byId.has(id)) {
+        byId.set(id, { person: sp.person, role });
+      }
+    }
+  }
+  const rows = [...byId.values()];
+  rows.sort((a, b) => {
+    const aB = a.person.full_name === BABITA_FULL_NAME ? 0 : 1;
+    const bB = b.person.full_name === BABITA_FULL_NAME ? 0 : 1;
+    if (aB !== bB) return aB - bB;
+    return a.person.full_name.localeCompare(b.person.full_name, "en-ZA");
+  });
+  return rows;
+}
+
+function madlangaCarrimDelayTickerLine(
+  mkStory: StoryDetail | null,
+  carrimInPeopleDirectory: boolean,
+): string | null {
+  if (!carrimInPeopleDirectory || !mkStory?.timeline_events?.length) {
+    return null;
+  }
+  const now = Date.now();
+  const maxAgeMs = 30 * 86_400_000;
+  const recentCarrim = mkStory.timeline_events.some((e) => {
+    const t = new Date(e.event_date).getTime();
+    if (Number.isNaN(t) || t > now || now - t > maxAgeMs) return false;
+    const blob = `${e.title} ${e.description ?? ""} ${e.plain_english ?? ""}`;
+    return /\bcarrim\b/i.test(blob);
+  });
+  return recentCarrim
+    ? "MADLANGA COMMISSION · CARRIM TESTIMONY DELAYED · MEDICAL CERTIFICATE"
+    : null;
 }
 
 function peopleExplorerFromStory(
@@ -131,7 +176,10 @@ function peopleExplorerFromStory(
 
 export default async function HomePage() {
   const [
-    story,
+    storiesRes,
+    mkStory,
+    tembisaStory,
+    medicareStory,
     commissionsRes,
     committeesRes,
     accountabilityBodies,
@@ -143,7 +191,12 @@ export default async function HomePage() {
     expenditureCounter,
     impactWeb,
   ] = await Promise.all([
+    listStories(1, 10, { sort: "updated_at", order: "DESC" }),
     fetchJson<StoryDetail>(`/api/stories/${encodeURIComponent(MKHWANAZI_SLUG)}`),
+    fetchJson<StoryDetail>(
+      `/api/stories/${encodeURIComponent(TEMBISA_HOSPITAL_STORY_SLUG)}`,
+    ),
+    fetchJson<StoryDetail>(`/api/stories/${encodeURIComponent(MEDICARE24_STORY_SLUG)}`),
     fetchJson<Paginated<CommissionSummary>>(
       "/api/commissions?page=1&limit=100",
     ),
@@ -161,6 +214,22 @@ export default async function HomePage() {
     fetchJson<ExpenditureCounter>("/api/expenditure/counter"),
     getImpactWeb(),
   ]);
+
+  const featuredSlug = storiesRes.data[0]?.slug ?? MKHWANAZI_SLUG;
+  const storyBySlug: Record<string, StoryDetail | null> = {
+    [MKHWANAZI_SLUG]: mkStory,
+    [TEMBISA_HOSPITAL_STORY_SLUG]: tembisaStory,
+    [MEDICARE24_STORY_SLUG]: medicareStory,
+  };
+  let featuredStory = storyBySlug[featuredSlug] ?? null;
+  if (!featuredStory) {
+    featuredStory = await fetchJson<StoryDetail>(
+      `/api/stories/${encodeURIComponent(featuredSlug)}`,
+    );
+  }
+  if (!featuredStory) {
+    featuredStory = mkStory;
+  }
 
   const commissions = commissionsRes?.data ?? [];
   const committees = committeesRes?.data ?? [];
@@ -189,22 +258,38 @@ export default async function HomePage() {
     ? Math.max(commMeta.total, commissions.length, commMeta.total === 21 ? 22 : 0)
     : 22;
 
+  const storyTickerExtras: string[] = [];
+  if (tembisaStory?.status === "active") {
+    storyTickerExtras.push(
+      "TEMBISA HOSPITAL · R2BN LOOTED · MASTERMINDS STILL FREE",
+    );
+  }
+  if (medicareStory?.status === "active") {
+    storyTickerExtras.push("MEDICARE24 · 12 SAPS OFFICERS IN COURT · MARCH 2026");
+  }
+  const carrimListed = people.some((p) => p.full_name === "Suliman Carrim");
+  const carrimLine = madlangaCarrimDelayTickerLine(mkStory, carrimListed);
+  if (carrimLine) {
+    storyTickerExtras.push(carrimLine);
+  }
+
   const tickerItems: string[] = [
     `MADLANGA COMMISSION · DAY ${commissionDays} — ACTIVE`,
     litigationTicker,
     `${commissionTickerTotal} COMMISSIONS SINCE 1994`,
     `MKHWANAZI AD HOC COMMITTEE — 7TH PARLIAMENT`,
+    ...storyTickerExtras,
     ...activeCommissions.map(
       (c) => `${c.popular_name.toUpperCase()} — ${c.status.toUpperCase()}`,
     ),
     "VBS SENTENCE: MATODZI 15 YEARS · JULY 2024",
   ];
 
-  const strip = peopleStripFromStory(story);
-  const explorerPeople = peopleExplorerFromStory(story, people);
+  const strip = peopleStripFromStories([mkStory, tembisaStory]);
+  const explorerPeople = peopleExplorerFromStory(mkStory, people);
 
   const featuredBody =
-    story?.plain_english_summary ??
+    featuredStory?.plain_english_summary ??
     "A top police general went on TV and said some politicians were blocking the police from doing their job — triggering parallel judicial and parliamentary investigations.";
 
   return (
@@ -221,16 +306,19 @@ export default async function HomePage() {
       <MoneyCounter counter={expenditureCounter} />
       <SmartSearch />
       <FeaturedStory
-        title={story?.title ?? "The Mkhwanazi allegations & Madlanga Commission"}
+        title={
+          featuredStory?.title ?? "The Mkhwanazi allegations & Madlanga Commission"
+        }
         plainSummary={featuredBody}
-        slug={MKHWANAZI_SLUG}
-        events={story?.timeline_events ?? []}
+        slug={featuredStory?.slug ?? MKHWANAZI_SLUG}
+        events={featuredStory?.timeline_events ?? []}
       />
       <AccountabilityExplorer
         commissions={commissions.slice(0, 22)}
         committees={committees.slice(0, 10)}
         accountabilityBodies={accountabilityBodies.slice(0, 12)}
         siuProclamations={siuProc}
+        stories={storiesRes.data}
         peopleRows={explorerPeople}
         laws={lawsList}
         impactSectors={impactWeb?.sectors ?? []}

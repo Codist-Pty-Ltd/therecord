@@ -34,12 +34,19 @@ export class StoriesController {
   @ApiOperation({
     summary: 'List active stories',
     description:
-      'Paginated list of active stories, ordered by most recent timeline event (then by creation date). ' +
+      'Paginated list of active stories. Default sort: most recent timeline event per story (then created_at). ' +
+      'Use `sort=updated_at` for editorial “recently touched” ordering. ' +
       'Optionally filter by `domain` (story_domain enum).',
   })
   @ApiOkResponse({ type: StoryListResponseDto })
   async findAll(@Query() query: StoryListQueryDto): Promise<StoryListResponseDto> {
-    return this.stories.findAll(query.page, query.limit, query.domain);
+    return this.stories.findAll(
+      query.page,
+      query.limit,
+      query.domain,
+      query.sort ?? 'latest_event',
+      query.order ?? 'DESC',
+    );
   }
 
   @Get(':slug/similar')

@@ -161,7 +161,11 @@ export const getStory = cache(
 );
 
 /** Fetch the paginated list of stories for the index page. */
-type StoryListFilters = { domain?: StoryDomain };
+type StoryListFilters = {
+  domain?: StoryDomain;
+  sort?: 'latest_event' | 'updated_at';
+  order?: 'ASC' | 'DESC';
+};
 
 export const listStories = cache(
   async (
@@ -175,12 +179,20 @@ export const listStories = cache(
     if (filters?.domain) {
       q.set("domain", filters.domain);
     }
+    if (filters?.sort) {
+      q.set("sort", filters.sort);
+    }
+    if (filters?.order) {
+      q.set("order", filters.order);
+    }
     const result = await apiGet<Paginated<StorySummary>>(
       `/api/stories?${q.toString()}`,
       {
         revalidate: REVALIDATE_STORIES_SECONDS,
         tags: [
           "stories:list",
+          filters?.sort ?? "latest_event",
+          filters?.order ?? "DESC",
           ...(filters?.domain ? [`stories:domain:${filters.domain}`] : []),
         ],
       },

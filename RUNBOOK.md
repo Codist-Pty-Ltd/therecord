@@ -63,7 +63,7 @@ docker exec therecord-api npm run migration:run
 
 ### Run seeds (first time or after reset)
 
-After migrations, the recommended one-shot import is the orchestrated index (order: commissions master → reports → recommendations → ad hoc → SIU → impact-sectors → state-entities → accountability-bodies → cape-town → **mkhwanazi last** — see `apps/api/src/database/seeds/index.ts`):
+After migrations, the recommended one-shot import is the orchestrated index (order: commissions master → reports → recommendations → ad hoc → SIU → impact-sectors → state-entities → accountability-bodies → cape-town → mkhwanazi → **new-stories-2026** — see `apps/api/src/database/seeds/index.ts`):
 
 ```bash
 docker exec therecord-api npm run seed:all
@@ -80,7 +80,11 @@ docker exec therecord-api npm run seed
 
 The `seed` script runs only the Mkhwanazi / Madlanga story seed (`mkhwanazi.seed.ts`). Prefer `seed:all` for a greenfield database.
 
-### Trigger manual article ingest
+**2026 corpus** (Tembisa Hospital, Medicare24/Carrim, Madlanga timeline extensions): runs automatically at the end of `seed:all`. To run only that step after a build (must run after mkhwanazi / full graph):
+
+```bash
+docker exec therecord-api node dist/database/seeds/new-stories-2026.seed.js
+```
 
 ```bash
 curl -X POST https://therecord.codist.co.za/api/ingestion/article \

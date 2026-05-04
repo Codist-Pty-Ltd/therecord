@@ -36,7 +36,7 @@
     "seed:state-entities": "node dist/database/seeds/state-entities.seed.js",
     "seed:all": "ts-node src/database/seeds/index.ts",
     "seed:cape-town": "node dist/database/seeds/cape-town-stories.seed.js",
-    "seed:accountability-bodies": "node dist/database/seeds/accountability-bodies.seed.js",
+    "seed:new-stories-2026": "node dist/database/seeds/new-stories-2026.seed.js",
     "db:bootstrap": "npm run schema:sync && npm run seed:all",
     "db:reset": "npm run schema:drop && npm run schema:sync && npm run seed:all"
   },

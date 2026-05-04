@@ -2,7 +2,7 @@
 
 import { motion, useInView } from "framer-motion";
 import Link from "next/link";
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 
 import { getPersonInitials, getStatusColour } from "@/lib/format";
 
@@ -22,16 +22,12 @@ function textOnAvatar(status: string): string {
   return "text-cream";
 }
 
+/** Row order is controlled upstream (e.g. Babita first); not re-sorted here. */
 export default function PeopleStrip({ rows }: PeopleStripProps) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.2 });
-  const sorted = useMemo(() => {
-    return [...rows].sort((a, b) =>
-      a.person.full_name.localeCompare(b.person.full_name, "en-ZA"),
-    );
-  }, [rows]);
 
-  if (sorted.length === 0) {
+  if (rows.length === 0) {
     return null;
   }
 
@@ -53,7 +49,7 @@ export default function PeopleStrip({ rows }: PeopleStripProps) {
           ref={ref}
           className="mt-4 -mx-4 flex gap-3 overflow-x-auto px-4 pb-1 scrollbar-hidden md:mx-0 md:px-0"
         >
-          {sorted.map((row, i) => {
+          {rows.map((row, i) => {
             const bg = getStatusColour(row.person.status);
             const tc = textOnAvatar(row.person.status);
             const surname = row.person.full_name.split(/\s+/).pop() ?? row.person.full_name;

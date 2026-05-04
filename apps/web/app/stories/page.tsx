@@ -15,7 +15,10 @@ export const metadata: Metadata = {
 
 async function loadStories(): Promise<StorySummary[]> {
   try {
-    const paginated = await listStories(1, 100);
+    const paginated = await listStories(1, 100, {
+      sort: "updated_at",
+      order: "DESC",
+    });
     return paginated.data.length > 0 ? paginated.data : PLACEHOLDER_STORIES;
   } catch (err) {
     if (process.env.NODE_ENV !== "production") {
@@ -38,8 +41,8 @@ export default async function StoriesPage() {
           Every story on The Record.
         </h1>
         <p className="mt-6 md:mt-8 font-sans text-base md:text-lg text-charcoal/70 max-w-2xl leading-[1.55]">
-          Sorted by the most recent event in each thread. Click through to see
-          the full timeline, the people involved, and the laws that apply.
+          Sorted by the most recently updated threads. Click through to see the
+          full timeline, the people involved, and the laws that apply.
         </p>
       </header>
 

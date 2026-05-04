@@ -37,6 +37,7 @@ const DOMAIN_LABELS: Record<StoryDomain, string> = {
   organised_crime: "Organised Crime",
   business: "Business",
   labour: "Labour",
+  corruption: "Corruption",
 };
 
 export default function StoryHeader({ story }: StoryHeaderProps) {

@@ -26,6 +26,7 @@ export const PERSON_STATUS_LABELS: Record<PersonStatus, string> = {
   acquitted: "Acquitted",
   resigned: "Resigned",
   unknown: "Unknown",
+  deceased: "Deceased",
 };
 
 /**
@@ -45,6 +46,8 @@ export function personStatusToBadgeVariant(
       return "charged";
     case "acquitted":
       return "acquitted";
+    case "deceased":
+      return "charged";
     case "resigned":
     case "unknown":
     default:
@@ -77,6 +80,8 @@ export function personAvatarBgClass(status: PersonStatus): string {
     case "suspended":
       return "bg-amber";
     case "charged":
+      return "bg-charge-red";
+    case "deceased":
       return "bg-charge-red";
     case "acquitted":
       return "bg-legal-blue";

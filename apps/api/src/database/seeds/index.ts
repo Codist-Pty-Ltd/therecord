@@ -32,9 +32,12 @@
  *      for water-sector / gauteng-sassa stories). Pairs that reference
  *      mkhwanazi-madlanga-commission are finalized when mkhwanazi runs last.
  *
- *   10. mkhwanazi.seed.ts (always last)
+ *   10. mkhwanazi.seed.ts
  *       Madlanga Commission + Mkhwanazi story + timeline; patches ad hoc ↔ commission;
  *       backfills similar_story row(s) that reference this slug after cape-town ran.
+ *
+ *   11. new-stories-2026.seed.ts (after mkhwanazi — requires Madlanga story + commission)
+ *       Tembisa Hospital, Medicare24, Suliman Carrim, SIU R136/2023, extra Madlanga events.
  *
  * Run with (inside apps/api):
  *   npm run seed:all
@@ -50,6 +53,7 @@ import { run as runCapeTownStories } from './cape-town-stories.seed';
 import { run as runCommissionsMaster } from './commissions-master.seed';
 import { run as runImpactSectors } from './impact-sectors.seed';
 import { run as runMkhwanazi } from './mkhwanazi.seed';
+import { run as runNewStories2026 } from './new-stories-2026.seed';
 import { run as runRecommendations } from './recommendations.seed';
 import { run as runReports } from './reports.seed';
 import { run as runSiu } from './siu.seed';
@@ -70,6 +74,7 @@ async function main(): Promise<void> {
   await runAccountabilityBodies();
   await runCapeTownStories();
   await runMkhwanazi();
+  await runNewStories2026();
 
   console.log('\n═══════════════════════════════════════════════');
   console.log('   ✓ All seeds complete.');

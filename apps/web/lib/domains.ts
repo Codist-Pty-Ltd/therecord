@@ -60,6 +60,14 @@ export const DOMAINS: DomainMeta[] = [
     slug: "labour",
     description: "Unions, strikes and workplace rights.",
   },
+  {
+    value: "corruption",
+    label: "Corruption",
+    short: "Corruption",
+    icon: "📋",
+    slug: "corruption",
+    description: "Bribery, procurement capture and looting of public funds.",
+  },
 ];
 
 export const DOMAIN_BY_VALUE: Record<StoryDomain, DomainMeta> =

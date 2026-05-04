@@ -27,7 +27,8 @@ export type StoryDomain =
   | "politics"
   | "organised_crime"
   | "business"
-  | "labour";
+  | "labour"
+  | "corruption";
 
 export type StoryStatus = "active" | "resolved" | "dormant";
 
@@ -305,7 +306,8 @@ export type PersonStatus =
   | "charged"
   | "acquitted"
   | "resigned"
-  | "unknown";
+  | "unknown"
+  | "deceased";
 
 export type LawCategory =
   | "corruption"

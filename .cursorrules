@@ -30,7 +30,7 @@ PROD FACTS (non-negotiable):
 SEED ORDER (FK-dependent — never reorder; see seeds/index.ts):
   commissions-master → reports → recommendations → adhoc → siu →
   impact-sectors → state-entities → accountability-bodies →
-  cape-town-stories → mkhwanazi (always last)
+  cape-town-stories → mkhwanazi → new-stories-2026 (Tembisa / Medicare24 / Carrim)
 
 SCHEMA: 27 entities confirmed. Key ones:
   Story → Commission (FK), AdhocCommittee (FK), SiuProclamation (FK)

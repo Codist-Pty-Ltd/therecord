@@ -13,6 +13,12 @@ import type {
 
 export const MKHWANAZI_SLUG = "mkhwanazi-madlanga-commission";
 
+/** Tembisa Hospital R2bn corruption thread (2026 seed). */
+export const TEMBISA_HOSPITAL_STORY_SLUG = "tembisa-hospital-r2bn-corruption";
+
+/** Medicare24 / SAPS healthcare tender thread (2026 seed). */
+export const MEDICARE24_STORY_SLUG = "medicare24-matlala-r360m-saps-tender";
+
 /** Lightweight event shape for the homepage mini-timeline preview. */
 export interface FeaturedPreviewEvent {
   event_date: string;

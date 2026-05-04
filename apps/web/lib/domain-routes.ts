@@ -56,13 +56,14 @@ export const DOMAIN_PAGE_LABEL: Record<DomainPageSlug, string> = {
   "public-safety": "Public Safety",
 };
 
-/** The five `story_domain` values — stories list API only filters these. */
+/** The `story_domain` values — stories list API filters on these. */
 const STORY_LIST_DOMAIN = new Set<CommissionDomain>([
   "criminal_justice",
   "politics",
   "organised_crime",
   "business",
   "labour",
+  "corruption",
 ]);
 
 export function isValidDomainPageSlug(name: string): name is DomainPageSlug {

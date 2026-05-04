@@ -9,6 +9,7 @@ export type ExplorerTab =
   | "adhoc"
   | "special_units"
   | "siu"
+  | "stories"
   | "people"
   | "laws"
   | "impact";

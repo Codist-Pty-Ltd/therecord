@@ -70,6 +70,7 @@ export function getStatusColour(status: string): string {
     concluded: "#16A34A",
     resigned: "#78716C",
     unknown: "#1C1C1E",
+    deceased: "#B91C1C",
   };
   return map[status] ?? "#1C1C1E";
 }

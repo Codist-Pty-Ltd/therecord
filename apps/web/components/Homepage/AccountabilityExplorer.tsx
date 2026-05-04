@@ -21,6 +21,7 @@ import type {
   PersonSummary,
   SiuProclamationSummary,
   ImpactWebSectorNode,
+  StorySummary,
 } from "@the-record/shared-types";
 
 import type { ExplorerTab } from "./StatsBar";
@@ -35,6 +36,8 @@ export interface AccountabilityExplorerProps {
   committees: AdhocCommitteeSummary[];
   accountabilityBodies: AccountabilityBody[];
   siuProclamations: SiuProclamationSummary[];
+  /** Most recently updated active stories (homepage uses limit 10, `sort=updated_at`). */
+  stories: StorySummary[];
   peopleRows: PeopleExplorerRow[];
   laws: LawSummary[];
   impactSectors: ImpactWebSectorNode[];
@@ -45,6 +48,7 @@ const TABS: { id: ExplorerTab; label: string }[] = [
   { id: "adhoc", label: "Ad Hoc" },
   { id: "special_units", label: "Special Units" },
   { id: "siu", label: "SIU" },
+  { id: "stories", label: "Stories" },
   { id: "people", label: "People" },
   { id: "laws", label: "Laws" },
   { id: "impact", label: "Impact" },
@@ -55,6 +59,7 @@ export default function AccountabilityExplorer({
   committees,
   accountabilityBodies,
   siuProclamations,
+  stories,
   peopleRows,
   laws,
   impactSectors,
@@ -82,6 +87,8 @@ export default function AccountabilityExplorer({
         return accountabilityBodies.length;
       case "siu":
         return siuProclamations.length;
+      case "stories":
+        return stories.length;
       case "people":
         return peopleRows.length;
       case "laws":
@@ -91,7 +98,17 @@ export default function AccountabilityExplorer({
       default:
         return 0;
     }
-  }, [tab, commissions, committees, accountabilityBodies, siuProclamations, peopleRows, laws, impactSectors]);
+  }, [
+    tab,
+    commissions,
+    committees,
+    accountabilityBodies,
+    siuProclamations,
+    stories,
+    peopleRows,
+    laws,
+    impactSectors,
+  ]);
 
   return (
     <section
@@ -145,6 +162,7 @@ export default function AccountabilityExplorer({
               {tab === "adhoc" && <AdhocRowList rows={committees} />}
               {tab === "special_units" && <BodiesRowList rows={accountabilityBodies} />}
               {tab === "siu" && <SiuProclamationsRowList rows={siuProclamations} />}
+              {tab === "stories" && <StoriesList rows={stories} />}
               {tab === "people" && <PeopleList rows={peopleRows} />}
               {tab === "laws" && <LawsList rows={laws} />}
               {tab === "impact" && <ImpactExplorerGrid sectors={impactSectors} />}
@@ -177,6 +195,40 @@ function ExplorerPanel({
     >
       {children}
     </motion.div>
+  );
+}
+
+function StoriesList({ rows }: { rows: StorySummary[] }) {
+  if (rows.length === 0) {
+    return <PeopleLawsEmptyHint />;
+  }
+  return (
+    <ul className="divide-y divide-charcoal/10">
+      {rows.map((story) => (
+        <li key={story.id}>
+          <Link
+            href={`/story/${story.slug}`}
+            className="block min-h-[48px] py-3 transition hover:bg-amber/[0.04] first:pt-0"
+          >
+            <p className="text-sm font-medium text-charcoal">{story.title}</p>
+            <p className="font-mono text-[9px] uppercase tracking-wider text-charcoal/45">
+              {story.domain.replace(/_/g, " ")} · updated{" "}
+              {new Intl.DateTimeFormat("en-ZA", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+                timeZone: "Africa/Johannesburg",
+              }).format(new Date(story.updated_at))}
+            </p>
+            {story.plain_english_summary ? (
+              <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-charcoal/65">
+                {story.plain_english_summary}
+              </p>
+            ) : null}
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }
 
