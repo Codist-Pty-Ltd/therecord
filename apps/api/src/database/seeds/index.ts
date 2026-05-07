@@ -36,8 +36,10 @@
  *       Madlanga Commission + Mkhwanazi story + timeline; patches ad hoc ↔ commission;
  *       backfills similar_story row(s) that reference this slug after cape-town ran.
  *
- *   11. new-stories-2026.seed.ts (after mkhwanazi — requires Madlanga story + commission)
- *       Tembisa Hospital, Medicare24, Suliman Carrim, SIU R136/2023, extra Madlanga events.
+ *   11. new-stories-2026.seed.ts
+ *       Tembisa Hospital, Medicare24, Carrim, SIU R136/2023 (after mkhwanazi).
+ *
+ *   12. bbee-transformation.seed.ts — B-BBEE policy explainer + story (after Tembisa / Malusi stories exist).
  *
  * Run with (inside apps/api):
  *   npm run seed:all
@@ -49,6 +51,7 @@ import 'reflect-metadata';
 
 import { run as runAccountabilityBodies } from './accountability-bodies.seed';
 import { run as runAdhocCommittees } from './adhoc-committees.seed';
+import { run as runBbeeTransformation } from './bbee-transformation.seed';
 import { run as runCapeTownStories } from './cape-town-stories.seed';
 import { run as runCommissionsMaster } from './commissions-master.seed';
 import { run as runImpactSectors } from './impact-sectors.seed';
@@ -75,6 +78,7 @@ async function main(): Promise<void> {
   await runCapeTownStories();
   await runMkhwanazi();
   await runNewStories2026();
+  await runBbeeTransformation();
 
   console.log('\n═══════════════════════════════════════════════');
   console.log('   ✓ All seeds complete.');

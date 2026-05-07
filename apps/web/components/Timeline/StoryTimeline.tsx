@@ -37,7 +37,9 @@ import EmptyState from "@/components/ui/EmptyState";
 import ConstitutionPanel from "@/components/ui/ConstitutionPanel";
 import EventTypeBadge from "@/components/ui/EventTypeBadge";
 import LegalPanel from "@/components/ui/LegalPanel";
-import PlainEnglishBox from "@/components/ui/PlainEnglishBox";
+import PlainEnglishBox, {
+  type PlainEnglishLevel,
+} from "@/components/ui/PlainEnglishBox";
 
 // -----------------------------------------------------------------------------
 // Public props
@@ -46,13 +48,28 @@ import PlainEnglishBox from "@/components/ui/PlainEnglishBox";
 export interface StoryTimelineProps {
   events: TimelineEventWithReferences[];
   storySlug: string;
+  /**
+   * Events strictly before this calendar year use muted spine-adjacent nodes
+   * (apartheid-era history on the transformation explainer).
+   */
+  mutedBeforeYear?: number;
+  /** When set, timeline plain-English blurbs follow this level instead of `child`. */
+  plainEnglishLevel?: PlainEnglishLevel;
+  /** Shown beneath the title for the 1994-04-27 first democratic election event. */
+  transitionElectionNote?: string;
 }
 
 // =============================================================================
 // Main component
 // =============================================================================
 
-export default function StoryTimeline({ events, storySlug }: StoryTimelineProps) {
+export default function StoryTimeline({
+  events,
+  storySlug,
+  mutedBeforeYear,
+  plainEnglishLevel,
+  transitionElectionNote,
+}: StoryTimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const shouldReduceMotion = useReducedMotion() ?? false;
 
@@ -100,6 +117,14 @@ export default function StoryTimeline({ events, storySlug }: StoryTimelineProps)
               isLatest={idx === latestIndex}
               side={idx % 2 === 0 ? "left" : "right"}
               storySlug={storySlug}
+              mutedBeforeYear={mutedBeforeYear}
+              plainEnglishLevel={plainEnglishLevel}
+              transitionElectionNote={
+                transitionElectionNote &&
+                event.event_date.startsWith("1994-04-27")
+                  ? transitionElectionNote
+                  : undefined
+              }
             />
           ))}
         </ol>
@@ -155,6 +180,9 @@ interface TimelineItemProps {
   isLatest: boolean;
   side: Side;
   storySlug: string;
+  mutedBeforeYear?: number;
+  plainEnglishLevel?: PlainEnglishLevel;
+  transitionElectionNote?: string;
 }
 
 function TimelineItem({
@@ -163,6 +191,9 @@ function TimelineItem({
   isLatest,
   side,
   storySlug,
+  mutedBeforeYear,
+  plainEnglishLevel,
+  transitionElectionNote,
 }: TimelineItemProps) {
   const liRef = useRef<HTMLLIElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -172,6 +203,15 @@ function TimelineItem({
   const isDesktop = useIsDesktop();
 
   const [open, setOpen] = useState(false);
+
+  const eventYear = useMemo(
+    () => parseInt(event.event_date.slice(0, 4), 10),
+    [event.event_date],
+  );
+  const isMutedHistorical =
+    mutedBeforeYear !== undefined &&
+    !Number.isNaN(eventYear) &&
+    eventYear < mutedBeforeYear;
 
   const { statutoryRefs, constitutionalRefs } = useMemo(() => {
     const all = event.legal_references ?? [];
@@ -225,6 +265,7 @@ function TimelineItem({
           isLatest={isLatest}
           isOpen={open}
           onToggle={toggle}
+          isMutedHistorical={isMutedHistorical}
         />
       </div>
 
@@ -249,6 +290,8 @@ function TimelineItem({
           onToggle={toggle}
           statutoryRefs={statutoryRefs}
           constitutionalRefs={constitutionalRefs}
+          plainEnglishLevel={plainEnglishLevel}
+          transitionElectionNote={transitionElectionNote}
         />
       </div>
     </motion.li>
@@ -264,6 +307,7 @@ interface TimelineNodeProps {
   isLatest: boolean;
   isOpen: boolean;
   onToggle: () => void;
+  isMutedHistorical: boolean;
 }
 
 function TimelineNode({
@@ -271,8 +315,11 @@ function TimelineNode({
   isLatest,
   isOpen,
   onToggle,
+  isMutedHistorical,
 }: TimelineNodeProps) {
-  const bg = nodeBgClass(event.event_type);
+  const bg = isMutedHistorical
+    ? "bg-charcoal/40"
+    : nodeBgClass(event.event_type);
 
   return (
     <button
@@ -322,6 +369,8 @@ interface EventCardProps {
   onToggle: () => void;
   statutoryRefs: LegalReference[];
   constitutionalRefs: LegalReference[];
+  plainEnglishLevel?: PlainEnglishLevel;
+  transitionElectionNote?: string;
 }
 
 function EventCard({
@@ -330,6 +379,8 @@ function EventCard({
   onToggle,
   statutoryRefs,
   constitutionalRefs,
+  plainEnglishLevel,
+  transitionElectionNote,
 }: EventCardProps) {
   const hasSources = event.source_urls.length > 0;
   const hasDescription = event.description.trim().length > 0;
@@ -375,6 +426,12 @@ function EventCard({
           {event.title}
         </h3>
 
+        {transitionElectionNote ? (
+          <p className="font-serif text-sm md:text-base italic text-amber leading-snug">
+            {transitionElectionNote}
+          </p>
+        ) : null}
+
         {!open ? (
           <span className="mt-0.5 inline-flex items-center gap-1 font-mono text-[10px] md:text-[11px] uppercase tracking-[0.18em] text-amber">
             Tap to read more
@@ -402,7 +459,10 @@ function EventCard({
               ) : null}
 
               {event.plain_english ? (
-                <PlainEnglishBox level="child" text={event.plain_english} />
+                <PlainEnglishBox
+                  level={plainEnglishLevel ?? "child"}
+                  text={event.plain_english}
+                />
               ) : null}
 
               {statutoryRefs.length > 0 ? (

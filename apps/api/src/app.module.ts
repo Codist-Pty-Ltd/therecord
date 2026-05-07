@@ -20,6 +20,7 @@ import { SiuModule } from './siu/siu.module';
 import { StoriesModule } from './stories/stories.module';
 import { TakedownModule } from './takedown/takedown.module';
 import { TimelineModule } from './timeline/timeline.module';
+import { TransformationPoliciesModule } from './transformation-policies/transformation-policies.module';
 import { YoutubeModule } from './youtube/youtube.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
 import { StateEntitiesModule } from './state-entities/state-entities.module';
@@ -62,6 +63,7 @@ import { StateEntitiesModule } from './state-entities/state-entities.module';
     StoriesModule,
     TakedownModule,
     TimelineModule,
+    TransformationPoliciesModule,
     YoutubeModule,
     RecommendationsModule,
     StateEntitiesModule,

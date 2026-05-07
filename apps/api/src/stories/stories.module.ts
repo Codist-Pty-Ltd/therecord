@@ -13,6 +13,7 @@ import { SimilarStory } from '../entities/similar-story.entity';
 import { Story } from '../entities/story.entity';
 import { StoryPerson } from '../entities/story_person.entity';
 import { TimelineEvent } from '../entities/timeline_event.entity';
+import { TransformationPolicy } from '../entities/transformation-policy.entity';
 import { StoriesController } from './stories.controller';
 import { StoriesService } from './stories.service';
 
@@ -21,6 +22,7 @@ import { StoriesService } from './stories.service';
     HumanImpactModule,
     TypeOrmModule.forFeature([
       Story,
+      TransformationPolicy,
       TimelineEvent,
       StoryPerson,
       Investigation,

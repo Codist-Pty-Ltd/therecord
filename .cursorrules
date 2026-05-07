@@ -55,6 +55,7 @@ ROUTES BUILT (no Coming Soon anywhere):
   /state-entities /state-entities/[slug]
   /accountability-bodies /accountability-bodies/[slug]
   + error.tsx on every route + not-found.tsx
+  /transformation — B-BBEE & economic transformation explainer (force-dynamic)
 
 CI: .github/workflows/ci.yml runs typecheck+lint+smoke+python+build on PRs
 DEPLOY: .github/workflows/deploy.yml runs migrations, SOE seed, then health check on main push
@@ -146,13 +147,54 @@ Presentation rules:
     "These figures show the scale of service delivery failures.
      Not all are caused solely by corruption — but all are worsened by it."
 
+## Transformation & B-BBEE
+The transformation page (/transformation) is the most editorially sensitive 
+on the platform. Strict rules:
+
+1. History (pre-1994) is factual, sourced, and not political.
+   The Natives Land Act, Bantu Education Act, Group Areas Act are facts.
+   Their economic impact is documented and measurable.
+   Present them as facts, not opinions.
+
+2. The B-BBEE debate has genuine arguments on both sides.
+   NEVER present one side as correct.
+   ALWAYS present both sides in equal depth.
+   The Record does not advocate for or against B-BBEE.
+
+3. The three-level reading system (child/layperson/legal) applies 
+   to ALL content on this page.
+
+4. The "How you can participate" section must always be present.
+   It is the page's most important civic contribution.
+
+5. Legal challenges to B-BBEE are covered as stories — with the same 
+   standard applied to all stories: allege what is alleged, 
+   find what is found, never assume outcome before judgment.
+
+6. The quote "if they cannot pronounce your name they will not make 
+   you a manager" is an important framing device. Use it where it 
+   contextualises the informal exclusion that B-BBEE addresses.
+   Do not overuse it.
+
+7. The wealth gap statistics must always be sourced:
+   - Median black household wealth: R70,000 (2025)
+   - Median white household wealth: R1.36 million (2025)
+   - Source: World Inequality Lab / Wits Southern Centre for Inequality Studies
+   - Top 10% own 86% of wealth: World Bank 2022
+   - 80% of land white-owned in 1994: PLAAS / Institute of Poverty, Land and Agrarian Studies
+
+New route: /transformation
+New entity: TransformationPolicy
+Linked to: laws (B-BBEE Act, Employment Equity Act, Constitution §9(2))
+Linked to: stories (bbee-transformation-south-africa)
+
 ## Navigation Architecture
 The nav has 3 dropdown groups + 2 direct links. Never add a flat top-level item.
 New features must fit into one of these groups or the group structure must
 be updated with justification.
 
 Groups:
-  Investigate: Stories, Provinces, State Entities, Human Impact
+  Investigate: Stories, Provinces, State Entities, Human Impact, Transformation
   Accountability: Commissions, Ad Hoc Committees, SIU, Special Units
   The Law: Laws & Acts, Constitution
 

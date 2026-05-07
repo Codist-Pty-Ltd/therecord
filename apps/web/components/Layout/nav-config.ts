@@ -50,6 +50,12 @@ export const NAV_GROUPS: NavGroup[] = [
         desc: "The real cost",
         href: "/impact",
       },
+      {
+        icon: "⚖️",
+        name: "Transformation",
+        desc: "B-BBEE, land, economic justice",
+        href: "/transformation",
+      },
     ],
   },
   {
@@ -137,6 +143,12 @@ export const MOBILE_NAV_SECTIONS: {
         name: "Human Impact",
         desc: "The real cost for ordinary people",
         href: "/impact",
+      },
+      {
+        icon: "⚖️",
+        name: "Transformation",
+        desc: "B-BBEE and economic justice",
+        href: "/transformation",
       },
     ],
   },

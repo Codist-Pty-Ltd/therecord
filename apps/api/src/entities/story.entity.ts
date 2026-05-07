@@ -16,6 +16,7 @@ import { Municipality } from './municipality.entity';
 import { Province } from './province.entity';
 import { SiuProclamation } from './siu_proclamation.entity';
 import { StateEntity } from './state-entity.entity';
+import { TransformationPolicy } from './transformation-policy.entity';
 
 export enum StoryDomain {
   CRIMINAL_JUSTICE = 'criminal_justice',
@@ -162,6 +163,18 @@ export class Story {
   @ManyToOne(() => ImpactSector, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'primary_impact_sector_id' })
   primary_impact_sector!: ImpactSector | null;
+
+  /**
+   * Optional link to a transformation / empowerment policy explainer
+   * (e.g. B-BBEE) when the story is the policy thread itself.
+   */
+  @Index('stories_transformation_policy_id_idx')
+  @Column({ type: 'uuid', nullable: true })
+  transformation_policy_id!: string | null;
+
+  @ManyToOne(() => TransformationPolicy, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'transformation_policy_id' })
+  transformation_policy!: TransformationPolicy | null;
 
   /**
    * Optional link to a {@link StateEntity} when the story is centred on that SOE / schedule entity.

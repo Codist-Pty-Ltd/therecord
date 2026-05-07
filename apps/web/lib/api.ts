@@ -49,6 +49,7 @@ import type {
   StoryDetail,
   StoryDomain,
   StorySummary,
+  TransformationPolicy,
   YoutubeVideo,
 } from "@the-record/shared-types";
 
@@ -157,6 +158,20 @@ export const getStory = cache(
       revalidate: REVALIDATE_STORIES_SECONDS,
       tags: [`story:${slug}`],
     });
+  },
+);
+
+/** Transformation / B-BBEE explainer policy row by slug. */
+export const getTransformationPolicy = cache(
+  async (slug: string): Promise<TransformationPolicy | null> => {
+    const encoded = encodeURIComponent(slug);
+    return apiGet<TransformationPolicy>(
+      `/api/transformation-policies/${encoded}`,
+      {
+        revalidate: REVALIDATE_STORIES_SECONDS,
+        tags: [`transformation-policy:${slug}`],
+      },
+    );
   },
 );
 

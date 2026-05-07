@@ -21,6 +21,7 @@ import { SimilarStory } from '../entities/similar-story.entity';
 import { ImpactSector } from '../entities/impact-sector.entity';
 import { StoryImpactSector, ImpactSeverity } from '../entities/story-impact-sector.entity';
 import { Story, StoryDomain, StoryStatus } from '../entities/story.entity';
+import { TransformationPolicy } from '../entities/transformation-policy.entity';
 import { StoryPerson } from '../entities/story_person.entity';
 import { TimelineEvent } from '../entities/timeline_event.entity';
 import { CreateStoryDto } from './dto/create-story.dto';
@@ -41,6 +42,7 @@ import {
   StoryListResponseDto,
   StoryPersonBriefDto,
   TimelineEventBriefDto,
+  TransformationPolicyDto,
 } from './dto/story-response.dto';
 import { AccountabilityBodyEmbedDto } from '../accountability-bodies/dto/accountability-body.dto';
 
@@ -51,6 +53,7 @@ interface StoryWithLatestEvent extends Story {
   commission_id: string | null;
   latest_event_date: string | null;
   primary_impact_sector_id: string | null;
+  transformation_policy_id: string | null;
 }
 
 const IMPACT_SEVERITY_RANK: Record<ImpactSeverity, number> = {
@@ -159,6 +162,7 @@ export class StoriesService {
         'story.municipality_id AS municipality_id',
         'story.story_category AS story_category',
         'story.primary_impact_sector_id AS primary_impact_sector_id',
+        'story.transformation_policy_id AS transformation_policy_id',
         'story.total_amount_rands AS total_amount_rands',
         'story.created_at AS created_at',
         'story.updated_at AS updated_at',
@@ -296,7 +300,7 @@ export class StoriesService {
   async findBySlug(slug: string): Promise<StoryDetailResponseDto> {
     const story = await this.storyRepo.findOne({
       where: { slug },
-      relations: ['accountability_body', 'primary_impact_sector'],
+      relations: ['accountability_body', 'primary_impact_sector', 'transformation_policy'],
     });
     if (!story) {
       throw new NotFoundException(`Story with slug "${slug}" not found.`);
@@ -382,6 +386,7 @@ export class StoriesService {
       primary_impact_sector: story.primary_impact_sector
         ? this.mapImpactSector(story.primary_impact_sector)
         : null,
+      transformation_policy: this.mapTransformationPolicy(story.transformation_policy),
       impact_sectors: impactLinksSorted.map((row) => this.mapStoryImpactSectorRow(row)),
       timeline_events: timelineEvents.map((e) =>
         this.mapTimelineEvent(e, legalRefsByEvent.get(e.id) ?? []),
@@ -565,6 +570,31 @@ export class StoriesService {
     };
   }
 
+  private mapTransformationPolicy(
+    policy: TransformationPolicy | null | undefined,
+  ): TransformationPolicyDto | null {
+    if (!policy) return null;
+    return {
+      id: policy.id,
+      name: policy.name,
+      abbreviation: policy.abbreviation,
+      slug: policy.slug,
+      enabling_act: policy.enabling_act,
+      status: policy.status,
+      purpose_summary: policy.purpose_summary,
+      plain_english_child: policy.plain_english_child,
+      plain_english_layperson: policy.plain_english_layperson,
+      plain_english_legal: policy.plain_english_legal,
+      historical_context: policy.historical_context,
+      arguments_for: policy.arguments_for,
+      arguments_against: policy.arguments_against,
+      current_legal_challenges: policy.current_legal_challenges,
+      impact_on_ordinary_people: policy.impact_on_ordinary_people,
+      created_at: policy.created_at.toISOString(),
+      updated_at: policy.updated_at.toISOString(),
+    };
+  }
+
   private mapEntityToListItem(story: Story, latestEventDate: string | null): StoryListItemDto {
     return {
       id: story.id,
@@ -578,6 +608,7 @@ export class StoriesService {
       adhoc_committee_id: story.adhoc_committee_id,
       siu_proclamation_id: story.siu_proclamation_id,
       accountability_body_id: story.accountability_body_id,
+      transformation_policy_id: story.transformation_policy_id,
       province_id: story.province_id,
       municipality_id: story.municipality_id,
       story_category: story.story_category,
@@ -602,6 +633,7 @@ export class StoriesService {
       adhoc_committee_id: row.adhoc_committee_id,
       siu_proclamation_id: row.siu_proclamation_id,
       accountability_body_id: row.accountability_body_id ?? null,
+      transformation_policy_id: row.transformation_policy_id ?? null,
       province_id: row.province_id,
       municipality_id: row.municipality_id,
       story_category: row.story_category,

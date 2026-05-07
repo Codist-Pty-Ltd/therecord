@@ -1117,6 +1117,34 @@ export interface SimilarStory {
   created_at: string;
 }
 
+/** Mirrors `transformation_policy.entity.ts` — major policy explainer threads. */
+export type TransformationPolicyStatus =
+  | "active"
+  | "amended"
+  | "challenged"
+  | "partially_struck"
+  | "repealed";
+
+export interface TransformationPolicy {
+  id: string;
+  name: string;
+  abbreviation: string | null;
+  slug: string;
+  enabling_act: string | null;
+  status: TransformationPolicyStatus;
+  purpose_summary: string;
+  plain_english_child: string;
+  plain_english_layperson: string;
+  plain_english_legal: string;
+  historical_context: string;
+  arguments_for: string;
+  arguments_against: string;
+  current_legal_challenges: string | null;
+  impact_on_ordinary_people: string;
+  created_at: string;
+  updated_at: string;
+}
+
 /** Mirrors `story.entity.ts`. */
 export interface Story {
   id: string;
@@ -1145,6 +1173,8 @@ export interface Story {
    */
   siu_proclamation_id: string | null;
   accountability_body_id: string | null;
+  /** When set, links the story to a transformation-policy explainer row (e.g. B-BBEE). */
+  transformation_policy_id: string | null;
   /** Editorial primary human-impact lens (FK to impact_sectors). */
   primary_impact_sector_id: string | null;
   /** Optional link to a state-owned / PFMA schedule entity. */
@@ -1444,6 +1474,8 @@ export interface TimelineEventWithReferences extends TimelineEvent {
  * every relation needed to render the story detail page.
  */
 export interface StoryDetail extends Story {
+  /** Full policy explainer when `transformation_policy_id` is set. */
+  transformation_policy?: TransformationPolicy | null;
   timeline_events: TimelineEventWithReferences[];
   people: StoryPersonWithPerson[];
   investigations: Investigation[];

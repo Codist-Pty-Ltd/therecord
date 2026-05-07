@@ -17,7 +17,7 @@ import { useEffect, useState } from "react";
 
 export type PlainEnglishLevel = "child" | "layperson" | "legal";
 
-interface PlainEnglishBoxProps {
+export interface PlainEnglishBoxProps {
   text: string;
   level: PlainEnglishLevel;
   /** Start expanded. Defaults to `false`, matching the mobile-first spec. */

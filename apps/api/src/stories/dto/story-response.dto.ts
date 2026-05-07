@@ -20,6 +20,7 @@ import {
 import { SimilarityReason } from '../../entities/similar-story.entity';
 import { StoryDomain, StoryStatus, StoryCategory } from '../../entities/story.entity';
 import { ImpactSeverity } from '../../entities/story-impact-sector.entity';
+import { TransformationPolicyStatus } from '../../entities/transformation-policy.entity';
 
 /* ------------------------------------------------------------------ list */
 
@@ -56,6 +57,13 @@ export class StoryListItemDto {
       'Accountability body scope (Scorpions, Hawks, IDAC, AFU, etc.), when applicable.',
   })
   accountability_body_id!: string | null;
+  @ApiPropertyOptional({
+    nullable: true,
+    format: 'uuid',
+    description:
+      'Transformation / empowerment policy record (e.g. B-BBEE) when this story is the policy explainer thread.',
+  })
+  transformation_policy_id!: string | null;
   @ApiPropertyOptional({ nullable: true, format: 'uuid' })
   province_id!: string | null;
   @ApiPropertyOptional({ nullable: true, format: 'uuid' })
@@ -286,6 +294,26 @@ export class SimilarStoryBriefDto {
   @ApiPropertyOptional({ nullable: true }) province_abbreviation?: string | null;
 }
 
+export class TransformationPolicyDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiProperty() name!: string;
+  @ApiPropertyOptional({ nullable: true }) abbreviation!: string | null;
+  @ApiProperty() slug!: string;
+  @ApiPropertyOptional({ nullable: true }) enabling_act!: string | null;
+  @ApiProperty({ enum: TransformationPolicyStatus }) status!: TransformationPolicyStatus;
+  @ApiProperty() purpose_summary!: string;
+  @ApiProperty() plain_english_child!: string;
+  @ApiProperty() plain_english_layperson!: string;
+  @ApiProperty() plain_english_legal!: string;
+  @ApiProperty() historical_context!: string;
+  @ApiProperty() arguments_for!: string;
+  @ApiProperty() arguments_against!: string;
+  @ApiPropertyOptional({ nullable: true }) current_legal_challenges!: string | null;
+  @ApiProperty() impact_on_ordinary_people!: string;
+  @ApiProperty({ format: 'date-time' }) created_at!: string;
+  @ApiProperty({ format: 'date-time' }) updated_at!: string;
+}
+
 /* ------------------------------------------------------------------ detail */
 
 export class StoryDetailResponseDto extends StoryListItemDto {
@@ -294,6 +322,13 @@ export class StoryDetailResponseDto extends StoryListItemDto {
 
   @ApiPropertyOptional({ type: ImpactSectorDto, nullable: true })
   primary_impact_sector!: ImpactSectorDto | null;
+
+  @ApiPropertyOptional({
+    type: TransformationPolicyDto,
+    nullable: true,
+    description: 'Full policy explainer when this story is linked to a transformation_policy row.',
+  })
+  transformation_policy!: TransformationPolicyDto | null;
 
   @ApiProperty({
     type: [StoryImpactSectorDto],
