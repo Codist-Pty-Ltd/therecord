@@ -20,7 +20,6 @@ export enum TransformationPolicyStatus {
  * but deserve the same structured explainer treatment (history, law, debate).
  */
 @Entity('transformation_policies')
-@Index('transformation_policies_slug_uidx', { unique: true })
 export class TransformationPolicy {
   @PrimaryColumn('uuid', { default: () => 'gen_random_uuid()' })
   id!: string;
@@ -31,6 +30,7 @@ export class TransformationPolicy {
   @Column({ type: 'varchar', length: 20, nullable: true })
   abbreviation!: string | null;
 
+  @Index('transformation_policies_slug_uidx', { unique: true })
   @Column({ type: 'varchar', length: 200, unique: true })
   slug!: string;
 
