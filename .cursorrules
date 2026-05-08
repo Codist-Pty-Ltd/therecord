@@ -188,6 +188,8 @@ New entity: TransformationPolicy
 Linked to: laws (B-BBEE Act, Employment Equity Act, Constitution §9(2))
 Linked to: stories (bbee-transformation-south-africa)
 
+Factual audit checklist for dates, statutes, courts, and stats: see `.cursor/rules/factual-timelines.mdc`.
+
 ## Navigation Architecture
 The nav has 3 dropdown groups + 2 direct links. Never add a flat top-level item.
 New features must fit into one of these groups or the group structure must

@@ -9,6 +9,9 @@
  * Run:
  *   npm run seed:cape-town   (after `nest build`)
  *   or via `npm run seed:all` (ts-node index)
+ *
+ * TIMELINE NOTE: Treat incident/event dates as verified only when matched to
+ * SAPS, court, or contemporaneous press; flag editorial anchors in `description`.
  */
 
 import 'reflect-metadata';
@@ -664,7 +667,7 @@ const STORY_BOOI: StoryBundle = {
       event_type: EventType.INCIDENT,
       title: 'Project official Wendy Kloppers murdered at Symphony Way (Delft)',
       description:
-        'Kloppers is gunned down on the Symphony Way mega-site — a R400m+ City flagship paused afterwards as extortion and gang interference dominate security planning.',
+        'Western Cape media placed Kloppers’s killing on the Symphony Way mega-site in **February 2023**; the calendar day in this seed is a best-effort editorial anchor — confirm against SAPS records or contemporaneous articles before citing the exact date elsewhere.',
       plain_english:
         'A city worker helping build houses was shot dead at the building site. People say gangsters wanted to control the contracts.',
       significance: EventSignificance.CRITICAL,

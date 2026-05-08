@@ -4,6 +4,11 @@
  * 2026 editorial corpus: Tembisa Hospital, Medicare24 / SAPS tender, Suliman Carrim,
  * and Madlanga Commission timeline extensions. Idempotent upserts.
  *
+ * FACTUAL MIX: Verifiable public-record beats (e.g. documented whistleblower murder,
+ * SIU proclamations) sit beside forward-looking or synthesised beats. Confirm dates
+ * against primary sources (news permalinks, SIU/gov releases) or label narrative rows
+ * in `description`.
+ *
  * Run after mkhwanazi.seed.ts (needs `mkhwanazi-madlanga-commission` and `madlanga-commission`).
  * Invoked from `seed:all` at the end of the orchestrated chain.
  *
@@ -793,7 +798,7 @@ export async function run(): Promise<void> {
         },
         {
           event_date: '2021-08-23',
-          event_type: EventType.ARREST,
+          event_type: EventType.INCIDENT,
           title: 'Babita Deokaran assassinated outside her Johannesburg home',
           description:
             'Deokaran was shot after dropping her child at school. Prosecutors later said hired gunmen were paid around R2 million. Masterminds remain disputed.',
@@ -845,7 +850,7 @@ export async function run(): Promise<void> {
           event_type: EventType.COMMISSION_ESTABLISHED,
           title: 'Presidential Proclamation 136 of 2023 — SIU formally authorised',
           description:
-            'President Ramaphosa signed Proclamation R136 of 2023 authorising the SIU to probe Tembisa and Gauteng Health supply-chain lines. Open reporting later connects Hangwani Maumela — described in media as Ramaphosa\'s relative by marriage — to alleged syndicate headlines; he denies wrongdoing.',
+            'President Ramaphosa signed Proclamation R.136 of 2023; the SIU records gazetting on **1 September 2023** (Government Gazette 49217), authorising investigation of corruption and maladministration at Gauteng Health and Tembisa Hospital. Open reporting later connects Hangwani Maumela — described in media as Ramaphosa\'s relative by marriage — to alleged syndicate headlines; he denies wrongdoing.',
           plain_english:
             'The President signed the paper that officially lets the SIU investigate Tembisa and the province\'s healthcare buying.',
           significance: EventSignificance.HIGH,

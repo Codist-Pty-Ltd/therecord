@@ -1,0 +1,53 @@
+---
+description: >-
+  Verify historical and legal facts before adding timelines, story copy, or stat callouts —
+  applies to all API seeds and key story surfaces. No plausible-sounding fiction.
+globs:
+  - apps/api/src/database/seeds/**/*.ts
+  - apps/web/app/story/**/*.tsx
+  - apps/web/app/transformation/**/*.tsx
+  - apps/web/components/transformation/**/*.tsx
+  - apps/web/components/transformation/**/*.ts
+alwaysApply: true
+---
+
+# Factual accuracy: timelines, stats, and law
+
+## Corpus coverage (The Record seeds & stories)
+
+Treat these areas the same way — **audit before shipping**:
+
+| Area | Files (typical) | Notes |
+|------|-----------------|--------|
+| Transformation / B-BBEE | `bbee-transformation.seed*.ts`, `/transformation` | Gazette dates, statute commencement; stats need named sources. |
+| Cape Town & national story bundles | `cape-town-stories.seed.ts` | Prefer **article permalinks** in `source_urls`, not homepages only. |
+| 2026 editorial corpus | `new-stories-2026.seed.ts` (Tembisa, Medicare24, Carrim, MK extensions) | Mix of **verified public facts** (e.g. documented murders, SIU proclamations) and **forward/editorial** beats — label the latter. |
+| Mkhwanazi / Madlanga thread | `mkhwanazi.seed.ts` | **Product narrative timeline** with 2025–2026 beats; must not pretend generic `source_urls` are citations for each line unless they are real article URLs. |
+| Other reference seeds | `commissions-master`, `siu`, `adhoc-committees`, `state-entities`, `accountability-bodies`, … | Commission dates and official names should match government/PMG records where claimed as fact. |
+
+## Required behaviour
+
+1. **Do not invent** calendar days, report titles, chair names, or “release” events. If only the **year** or **month** is supported, say so in `description` and avoid false precision in `event_date`.
+
+2. **Before merging** a new or changed timeline row, cross-check **at least one** independent reference (Gazette, SIU/presidency release, PMG, court file, or reputable news permalink).
+
+3. **Gazette / assent / commencement**: use the right word. “Signed” ≠ “commenced” ≠ “published in Gazette”. Acts may be **numbered** in one year and **gazetted** in another.
+
+4. **Statistics** need **named sources** in UI or `description` / `source_urls`. Do not bundle unrelated figures under one “report day” unless accurate.
+
+5. **Pending / disputed**: prefix description with an editorial tag (e.g. hearing coverage; verify against judgment) — no stated **ratio** or final legal conclusion until published.
+
+6. **event_type** must match the fact (e.g. assassination ≠ `arrest`).
+
+7. **source_urls**: use **specific articles** or official PDFs. Homepage-only links (e.g. `https://www.news24.com` alone) are **not** adequate support — replace or leave empty and flag in `description`.
+
+8. **Corrections**: when replacing a row, **delete** the superseded `(story_id, event_date, title)` (or equivalent) in seed cleanup so duplicates do not accumulate.
+
+## Narrative vs verified rows
+
+- **Verified**: real-world events with checkable dates — `description` should imply how the date was sourced.
+- **Narrative / scenario** (demo canon, speculative arcs): first sentence of `description` or story `summary` must signal that the beat is **in-product narrative** or **unverified outside verification pass**, so it is not mistaken for live news archive.
+
+## If uncertain
+
+Either **verify**, **narrow the claim**, or **mark the row as editorial** — do not ship filler that reads like court record.

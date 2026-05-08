@@ -360,6 +360,60 @@ async function linkStoryPersonRow(
   }
 }
 
+const SUPERSEDED_BBEE_TIMELINE_ROWS: ReadonlyArray<{
+  event_date: string;
+  title: string;
+}> = [
+  {
+    event_date: '2000-11-15',
+    title: 'BEE Commission releases Andile Mngxitama report',
+  },
+  {
+    event_date: '1953-06-17',
+    title: 'Bantu Education Act — deliberately inferior schools for black children',
+  },
+  {
+    event_date: '1998-10-19',
+    title: 'Employment Equity Act — first legislative step toward transformation',
+  },
+  {
+    event_date: '1973-01-25',
+    title: 'Black workers allowed into skilled urban jobs — only because of labour shortages',
+  },
+  {
+    event_date: '2003-11-09',
+    title: 'Broad-Based Black Economic Empowerment Act 53 of 2003 signed into law',
+  },
+  {
+    event_date: '2013-10-31',
+    title: 'B-BBEE Amendment Act — "fronting" becomes a criminal offence',
+  },
+  {
+    event_date: '2022-03-30',
+    title: 'World Bank: South Africa is the most unequal country on Earth',
+  },
+  {
+    event_date: '2025-08-01',
+    title: 'Pretoria High Court: Sakeliga wins against Air Services Licensing Council',
+  },
+];
+
+async function removeSupersededBbeeTimelineRows(
+  m: EntityManager,
+  storyId: string,
+): Promise<void> {
+  const eventRepo = m.getRepository(TimelineEvent);
+  for (const { event_date, title } of SUPERSEDED_BBEE_TIMELINE_ROWS) {
+    const obsolete = await eventRepo.findOne({
+      where: { story_id: storyId, event_date, title },
+    });
+    if (!obsolete) continue;
+    await m.getRepository(EventLegalReference).delete({ event_id: obsolete.id });
+    await eventRepo.delete({ id: obsolete.id });
+    console.log(`  · Dropped superseded timeline row: ${event_date} — ${title.slice(0, 48)}…`);
+  }
+}
+
 async function upsertTimelineRows(
   m: EntityManager,
   storyId: string,
@@ -531,24 +585,24 @@ const TIMELINE: TimelineSeedRow[] = [
     legal_links: [],
   },
   {
-    event_date: '1953-06-17',
+    event_date: '1953-10-05',
     event_type: EventType.INCIDENT,
     title: 'Bantu Education Act — deliberately inferior schools for black children',
     description:
-      'Legislated separate and unequal schooling, with substantially lower per-pupil investment for black learners — with intergenerational effects on skills and earnings.',
+      'Act No. 47 of 1953 legislated separate and unequal schooling with substantially lower per-pupil investment for black learners. Assented to 5 October 1953 (South African Government / SA History Online record).',
     plain_english:
       'The minister who designed this law said black children should only be educated enough to be workers for white people. Less money was spent per black pupil. Fewer qualified teachers. Worse facilities. The education gap created in 1953 is still visible in school results today.',
     significance: EventSignificance.CRITICAL,
     legal_links: [],
   },
   {
-    event_date: '1973-01-25',
+    event_date: '1973-07-01',
     event_type: EventType.INCIDENT,
-    title: 'Black workers allowed into skilled urban jobs — only because of labour shortages',
+    title: 'Early 1970s: black industrial organising and a tightening labour shortage',
     description:
-      'Industrial training and urban labour-market rules were partially relaxed amid skills shortages — after decades of statutory exclusion from skilled urban employment.',
+      'Year-level synthesis: Parliament passed the Bantu Labour Relations Regulation Amendment Act, 1973 (Act 70 of 1973), creating tightly controlled liaison and works committees and a constrained strike framework after major disputes. In parallel, skills shortages pushed policymakers and employers to relax some formal colour bars in industry — timing varies by sector and measure.',
     plain_english:
-      'For 60 years, black people were legally barred from skilled city jobs. This was only changed in 1973 — and only because white businesses were running out of workers.',
+      'Apartheid never gave black workers real union power, but strikes and labour shortages forced small cracks in the system. In 1973 the law allowed weak workplace committees instead of fair bargaining — while some better-paid skilled jobs slowly opened because white workers alone could not fill them. The wider pattern matters more than one calendar day.',
     significance: EventSignificance.MEDIUM,
     legal_links: [],
   },
@@ -566,9 +620,9 @@ const TIMELINE: TimelineSeedRow[] = [
   {
     event_date: '1998-10-19',
     event_type: EventType.INCIDENT,
-    title: 'Employment Equity Act — first legislative step toward transformation',
+    title: 'Employment Equity Act gazetted — workplace anti-discrimination framework',
     description:
-      'Employment Equity Act 55 of 1998 criminalises unfair discrimination in employment and requires designated employers to pursue equitable representation through plans and reporting.',
+      'Employment Equity Act 55 of 1998 — assented to 12 October 1998 and published in the Government Gazette on 19 October 1998. Core operational dates are phased (e.g. many employer duties commenced 1 December 1999); check commencement proclamations for detail. Prohibits unfair discrimination and requires designated employers to plan for equitable representation.',
     plain_english:
       'The first major post-apartheid law addressing workplace inequality. It banned unfair discrimination in employment and required employers with more than 50 staff to have employment equity plans. But it lacked the ownership and economic empowerment dimension that BEE would later address.',
     significance: EventSignificance.HIGH,
@@ -583,24 +637,24 @@ const TIMELINE: TimelineSeedRow[] = [
     ],
   },
   {
-    event_date: '2000-11-15',
+    event_date: '2000-09-13',
     event_type: EventType.STATEMENT,
-    title: 'BEE Commission releases Andile Mngxitama report',
+    title: 'Black Economic Empowerment Commission briefs Parliament on national strategy',
     description:
-      'Editorial seed note: a presidentially-led BEE commission reported slow voluntary transformation and recommended legislative scaffolding; details vary by published source.',
+      'The Black Economic Empowerment Commission (chaired by Cyril Ramaphosa) presented preliminary recommendations to the Trade and Industry Portfolio Committee: a proposed Black Economic Empowerment Act, procurement targets and departmental reporting, an Investment for Growth Accord, and national implementing agencies. Parliamentary monitoring record: PMG, 13 September 2000.',
     plain_english:
-      'The BEE Commission, chaired by Cyril Ramaphosa, released a report finding that economic transformation had been far too slow. The private sector had not voluntarily transformed. The report recommended legislation.',
+      'A commission led by Cyril Ramaphosa told Parliament that voluntary change had been too slow and sketched a future law to measure and push transformation — ideas that would feed into later B-BBEE legislation, though the final commission report to the President came only in 2001.',
     significance: EventSignificance.MEDIUM,
     legal_links: [],
   },
   {
-    event_date: '2003-11-09',
-    event_type: EventType.COMMISSION_ESTABLISHED,
-    title: 'Broad-Based Black Economic Empowerment Act 53 of 2003 signed into law',
+    event_date: '2004-01-09',
+    event_type: EventType.INCIDENT,
+    title: 'Broad-Based Black Economic Empowerment Act gazetted (Act 53 of 2003)',
     description:
-      'The B-BBEE Act creates a statutory empowerment framework — later operationalised through generic codes and sector codes.',
+      'Despite the “2003” year in the Act’s short title, the Broad-Based Black Economic Empowerment Act was assented to on 7 January 2004 and published in the Government Gazette on 9 January 2004; substantive commencement followed on 21 April 2004 (official gazette / Juta–Lexus metadata).',
     plain_english:
-      'The BEE Act created the legal framework for transformation for the first time. The word "Broad-Based" was important: the earlier approach had enriched a small black elite through individual deals. This law required transformation to benefit a broader community — through skills, suppliers, and social development, not just ownership.',
+      'The empowerment law people still call “B-BBEE” only appeared in the Government Gazette in January 2004 — the numbering reflects the year Parliament passed it, not the day it became public law.',
     significance: EventSignificance.CRITICAL,
     legal_links: [
       {
@@ -631,13 +685,13 @@ const TIMELINE: TimelineSeedRow[] = [
     legal_links: [],
   },
   {
-    event_date: '2013-10-31',
+    event_date: '2014-10-24',
     event_type: EventType.INCIDENT,
-    title: 'B-BBEE Amendment Act — "fronting" becomes a criminal offence',
+    title: 'B-BBEE Amendment Act provisions commence — fronting becomes a criminal offence',
     description:
-      'Amendments strengthen enforcement pathways, criminalise fronting, and establish institutional machinery for complaints and verification oversight.',
+      'The B-BBEE Amendment Act 46 of 2013 was assented to on 23 January 2014 and gazetted on 27 January 2014; most operational provisions (including the criminalisation of fronting under section 26B and B-BBEE Commission machinery) commenced on 24 October 2014 in terms of a presidential proclamation — confirm citation on the official proclamation in Government Gazette.',
     plain_english:
-      'Fronting is when a company gives the appearance of black ownership without genuine empowerment — a black person is listed as a shareholder but has no real power or benefit. The 2013 Act made fronting a criminal offence. The B-BBEE Commission was created to investigate complaints.',
+      'Fronting is when a company gives the appearance of black ownership without genuine empowerment — a black person is listed as a shareholder but has no real power or benefit. The 2013 Amendment Act, once it took effect in October 2014, made fronting a criminal offence and expanded the B-BBEE Commission’s powers to investigate complaints.',
     significance: EventSignificance.HIGH,
     legal_links: [
       {
@@ -650,13 +704,13 @@ const TIMELINE: TimelineSeedRow[] = [
     ],
   },
   {
-    event_date: '2022-03-30',
+    event_date: '2022-06-01',
     event_type: EventType.STATEMENT,
-    title: 'World Bank: South Africa is the most unequal country on Earth',
+    title: 'Inequality: South Africa near the top of global league tables',
     description:
-      'World Bank reporting and commentary widely cited South Africa as extremely unequal by international comparators; exact headline metrics evolve year to year.',
+      'World Bank, World Inequality Lab and domestic researchers repeatedly place South Africa among the most unequal countries when measured by income or wealth shares. Headlines differ by dataset and year — this entry is a thematic marker, not a claim that every statistic on the same card came from a single publication dated below.',
     plain_english:
-      'The World Bank ranked South Africa as the most economically unequal country on the planet. 30 years after apartheid ended, the racial wealth gap had barely closed at the median level. The top 10% — still disproportionately white — owned 86% of all wealth. The median black household had 5% of the wealth of the median white household.',
+      'International researchers keep showing that South Africa’s wealth and income are concentrated in a thin slice at the top, while ordinary households — still heavily shaped by race because of history — own very little. The exact numbers change depending on who measured and how; the pattern is what survived every serious study.',
     significance: EventSignificance.HIGH,
     legal_links: [],
   },
@@ -680,11 +734,11 @@ const TIMELINE: TimelineSeedRow[] = [
     ],
   },
   {
-    event_date: '2025-08-01',
+    event_date: '2025-08-05',
     event_type: EventType.JUDGMENT,
     title: 'Pretoria High Court: Sakeliga wins against Air Services Licensing Council',
     description:
-      'High Court litigation concerning whether an air-services licence may be conditioned on empowerment criteria; outcome described publicly as favourable to challengers.',
+      'North Gauteng High Court review litigation — judgment reported in early August 2025 — declaring aspects of the Air Services Licensing Council’s B-BBEE-related licensing requirements unlawful in the record before the court. Verify ratio and exact date from the published judgment PDF.',
     plain_english:
       'A court rules that the aviation regulator cannot make a BEE score a condition of getting an air service licence. Anti-BEE groups celebrate. Transformation advocates say it is a narrow procedural ruling, not a verdict on BEE itself.',
     significance: EventSignificance.HIGH,
@@ -695,7 +749,7 @@ const TIMELINE: TimelineSeedRow[] = [
     event_type: EventType.HEARING,
     title: 'Landmark Legal Sector Code challenge — Gauteng High Court, Week 1',
     description:
-      'Constitutional and administrative review of the Legal Sector Code: parties dispute rationality, fairness, and rights alignment of ownership targets and recognition rules.',
+      '[Editorial coverage — verify against final judgment.] Constitutional and administrative review of the Legal Sector Code: parties dispute rationality, fairness, and rights alignment of ownership targets and recognition rules.',
     plain_english:
       "Four of South Africa's largest law firms go to court to challenge the Legal Sector Code. The public gallery is packed. The hearing lasts the entire week. Both sides present their best arguments. The court is asked: is this code constitutional?",
     significance: EventSignificance.CRITICAL,
@@ -714,7 +768,7 @@ const TIMELINE: TimelineSeedRow[] = [
     event_type: EventType.HEARING,
     title: 'Defenders tell court: "This is about survival for black professionals"',
     description:
-      'Respondents in the Legal Sector Code review emphasise bar transformation history and practical barriers faced by black practitioners in large-firm practice.',
+      '[Editorial coverage — verify against final judgment.] Respondents in the Legal Sector Code review emphasise bar transformation history and practical barriers faced by black practitioners in large-firm practice.',
     plain_english:
       'Lawyers defending the Legal Sector Code tell the court that the case is about whether black professionals can survive in the legal field. The Black Lawyers Association, Advocates for Transformation, and the Legal Practice Council all oppose the challenge.',
     significance: EventSignificance.CRITICAL,
@@ -801,6 +855,8 @@ export async function run(): Promise<void> {
         true,
       );
       await linkStoryPersonRow(m, story.id, parks.id, 'minister — gazetted Legal Sector Code (2024)', true);
+
+      await removeSupersededBbeeTimelineRows(m, story.id);
 
       await upsertTimelineRows(m, story.id, TIMELINE, lawSections, constitutionSections);
 

@@ -13,6 +13,10 @@
  *   ts-node apps/api/src/database/seeds/mkhwanazi.seed.ts
  *
  * Requires DATABASE_URL in the environment (see .env.example).
+ *
+ * TIMELINE NOTE: Dated beats from 2025 onward are an in-product narrative arc
+ * (not a guarantee each calendar day maps to one wire story). Replace generic
+ * `source_urls` with article permalinks when mirroring real reporting.
  */
 
 import 'reflect-metadata';
