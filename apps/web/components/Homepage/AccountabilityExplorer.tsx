@@ -17,6 +17,7 @@ import type {
   AccountabilityBody,
   AdhocCommitteeSummary,
   CommissionSummary,
+  HistoricalEraDetailApi,
   LawSummary,
   PersonSummary,
   SiuProclamationSummary,
@@ -41,6 +42,11 @@ export interface AccountabilityExplorerProps {
   peopleRows: PeopleExplorerRow[];
   laws: LawSummary[];
   impactSectors: ImpactWebSectorNode[];
+  /** Eras for /history homepage tab (compact cards). */
+  historyEras: Pick<
+    HistoricalEraDetailApi,
+    "slug" | "name" | "period" | "icon" | "key_theme"
+  >[];
 }
 
 const TABS: { id: ExplorerTab; label: string }[] = [
@@ -52,6 +58,7 @@ const TABS: { id: ExplorerTab; label: string }[] = [
   { id: "people", label: "People" },
   { id: "laws", label: "Laws" },
   { id: "impact", label: "Impact" },
+  { id: "history", label: "History" },
 ];
 
 export default function AccountabilityExplorer({
@@ -63,6 +70,7 @@ export default function AccountabilityExplorer({
   peopleRows,
   laws,
   impactSectors,
+  historyEras,
 }: AccountabilityExplorerProps) {
   const [tab, setTab] = useState<ExplorerTab>("commissions");
   const prefersReduced = useReducedMotion() ?? false;
@@ -95,6 +103,8 @@ export default function AccountabilityExplorer({
         return laws.length;
       case "impact":
         return impactSectors.length;
+      case "history":
+        return historyEras.length;
       default:
         return 0;
     }
@@ -108,6 +118,7 @@ export default function AccountabilityExplorer({
     peopleRows,
     laws,
     impactSectors,
+    historyEras,
   ]);
 
   return (
@@ -166,6 +177,7 @@ export default function AccountabilityExplorer({
               {tab === "people" && <PeopleList rows={peopleRows} />}
               {tab === "laws" && <LawsList rows={laws} />}
               {tab === "impact" && <ImpactExplorerGrid sectors={impactSectors} />}
+              {tab === "history" && <HistoryEraScroll eras={historyEras} />}
             </ExplorerPanel>
           </AnimatePresence>
         </div>
@@ -287,6 +299,50 @@ function LawsList({ rows }: { rows: LawSummary[] }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+function HistoryEraScroll({
+  eras,
+}: {
+  eras: Pick<HistoricalEraDetailApi, "slug" | "name" | "period" | "icon" | "key_theme">[];
+}) {
+  if (eras.length === 0) {
+    return <PeopleLawsEmptyHint />;
+  }
+  return (
+    <div className="-mx-0 overflow-x-auto scrollbar-hidden pb-1">
+      <ul className="flex min-w-max gap-3 pl-0.5 pr-2">
+        {eras.map((e) => (
+          <li key={e.slug} className="w-[240px] shrink-0 md:w-[260px]">
+            <Link
+              href={`/history/${encodeURIComponent(e.slug)}`}
+              className="block h-full rounded-xl border border-charcoal/10 bg-white p-4 shadow-sm transition hover:border-amber/40 hover:shadow-md"
+            >
+              <div className="flex items-start gap-2">
+                <span aria-hidden className="text-xl shrink-0">
+                  {e.icon ?? "•"}
+                </span>
+                <div className="min-w-0">
+                  <p className="font-mono text-[9px] uppercase tracking-wider text-charcoal/45">
+                    {e.period}
+                  </p>
+                  <p className="font-serif text-base text-charcoal leading-snug">{e.name}</p>
+                </div>
+              </div>
+              {e.key_theme ? (
+                <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-charcoal/60">
+                  {e.key_theme}
+                </p>
+              ) : null}
+              <span className="mt-3 inline-flex font-mono text-[9px] uppercase tracking-wider text-amber">
+                Open era →
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 

@@ -20,7 +20,7 @@ import SiuMoneyBanner from "@/components/Homepage/SiuMoneyBanner";
 import SmartSearch from "@/components/Homepage/SmartSearch";
 import StatsBar from "@/components/Homepage/StatsBar";
 import { formatRands, formatRandsCompact } from "@/lib/format";
-import { getImpactWeb, listAccountabilityBodies, listStories } from "@/lib/api";
+import { getImpactWeb, listAccountabilityBodies, listHistoryEras, listStories } from "@/lib/api";
 import {
   MEDICARE24_STORY_SLUG,
   MKHWANAZI_SLUG,
@@ -190,6 +190,7 @@ export default async function HomePage() {
     madlangaCommission,
     expenditureCounter,
     impactWeb,
+    historyErasFull,
   ] = await Promise.all([
     listStories(1, 10, { sort: "updated_at", order: "DESC" }),
     fetchJson<StoryDetail>(`/api/stories/${encodeURIComponent(MKHWANAZI_SLUG)}`),
@@ -213,6 +214,7 @@ export default async function HomePage() {
     fetchJson<MadlangaCommission>("/api/commissions/madlanga-commission"),
     fetchJson<ExpenditureCounter>("/api/expenditure/counter"),
     getImpactWeb(),
+    listHistoryEras(),
   ]);
 
   const featuredSlug = storiesRes.data[0]?.slug ?? MKHWANAZI_SLUG;
@@ -259,6 +261,14 @@ export default async function HomePage() {
     : 22;
 
   const storyTickerExtras: string[] = [];
+
+  const historyEras = (historyErasFull ?? []).map((e) => ({
+    slug: e.slug,
+    name: e.name,
+    period: e.period,
+    icon: e.icon,
+    key_theme: e.key_theme,
+  }));
   if (tembisaStory?.status === "active") {
     storyTickerExtras.push(
       "TEMBISA HOSPITAL · R2BN LOOTED · MASTERMINDS STILL FREE",
@@ -322,6 +332,7 @@ export default async function HomePage() {
         peopleRows={explorerPeople}
         laws={lawsList}
         impactSectors={impactWeb?.sectors ?? []}
+        historyEras={historyEras}
       />
       <SiuMoneyBanner stats={siuStats} />
       <PeopleStrip rows={strip} />

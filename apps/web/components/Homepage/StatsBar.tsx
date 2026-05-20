@@ -12,7 +12,8 @@ export type ExplorerTab =
   | "stories"
   | "people"
   | "laws"
-  | "impact";
+  | "impact"
+  | "history";
 
 export interface StatsBarProps {
   /** Compact Rand headline for money counter (null when API unavailable). */

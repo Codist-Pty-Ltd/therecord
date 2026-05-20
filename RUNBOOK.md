@@ -63,7 +63,7 @@ docker exec therecord-api npm run migration:run
 
 ### Run seeds (first time or after reset)
 
-After migrations, the recommended one-shot import is the orchestrated index (order: commissions master → reports → recommendations → ad hoc → SIU → impact-sectors → state-entities → accountability-bodies → cape-town → mkhwanazi → **new-stories-2026** — see `apps/api/src/database/seeds/index.ts`):
+After migrations, the recommended one-shot import is the orchestrated index (order: commissions master → reports → recommendations → ad hoc → SIU → impact-sectors → **sa-history** → state-entities → accountability-bodies → cape-town → mkhwanazi → **new-stories-2026** — see `apps/api/src/database/seeds/index.ts`):
 
 ```bash
 docker exec therecord-api npm run seed:all
@@ -94,6 +94,38 @@ curl -X POST https://therecord.codist.co.za/api/ingestion/article \
 ```
 
 (Adjust the JSON body to match `IngestArticleDto` in the Nest API; required fields are validated by the API.)
+
+## History layer (South African context)
+
+Run the history seed after migrations and after the commissions master seed (for TRC / person FK lookups), typically via full `seed:all` or:
+
+```bash
+docker exec therecord-api node dist/database/run-migrations.js
+docker exec therecord-api node dist/database/seeds/sa-history.seed.js
+```
+
+Verify eras:
+
+```bash
+docker exec therecord-postgres psql -U therecord -d therecord_db \
+  -c "SELECT slug, name, period FROM historical_eras ORDER BY order_index;"
+```
+
+Verify event and law counts:
+
+```bash
+docker exec therecord-postgres psql -U therecord -d therecord_db \
+  -c "SELECT COUNT(*) FROM historical_events;"
+docker exec therecord-postgres psql -U therecord -d therecord_db \
+  -c 'SELECT name, year_enacted FROM historical_laws WHERE is_foundational = true ORDER BY year_enacted;'
+```
+
+Smoke API (see `docs/PLATFORM_CONTEXT.md` for ports; production API is proxied at `https://therecord.co.za/api`):
+
+```bash
+curl -s https://therecord.co.za/api/history/eras | jq 'length'
+curl -s https://therecord.co.za/api/history/compare | jq '.income_gap_post'
+```
 
 ## Provincial Stories & Money Counter
 

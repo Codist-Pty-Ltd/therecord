@@ -56,6 +56,12 @@ export const NAV_GROUPS: NavGroup[] = [
         desc: "B-BBEE, land, economic justice",
         href: "/transformation",
       },
+      {
+        icon: "📖",
+        name: "History",
+        desc: "Before, during & after apartheid",
+        href: "/history",
+      },
     ],
   },
   {
@@ -147,8 +153,14 @@ export const MOBILE_NAV_SECTIONS: {
       {
         icon: "⚖️",
         name: "Transformation",
-        desc: "B-BBEE and economic justice",
+        desc: "B-BBEE, land, economic justice",
         href: "/transformation",
+      },
+      {
+        icon: "📖",
+        name: "History",
+        desc: "South Africa: before, during & after",
+        href: "/history",
       },
     ],
   },

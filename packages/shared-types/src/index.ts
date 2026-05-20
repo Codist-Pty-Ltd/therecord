@@ -2519,3 +2519,152 @@ export interface YoutubeVideo {
   created_at: string;
   updated_at: string;
 }
+
+// -----------------------------------------------------------------------------
+// South African history (`GET /api/history/...`)
+// -----------------------------------------------------------------------------
+
+export type HistoricalEventTypeApi =
+  | "founding"
+  | "law_enacted"
+  | "law_repealed"
+  | "dispossession"
+  | "resistance"
+  | "massacre"
+  | "negotiation"
+  | "election"
+  | "economic"
+  | "social"
+  | "liberation"
+  | "assassination";
+
+export type HistoricalLawCategoryApi =
+  | "land"
+  | "labour"
+  | "education"
+  | "movement"
+  | "political"
+  | "classification"
+  | "housing"
+  | "amenities"
+  | "security"
+  | "economy";
+
+export type HistoricalLawStatusApi = "active" | "repealed" | "replaced";
+
+/** Significance of a historical timeline event (mirrors `historical_event_significance`). */
+export type EraSignificance =
+  | "foundational"
+  | "critical"
+  | "high"
+  | "medium";
+
+export interface HistoricalEventApi {
+  id: string;
+  era_id: string;
+  year: number;
+  year_display: string | null;
+  event_type: HistoricalEventTypeApi;
+  title: string;
+  description: string;
+  plain_english_child: string;
+  significance: EraSignificance;
+  is_verified: boolean;
+  source_attribution: string | null;
+  related_law_id: string | null;
+  related_historical_law_id: string | null;
+  related_commission_id: string | null;
+  related_commission_slug: string | null;
+  related_person_id: string | null;
+  related_story_id: string | null;
+  created_at: string;
+}
+
+export interface HistoricalLawApi {
+  id: string;
+  era_id: string;
+  year_enacted: number;
+  year_repealed: number | null;
+  name: string;
+  full_name: string | null;
+  act_number: string | null;
+  slug: string;
+  category: HistoricalLawCategoryApi;
+  status: HistoricalLawStatusApi;
+  replaced_by: string | null;
+  what_it_did: string;
+  plain_english_child: string;
+  plain_english_layperson: string;
+  impact_summary: string;
+  constitutional_violation: string | null;
+  is_foundational: boolean;
+  created_at: string;
+}
+
+export type HistoricalStatTypeApi =
+  | "income_gap"
+  | "wealth_gap"
+  | "land_ownership"
+  | "unemployment"
+  | "poverty"
+  | "education"
+  | "life_expectancy"
+  | "population"
+  | "other";
+
+export interface HistoricalStatisticApi {
+  id: string;
+  era_id: string;
+  stat_type: HistoricalStatTypeApi;
+  label: string;
+  value: string;
+  value_context: string;
+  year_or_period: string | null;
+  source: string;
+  plain_english_child: string;
+  created_at: string;
+}
+
+export interface HistoricalEraDetailApi {
+  id: string;
+  slug: string;
+  name: string;
+  period: string;
+  order_index: number;
+  summary: string;
+  plain_english_child: string;
+  plain_english_layperson: string;
+  plain_english_legal: string;
+  key_theme: string | null;
+  icon: string | null;
+  created_at: string;
+  events: HistoricalEventApi[];
+  laws: HistoricalLawApi[];
+  statistics: HistoricalStatisticApi[];
+  event_counts_by_type: Record<string, number>;
+}
+
+export interface HistoryCompareApi {
+  income_gap_apartheid: string;
+  income_gap_post: string;
+  land_black_apartheid: string;
+  land_redistributed_post: string;
+  unemployment_post: string;
+  poverty_post: string;
+  sources: Record<string, string>;
+}
+
+export interface HistoricalLawDetailApi {
+  law: HistoricalLawApi;
+  era: Pick<
+    HistoricalEraDetailApi,
+    "id" | "slug" | "name" | "period" | "icon" | "key_theme"
+  >;
+  related_current_law: {
+    id: string;
+    name: string;
+    short_name: string;
+    act_number: string;
+  } | null;
+  constitutional_violation: string | null;
+}

@@ -202,6 +202,15 @@ export default function TransformationPageClient({
               </div>
             </div>
 
+            <p className="mt-8 text-center">
+              <Link
+                href="/history"
+                className="font-mono text-[11px] uppercase tracking-wider text-legal-blue hover:text-amber underline-offset-4"
+              >
+                See the full historical record →
+              </Link>
+            </p>
+
             <p className="mt-10 text-center font-serif text-base italic text-amber md:text-lg">
               These numbers are the reason the law exists.
             </p>

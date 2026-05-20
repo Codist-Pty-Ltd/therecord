@@ -29,11 +29,13 @@ PROD FACTS (non-negotiable):
 
 SEED ORDER (FK-dependent — never reorder; see seeds/index.ts):
   commissions-master → reports → recommendations → adhoc → siu →
-  impact-sectors → state-entities → accountability-bodies →
+  impact-sectors → sa-history → state-entities → accountability-bodies →
   cape-town-stories → mkhwanazi → new-stories-2026 (Tembisa / Medicare24 / Carrim)
 
-SCHEMA: 27 entities confirmed. Key ones:
+SCHEMA: 31 entities confirmed. Key ones:
   Story → Commission (FK), AdhocCommittee (FK), SiuProclamation (FK)
+  HistoricalEra → HistoricalEvent, HistoricalLaw, HistoricalStatistic (FK)
+  HistoricalEvent → Commission, Person, Story, Law, HistoricalLaw (optional FKs)
   Recommendation → Commission (FK) or AdhocCommittee (FK)
   YoutubeVideo → Commission/AdhocCommittee/Story/SiuProclamation
   CommissionReport → Commission/AdhocCommittee/SiuProclamation
@@ -56,6 +58,7 @@ ROUTES BUILT (no Coming Soon anywhere):
   /accountability-bodies /accountability-bodies/[slug]
   + error.tsx on every route + not-found.tsx
   /transformation — B-BBEE & economic transformation explainer (force-dynamic)
+  /history / /history/[slug] — South African historical context layer (force-dynamic)
 
 CI: .github/workflows/ci.yml runs typecheck+lint+smoke+python+build on PRs
 DEPLOY: .github/workflows/deploy.yml runs migrations, SOE seed, then health check on main push
@@ -142,6 +145,40 @@ Navigation:
 Presentation rules:
   Spider-web SVG: draw radial spokes first (pathLength), then fade sector nodes.
   Never show the spider-web block without constitutional-rights framing nearby.
+
+## South African History Layer
+The `/history` section is the foundational context layer for the entire platform.
+It covers 5 eras: pre-colonial, colonial, union-and-segregation, apartheid,
+post-apartheid.
+
+Entities: HistoricalEra, HistoricalEvent, HistoricalLaw, HistoricalStatistic
+
+Editorial rules (non-negotiable):
+  Only verified, sourced facts. Every claim has a source.
+  Do not make claims that cannot be sourced.
+  Show the improvement AND the remaining gap honestly.
+  This is not triumphalist and not hopeless — it is factual.
+
+  Historical laws: use HistoricalLaw entity (repealed / colonial statutes)
+  Current laws: use Law entity (active legislation)
+  Never mix them in the same list UI as if they were the same kind of record.
+
+The three plain English levels for history:
+  child → school-level language, analogies from classroom/community
+  layperson → clear, direct, no jargon, under 150 words where possible per block
+  legal → maps to specific Constitution sections (avoid "§" in UI strings)
+
+Cross-links:
+  HistoricalEvent → Commission (TRC, etc.)
+  HistoricalEvent → Person (Mandela, etc.)
+  HistoricalEvent → Story (optional)
+  HistoricalLaw.replaced_by → text pointer to successor Acts; detail API may resolve current Law row when names match.
+
+New routes: `/history` (landing), `/history/[slug]` (era detail)
+New API: GET `/api/history/eras`, `/api/history/eras/:slug`, `/api/history/laws`,
+  `/api/history/timeline`, `/api/history/compare`
+
+Seed: `sa-history.seed.ts` — runs after `impact-sectors` (see `seeds/index.ts`).
   Always show plain_english_child per sector (PlainEnglishBox child level).
   Disclaimer on impact stats:
     "These figures show the scale of service delivery failures.

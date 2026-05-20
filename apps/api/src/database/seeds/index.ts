@@ -23,6 +23,9 @@
  *      Human-impact sectors + joins. MUST run before state-entities
  *      (primary_impact_sector_slug FK to sector slugs).
  *
+ *   6b. sa-history.seed.ts
+ *      Historical eras/events/laws/statistics (requires migrations + TRC commission seed).
+ *
  *   7. state-entities.seed.ts — SOEs + timeline + commission/SIU/ad hoc links.
  *
  *   8. accountability-bodies.seed.ts — Scorpions / Hawks / IDAC (uses commissions + migrations).
@@ -55,6 +58,7 @@ import { run as runBbeeTransformation } from './bbee-transformation.seed';
 import { run as runCapeTownStories } from './cape-town-stories.seed';
 import { run as runCommissionsMaster } from './commissions-master.seed';
 import { run as runImpactSectors } from './impact-sectors.seed';
+import { run as runSaHistory } from './sa-history.seed';
 import { run as runMkhwanazi } from './mkhwanazi.seed';
 import { run as runNewStories2026 } from './new-stories-2026.seed';
 import { run as runRecommendations } from './recommendations.seed';
@@ -73,6 +77,7 @@ async function main(): Promise<void> {
   await runAdhocCommittees();
   await runSiu();
   await runImpactSectors();
+  await runSaHistory();
   await runStateEntities();
   await runAccountabilityBodies();
   await runCapeTownStories();

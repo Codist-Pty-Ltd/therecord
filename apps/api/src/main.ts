@@ -51,6 +51,7 @@ async function bootstrap(): Promise<void> {
       .addTag('People', 'People who appear in stories (accused, chairs, witnesses…)')
       .addTag('Legal', 'Statutes, law sections, and constitutional provisions')
       .addTag('Investigations', 'Commissions, inquiries and investigative bodies')
+      .addTag('History', 'South African historical eras, events, laws, statistics')
       .addTag('search', 'Global search across all indexed entities')
       .build();
 

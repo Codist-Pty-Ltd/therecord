@@ -24,6 +24,11 @@ import type {
   CommissionDomain,
   CommissionSummary,
   ConstitutionSection,
+  HistoricalEraDetailApi,
+  HistoricalEventApi,
+  HistoricalLawApi,
+  HistoricalLawDetailApi,
+  HistoryCompareApi,
   ImpactSectorDetail,
   ImpactSectorListItem,
   ImpactWeb,
@@ -874,5 +879,80 @@ export const listYoutubeVideosForStory = cache(
       },
     );
     return r ?? [];
+  },
+);
+
+export const listHistoryEras = cache(
+  async (): Promise<HistoricalEraDetailApi[]> => {
+    const r = await apiGet<HistoricalEraDetailApi[]>("/api/history/eras", {
+      revalidate: REVALIDATE_STABLE_SECONDS,
+      tags: ["history:eras"],
+    });
+    return r ?? [];
+  },
+);
+
+export const getHistoryEra = cache(
+  async (slug: string): Promise<HistoricalEraDetailApi | null> => {
+    const enc = encodeURIComponent(slug);
+    return apiGet<HistoricalEraDetailApi>(`/api/history/eras/${enc}`, {
+      revalidate: REVALIDATE_STABLE_SECONDS,
+      tags: [`history:era:${slug}`],
+    });
+  },
+);
+
+export const listHistoricalLaws = cache(
+  async (query?: {
+    category?: string;
+    status?: string;
+    era_slug?: string;
+    is_foundational?: boolean;
+  }): Promise<HistoricalLawApi[]> => {
+    const q = new URLSearchParams();
+    if (query?.category) q.set("category", query.category);
+    if (query?.status) q.set("status", query.status);
+    if (query?.era_slug) q.set("era_slug", query.era_slug);
+    if (query?.is_foundational === true) q.set("is_foundational", "true");
+    if (query?.is_foundational === false) q.set("is_foundational", "false");
+    const qs = q.toString();
+    const r = await apiGet<HistoricalLawApi[]>(
+      `/api/history/laws${qs ? `?${qs}` : ""}`,
+      { revalidate: REVALIDATE_STABLE_SECONDS, tags: ["history:laws"] },
+    );
+    return r ?? [];
+  },
+);
+
+export const getHistoricalLaw = cache(
+  async (slug: string): Promise<HistoricalLawDetailApi | null> => {
+    const enc = encodeURIComponent(slug);
+    return apiGet<HistoricalLawDetailApi>(`/api/history/laws/${enc}`, {
+      revalidate: REVALIDATE_STABLE_SECONDS,
+      tags: [`history:law:${slug}`],
+    });
+  },
+);
+
+export const getHistoryTimeline = cache(
+  async (query?: { era?: string; type?: string }): Promise<HistoricalEventApi[]> => {
+    const q = new URLSearchParams();
+    if (query?.era) q.set("era", query.era);
+    if (query?.type) q.set("type", query.type);
+    const qs = q.toString();
+    const r = await apiGet<HistoricalEventApi[]>(
+      `/api/history/timeline${qs ? `?${qs}` : ""}`,
+      { revalidate: REVALIDATE_STABLE_SECONDS, tags: ["history:timeline"] },
+    );
+    return r ?? [];
+  },
+);
+
+export const getHistoryCompare = cache(
+  async (): Promise<HistoryCompareApi | null> => {
+    return apiGet<HistoryCompareApi>("/api/history/compare", {
+      revalidate: REVALIDATE_STABLE_SECONDS,
+      tags: ["history:compare"],
+    });
   },
 );

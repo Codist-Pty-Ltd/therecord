@@ -7,6 +7,7 @@ import { AdhocCommitteesModule } from './adhoc-committees/adhoc-committees.modul
 import { CommissionsModule } from './commissions/commissions.module';
 import { ExpenditureModule } from './expenditure/expenditure.module';
 import { HealthModule } from './health/health.module';
+import { HistoryModule } from './history/history.module';
 import { HumanImpactModule } from './human-impact/human-impact.module';
 import { ImpactModule } from './impact/impact.module';
 import { IngestionModule } from './ingestion/ingestion.module';
@@ -51,6 +52,7 @@ import { StateEntitiesModule } from './state-entities/state-entities.module';
     ExpenditureModule,
     HealthModule,
     HumanImpactModule,
+    HistoryModule,
     ImpactModule,
     IngestionModule,
     InvestigationsModule,
