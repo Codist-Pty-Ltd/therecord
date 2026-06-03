@@ -517,7 +517,9 @@ const TIMELINE_SEED: readonly TimelineEventSeed[] = [
     plain_english:
       'A company run by a man people called "Cat" won a huge R360-million contract to take care of sick police officers — but some people inside the police were already worried about how the contract was awarded.',
     significance: EventSignificance.HIGH,
-    source_urls: ['https://www.dailymaverick.co.za'],
+    source_urls: [
+      'https://www.news24.com/investigations/9-lives-cat-matlalas-r360m-police-deal-cancelled-days-before-criminal-probe-begins-20250518-1193',
+    ],
     legal_links: [
       {
         kind: 'law',
@@ -530,15 +532,18 @@ const TIMELINE_SEED: readonly TimelineEventSeed[] = [
     ],
   },
   {
-    event_date: '2025-01-15',
+    event_date: '2024-12-31',
     event_type: EventType.INCIDENT,
     title: 'Minister Mchunu Disbands the PKTT',
     description:
-      'Police Minister Senzo Mchunu issues a directive disbanding the Political Killings Task Team. No replacement structure is announced. Detectives attached to the unit are reassigned to general crime duties in KwaZulu-Natal and Gauteng, and active dockets are redistributed.',
+      'Police Minister Senzo Mchunu issues a memorandum (dated 31 December 2024) directing the immediate disbandment of the Political Killings Task Team; public reporting from January 2025 covered the fallout. No replacement structure was announced at the time.',
     plain_english:
       'The special team catching political murderers was suddenly shut down by the minister.',
     significance: EventSignificance.CRITICAL,
-    source_urls: ['https://www.news24.com'],
+    source_urls: [
+      'https://www.sabcnews.com/sabcnews/1000856-2/',
+      'https://www.sabcnews.com/sabcnews/decision-to-disband-kzns-political-killings-task-team-slated/',
+    ],
     legal_links: [
       {
         kind: 'constitution',
@@ -558,19 +563,23 @@ const TIMELINE_SEED: readonly TimelineEventSeed[] = [
     plain_english:
       "Journalists found messages on WhatsApp between the minister's team and the businessman's team. They were talking about police contracts and shutting down the special team.",
     significance: EventSignificance.HIGH,
-    source_urls: ['https://www.dailymaverick.co.za'],
+    source_urls: [
+      'https://www.dailymaverick.co.za/article/2025-07-06-saps-commissioner-accuses-police-minister-of-derailing-probe-into-political-killings/',
+    ],
     legal_links: [],
   },
   {
-    event_date: '2025-05-01',
+    event_date: '2024-07-01',
     event_type: EventType.INCIDENT,
     title: "SAPS Cancels Matlala's R360m Contract",
     description:
-      'National Commissioner Fannie Masemola signs off on the cancellation of the R360-million Medicare 24 Tshwane District contract. SAPS cites procurement irregularities and reports the matter to the Directorate for Priority Crime Investigation (the Hawks).',
+      'Month-level anchor (cancellation reported July 2024) — National Commissioner Fannie Masemola cancelled the R360-million Medicare24 Tshwane District contract after internal audit concerns; reporting later tied the lane to IDAC and criminal charges in 2026.',
     plain_english:
       'The top police boss cancelled the big contract with Cat\'s company and asked a special police unit to investigate how it was awarded.',
     significance: EventSignificance.HIGH,
-    source_urls: ['https://www.news24.com'],
+    source_urls: [
+      'https://www.news24.com/investigations/9-lives-cat-matlalas-r360m-police-deal-cancelled-days-before-criminal-probe-begins-20250518-1193',
+    ],
     legal_links: [],
   },
   {
@@ -583,9 +592,8 @@ const TIMELINE_SEED: readonly TimelineEventSeed[] = [
       'General Mkhwanazi stood in front of cameras in his police uniform with armed officers behind him and told the whole country: our police minister is protecting criminals.',
     significance: EventSignificance.CRITICAL,
     source_urls: [
-      'https://www.dailymaverick.co.za',
-      'https://www.news24.com',
-      'https://www.sabcnews.com',
+      'https://www.dailymaverick.co.za/article/2025-07-06-saps-commissioner-accuses-police-minister-of-derailing-probe-into-political-killings/',
+      'https://www.news24.com/drum/news/kzn-police-commissioner-lt-general-nhlanhla-mkhwanazi-makes-explosive-allegations-20250707-0631',
     ],
     legal_links: [
       {
@@ -647,7 +655,10 @@ const TIMELINE_SEED: readonly TimelineEventSeed[] = [
     plain_english:
       'Police arrested six people for the murder of a famous DJ. That case had been handled by the special team that was shut down in January.',
     significance: EventSignificance.HIGH,
-    source_urls: ['https://www.news24.com', 'https://www.timeslive.co.za'],
+    source_urls: [
+      'https://www.news24.com/investigations/sandton-businessman-arrested-for-dj-sumbody-hit-20250721-0897',
+      'https://www.news24.com/citypress/news/breakthrough-in-dj-sumbody-murder-probe-as-police-arrest-four-suspects-20250721-1120',
+    ],
     legal_links: [],
   },
   {
@@ -701,7 +712,7 @@ const TIMELINE_SEED: readonly TimelineEventSeed[] = [
     significance: EventSignificance.CRITICAL,
     source_urls: [
       'https://criminaljusticecommission.org.za',
-      'https://www.dailymaverick.co.za',
+      'https://www.dailymaverick.co.za/article/2025-07-24-madlanga-inquiry-terms-of-reference-heres-what-to-know/',
     ],
     legal_links: [
       {
@@ -1172,6 +1183,37 @@ async function upsertInvestigations(
   console.log(`  · Investigations: ${INVESTIGATIONS_SEED.length}`);
 }
 
+const SUPERSEDED_MKHWANAZI_TIMELINE_ROWS: ReadonlyArray<{
+  event_date: string;
+  title: string;
+}> = [
+  {
+    event_date: '2025-01-15',
+    title: 'Minister Mchunu Disbands the PKTT',
+  },
+  {
+    event_date: '2025-05-01',
+    title: "SAPS Cancels Matlala's R360m Contract",
+  },
+];
+
+async function removeSupersededMkhwanaziTimelineRows(
+  m: EntityManager,
+  storyId: string,
+): Promise<void> {
+  const eventRepo = m.getRepository(TimelineEvent);
+  const refRepo = m.getRepository(EventLegalReference);
+  for (const { event_date, title } of SUPERSEDED_MKHWANAZI_TIMELINE_ROWS) {
+    const obsolete = await eventRepo.findOne({
+      where: { story_id: storyId, event_date, title },
+    });
+    if (!obsolete) continue;
+    await refRepo.delete({ event_id: obsolete.id });
+    await eventRepo.delete({ id: obsolete.id });
+    console.log(`  · Dropped superseded timeline row: ${event_date} — ${title.slice(0, 48)}…`);
+  }
+}
+
 async function upsertTimelineEvents(
   m: EntityManager,
   story: Story,
@@ -1180,6 +1222,8 @@ async function upsertTimelineEvents(
 ): Promise<void> {
   const eventRepo = m.getRepository(TimelineEvent);
   const refRepo = m.getRepository(EventLegalReference);
+
+  await removeSupersededMkhwanaziTimelineRows(m, story.id);
 
   let eventCount = 0;
   let refCount = 0;

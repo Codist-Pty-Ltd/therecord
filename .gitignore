@@ -105,6 +105,10 @@ desktop.ini
 *.db
 postgres-data/
 
+# Interview prep (generated locally — do not commit)
+INTERVIEW_PREP.md
+INTERVIEW_PREP.warroom.json
+
 # Misc
 *.pem
 *.key

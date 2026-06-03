@@ -82,6 +82,7 @@ type EventLegalLink =
     };
 
 interface TimelineSeedRow {
+  source_urls?: string[];
   event_date: string;
   event_type: EventType;
   title: string;
@@ -269,6 +270,38 @@ async function upsertTembisaProclamation(
   return row;
 }
 
+const SUPERSEDED_MEDICARE_TIMELINE_ROWS: ReadonlyArray<{
+  event_date: string;
+  title: string;
+}> = [
+  {
+    event_date: '2023-01-01',
+    title: 'Medicare24 tender awarded to Matlala-linked company',
+  },
+  {
+    event_date: '2024-05-01',
+    title: 'SAPS cancels Medicare24 contract — Commissioner Masemola',
+  },
+];
+
+async function removeSupersededTimelineRows(
+  m: EntityManager,
+  storyId: string,
+  rows: ReadonlyArray<{ event_date: string; title: string }>,
+): Promise<void> {
+  const eventRepo = m.getRepository(TimelineEvent);
+  const refRepo = m.getRepository(EventLegalReference);
+  for (const { event_date, title } of rows) {
+    const obsolete = await eventRepo.findOne({
+      where: { story_id: storyId, event_date, title },
+    });
+    if (!obsolete) continue;
+    await refRepo.delete({ event_id: obsolete.id });
+    await eventRepo.delete({ id: obsolete.id });
+    console.log(`  · Dropped superseded timeline row: ${event_date} — ${title.slice(0, 48)}…`);
+  }
+}
+
 async function upsertTimelineRows(
   m: EntityManager,
   storyId: string,
@@ -288,7 +321,7 @@ async function upsertTimelineRows(
       description: seed.description,
       plain_english: seed.plain_english,
       significance: seed.significance,
-      source_urls: [] as string[],
+      source_urls: seed.source_urls ?? [],
     };
 
     let event = await eventRepo.findOne({
@@ -999,14 +1032,17 @@ export async function run(): Promise<void> {
       /* ── Medicare timeline ── */
       const medicareTimeline: TimelineSeedRow[] = [
         {
-          event_date: '2023-01-01',
+          event_date: '2024-06-01',
           event_type: EventType.INCIDENT,
           title: 'Medicare24 tender awarded to Matlala-linked company',
           description:
-            'Medicare24, tied publicly to Matlala, secured a roughly R360 million SAPS healthcare contract amid procurement allegations.',
+            'Month-level anchor (award reported mid-2024) — Medicare24 Tshwane District, tied publicly to Vusimuzi Matlala, secured a roughly R360 million SAPS healthcare contract; later audit reporting questioned bidder capacity and procurement steps.',
           plain_english:
             'Matlala\'s company won a huge police health deal — investigators say the company maybe lied about what it could do.',
           significance: EventSignificance.HIGH,
+          source_urls: [
+            'https://www.timeslive.co.za/news/south-africa/2025-11-20-red-flags-show-cat-matlalas-saps-tender-bid-should-have-been-disallowed/',
+          ],
           legal_links: [],
         },
         {
@@ -1014,10 +1050,11 @@ export async function run(): Promise<void> {
           event_type: EventType.INCIDENT,
           title: 'IDAC investigation lane on Medicare24 tender',
           description:
-            'The Investigating Directorate Against Corruption reportedly took the tender as an early flagship matter after forming in 2024.',
+            'Year-level anchor — the Investigating Directorate Against Corruption was publicly associated with the Medicare24 SAPS tender lane from 2024 after SAPS referred procurement concerns; IDAC was permanently established in April 2024.',
           plain_english:
             'A new corruption-fighting team inside prosecutors started digging into the police contract.',
           significance: EventSignificance.HIGH,
+          source_urls: ['https://allafrica.com/stories/202603260067.html'],
           legal_links: [
             {
               kind: 'law',
@@ -1036,14 +1073,18 @@ export async function run(): Promise<void> {
           ],
         },
         {
-          event_date: '2024-05-01',
+          event_date: '2024-07-01',
           event_type: EventType.INCIDENT,
           title: 'SAPS cancels Medicare24 contract — Commissioner Masemola',
           description:
-            'General Masemola cancelled the contract after internal concerns; Mkhwanazi later cited this as proof correct processes could still bite before political interference allegations.',
+            'Month-level anchor (cancellation reported July 2024) — National Commissioner Fannie Masemola cancelled the Medicare24 contract after internal audit concerns; reporting tied roughly R18.6m in irregular disbursements before termination.',
           plain_english:
             'The police boss cancelled the stolen contract when red lights flashed.',
           significance: EventSignificance.HIGH,
+          source_urls: [
+            'https://www.news24.com/investigations/9-lives-cat-matlalas-r360m-police-deal-cancelled-days-before-criminal-probe-begins-20250518-1193',
+            'https://mg.co.za/news/2026-03-27-how-the-cat-captured-top-brass-in-saps/',
+          ],
           legal_links: [],
         },
         {
@@ -1051,10 +1092,11 @@ export async function run(): Promise<void> {
           event_type: EventType.INCIDENT,
           title: 'Bank records — R1.5 million from Matlala to Suliman Carrim',
           description:
-            'Statements allegedly showed a February 2025 payment; Carrim publicly characterised it as loan/investment repayment.',
+            'Editorial / commission-facing narrative — reporting and commission evidence lanes allege a February 2025 payment; Carrim publicly characterised it as loan/investment repayment; verify against sworn testimony before treating as proved fact.',
           plain_english:
             'Paper trails allegedly show money moved from Matlala to Carrim — he says it was paying back someone who invested.',
           significance: EventSignificance.CRITICAL,
+          source_urls: [],
           legal_links: [],
         },
         {
@@ -1062,10 +1104,13 @@ export async function run(): Promise<void> {
           event_type: EventType.PRESS_CONFERENCE,
           title: 'Mkhwanazi press conference names Medicare24 tender lines',
           description:
-            'Lt Gen Mkhwanazi publicly referenced the tender while accusing political interference in SAPS; overlaps the existing Madlanga story timeline on the same date.',
+            'Lt Gen Nhlanhla Mkhwanazi publicly referenced the Medicare24 tender while alleging political interference in SAPS; overlaps the Madlanga story timeline on the same date.',
           plain_english:
             'The police general told the country about the giant tender while accusing powerful people of protecting crooks.',
           significance: EventSignificance.CRITICAL,
+          source_urls: [
+            'https://www.dailymaverick.co.za/article/2025-07-06-saps-commissioner-accuses-police-minister-of-derailing-probe-into-political-killings/',
+          ],
           legal_links: [],
         },
         {
@@ -1073,10 +1118,14 @@ export async function run(): Promise<void> {
           event_type: EventType.CHARGE_FILED,
           title: 'Medicare24 — senior SAPS members in Pretoria Magistrate\'s Court',
           description:
-            'Twelve senior officers appeared; Masemola was summonsed; bail between R40k–R80k was reported.',
+            'Twelve senior SAPS members and Matlala-linked figures appeared in the Pretoria Magistrate\'s Court on fraud, corruption and PFMA-related counts linked to the Medicare24 tender; reported bail between R40,000 and R80,000; subjects presumed innocent until proved in court.',
           plain_english:
             'A dozen top cops went to court for fraud and corruption charges about the same tender.',
           significance: EventSignificance.CRITICAL,
+          source_urls: [
+            'https://iol.co.za/news/crime-and-courts/2026-03-25-inside-the-r360-million-tender-scandal-vusimuzi-cat-matlala-and-police-officers-in-court/',
+            'https://allafrica.com/stories/202603260067.html',
+          ],
           legal_links: [
             {
               kind: 'law',
@@ -1096,6 +1145,7 @@ export async function run(): Promise<void> {
         },
       ];
 
+      await removeSupersededTimelineRows(m, medicareStory.id, SUPERSEDED_MEDICARE_TIMELINE_ROWS);
       await upsertTimelineRows(
         m,
         medicareStory.id,

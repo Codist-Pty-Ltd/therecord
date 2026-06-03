@@ -10,6 +10,10 @@
 #                     lives on the server and is used to git pull from GitHub)
 #   APP_DIR         = /opt/therecord
 #
+# Post-migrate seeds (idempotent): impact-sectors → sa-history → state-entities.
+# Full corpus refresh (mkhwanazi, new-stories-2026, accountability-bodies) still
+# requires `npm run seed:all` on the VPS when editorial seeds change — see RUNBOOK.md.
+#
 # Server prerequisites (one-time, outside this workflow):
 #   - /opt/therecord is a git clone of this repo, owned by user `therecord`.
 #   - ~/.ssh/therecord_deploy is an ed25519 deploy key whose public half is
@@ -64,6 +68,8 @@ jobs:
             docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
             # Run migrations (env vars already in container from compose)
             docker exec therecord-api node dist/database/run-migrations.js
+            docker exec therecord-api node dist/database/seeds/impact-sectors.seed.js
+            docker exec therecord-api node dist/database/seeds/sa-history.seed.js
             docker exec therecord-api node dist/database/seeds/state-entities.seed.js
             # Wait for API container to be ready
             for i in $(seq 1 10); do

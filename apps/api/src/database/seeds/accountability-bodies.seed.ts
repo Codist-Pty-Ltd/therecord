@@ -493,6 +493,7 @@ export async function run(): Promise<void> {
         plain_english: string;
         significance: EventSignificance;
         law_ref?: boolean;
+        source_urls?: string[];
       };
 
       const eventSpecs: EvSpec[] = [
@@ -505,13 +506,14 @@ export async function run(): Promise<void> {
           plain_english:
             'The President told the country that a new, very serious police-and-lawyers team would be formed to catch big criminals and corrupt powerful people.',
           significance: EventSignificance.HIGH,
+          source_urls: ['https://www.vukuzenzele.gov.za/new-unit-will-crush-organised-crime'],
         },
         {
           event_date: '2001-01-01',
           event_type: EventType.INCIDENT,
           title: 'Scorpions launch Arms Deal investigation',
           description:
-            'The Scorpions open investigations into corruption and fraud surrounding the Strategic Defence Package (Arms Deal), including relationships between officials, middlemen and arms manufacturers.',
+            'Year-level anchor — the Scorpions open investigations into corruption and fraud surrounding the Strategic Defence Package (Arms Deal), including relationships between officials, middlemen and arms manufacturers.',
           plain_english:
             'The new unit started looking into the massive government weapons purchase — who got money and whether anyone was bribed.',
           significance: EventSignificance.HIGH,
@@ -559,9 +561,13 @@ export async function run(): Promise<void> {
         {
           event_date: '2005-06-08',
           event_type: EventType.JUDGMENT,
-          title: 'Schabir Shaik convicted — Zuma next in line',
+          title: 'Schabir Shaik sentenced — landmark Arms Deal prosecution',
           description:
-            'The Durban High Court convicts Schabir Shaik on corruption counts tied to payments benefitting Jacob Zuma — a landmark Scorpions prosecution in the Arms Deal saga.',
+            'The Durban High Court sentences Schabir Shaik to an effective 15 years after his 2 June 2005 corruption and fraud convictions tied to payments benefitting Jacob Zuma — a landmark Scorpions-era Arms Deal prosecution.',
+          source_urls: [
+            'https://mg.co.za/article/2005-06-08-shaik-lost-his-moral-compass/',
+            'https://www.news24.com/shaik-found-guilty-20050602',
+          ],
           plain_english:
             'The businessman who paid money to help Zuma was found guilty — and attention turned to whether Zuma himself would face trial.',
           significance: EventSignificance.CRITICAL,
@@ -619,10 +625,14 @@ export async function run(): Promise<void> {
         },
         {
           event_date: '2008-10-23',
-          event_type: EventType.JUDGMENT,
-          title: 'Parliament votes 252–63 to abolish the Scorpions',
+          event_type: EventType.INCIDENT,
+          title: 'National Assembly adopts bills abolishing the Scorpions',
           description:
-            'The National Assembly passes legislation to repeal the Scorpions’ standalone NPA structure — implementing the Polokwane political resolution with a large majority.',
+            'The National Assembly passes the National Prosecuting Authority Amendment Bill and related SAPS amendment legislation to dissolve the Scorpions (DSO) — implementing the Polokwane resolution; contemporaneous reporting described a large ANC majority margin (do not treat “252–63” as verified Hansard without a primary citation).',
+          source_urls: [
+            'https://pmg.org.za/bill/401/',
+            'http://news.bbc.co.uk/2/hi/africa/7685927.stm',
+          ],
           plain_english:
             'MPs voted to change the law so the Scorpions would cease to exist as they were.',
           significance: EventSignificance.CRITICAL,
@@ -638,11 +648,15 @@ export async function run(): Promise<void> {
           significance: EventSignificance.CRITICAL,
         },
         {
-          event_date: '2009-01-01',
+          event_date: '2009-06-30',
           event_type: EventType.INCIDENT,
           title: 'Scorpions officially disbanded — Hawks activated',
           description:
-            'The DSO is dissolved and investigative mandates move toward the new Hawks structure under SAPS; 287 matters are transferred, with widely reported drops in prosecution outcomes compared to Scorpions-era performance.',
+            'The DSO closed at the end of June 2009 under the NPA Amendment Act 56 of 2008 (commencement 6 July 2009 for most provisions); investigative mandates moved to the Hawks under SAPS; widely reported transfers of open matters followed.',
+          source_urls: [
+            'https://www.gov.za/documents/national-prosecuting-authority-amendment-act-0',
+            'https://www.vukuzenzele.gov.za/new-unit-will-crush-organised-crime',
+          ],
           plain_english:
             'The best anti-corruption unit in SA history ceased to exist. 287 cases were transferred. The Arms Deal investigation was dropped.',
           significance: EventSignificance.CRITICAL,
@@ -658,11 +672,12 @@ export async function run(): Promise<void> {
           significance: EventSignificance.CRITICAL,
         },
         {
-          event_date: '2011-09-01',
+          event_date: '2011-03-17',
           event_type: EventType.JUDGMENT,
           title: 'Constitutional Court: Hawks lack independence (Glenister I)',
           description:
-            'In Glenister v President of the Republic of South Africa, the Constitutional Court finds the Hawks structure insufficiently independent to combat corruption effectively and orders Parliament to redesign a more independent anti-corruption body.',
+            'In Glenister v President of the Republic of South Africa [2011] ZACC 6 (17 March 2011), the Constitutional Court finds the Hawks structure insufficiently independent to combat corruption effectively and orders Parliament to redesign a more independent anti-corruption body.',
+          source_urls: ['https://www.saflii.org/za/cases/ZACC/2011/6.html'],
           plain_english:
             'The highest court said the replacement for the Scorpions was still too easy for politicians to control.',
           significance: EventSignificance.HIGH,
@@ -676,6 +691,7 @@ export async function run(): Promise<void> {
           plain_english:
             'A new permanent corruption-fighting team inside the NPA was created — similar in some ways to what the Scorpions were.',
           significance: EventSignificance.HIGH,
+          source_urls: ['https://www.gov.za/documents/national-prosecuting-authority-amendment-act-0'],
         },
       ];
 
@@ -707,7 +723,7 @@ export async function run(): Promise<void> {
           description: spec.description,
           plain_english: spec.plain_english,
           significance: spec.significance,
-          source_urls: [],
+          source_urls: spec.source_urls ?? [],
         });
         ev = await eventRepo.save(ev);
 
