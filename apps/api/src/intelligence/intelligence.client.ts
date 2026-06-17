@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import type {
   ClusterMatchResult,
   ExtractEntitiesResult,
+  IntelligenceAskResult,
   LegalMapResult,
   ReadingLevel,
   SimplifyResult,
@@ -110,6 +111,22 @@ export class IntelligenceClient {
     announced_year?: string;
   }): Promise<YoutubeScoredVideoDto[]> {
     return this.request<YoutubeScoredVideoDto[]>('/api/youtube/discover', 'POST', body);
+  }
+
+  async ask(
+    query: string,
+    opts?: {
+      topK?: number;
+      minSimilarity?: number;
+      sourceTypes?: string[];
+    },
+  ): Promise<IntelligenceAskResult> {
+    return this.request<IntelligenceAskResult>('/api/rag/ask', 'POST', {
+      query,
+      top_k: opts?.topK,
+      min_similarity: opts?.minSimilarity,
+      source_types: opts?.sourceTypes,
+    });
   }
 
   /* ------------------------------------------------------- internals */

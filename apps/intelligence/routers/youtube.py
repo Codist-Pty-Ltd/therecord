@@ -12,6 +12,13 @@ import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
+from core.relevance import (
+    HEURISTIC_FALLBACK_THRESHOLD,
+    is_relevant,
+    score as relevance_score,
+    upsert_relevance_label,
+)
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/youtube", tags=["youtube"])
@@ -71,6 +78,8 @@ class ScoredVideoOut(BaseModel):
     view_count: int | None = None
     relevance_score: float
     relevance_reason: str | None = None
+    heuristic_score: float | None = None
+    scoring_method: str | None = None
 
 
 def _yt_get(url: str, params: dict[str, Any], api_key: str) -> dict[str, Any]:
@@ -265,8 +274,22 @@ def _score_video(
     return score, reason
 
 
+def _scoring_text(
+    *,
+    title: str,
+    channel_name: str | None,
+    description: str | None,
+) -> str:
+    parts = [title.strip()]
+    if channel_name:
+        parts.append(channel_name.strip())
+    if description:
+        parts.append(description.strip())
+    return "\n".join(part for part in parts if part)
+
+
 @router.post("/discover", response_model=list[ScoredVideoOut])
-def youtube_discover(body: DiscoverRequest) -> list[ScoredVideoOut]:
+async def youtube_discover(body: DiscoverRequest) -> list[ScoredVideoOut]:
     api_key = os.environ.get("YOUTUBE_API_KEY", "").strip()
     if not api_key:
         raise HTTPException(
@@ -348,7 +371,45 @@ def youtube_discover(body: DiscoverRequest) -> list[ScoredVideoOut]:
             announced_year=body.announced_year,
         )
 
-        if score < 0.4:
+        scoring_text = _scoring_text(
+            title=title,
+            channel_name=channel_title,
+            description=desc,
+        )
+        centroid_result = await relevance_score(scoring_text)
+
+        if centroid_result.cold_start:
+            logger.warning(
+                "YouTube discover using heuristic fallback threshold=%s for video_id=%s",
+                HEURISTIC_FALLBACK_THRESHOLD,
+                vid,
+            )
+            ranking_score = score
+            scoring_method = "heuristic_fallback"
+            passes_filter = score >= HEURISTIC_FALLBACK_THRESHOLD
+            persisted_score = score
+            persisted_method = "heuristic_fallback"
+        else:
+            ranking_score = centroid_result.score
+            scoring_method = centroid_result.method
+            passes_filter = is_relevant(centroid_result)
+            persisted_score = centroid_result.score
+            persisted_method = centroid_result.method
+
+        try:
+            await upsert_relevance_label(
+                video_id=vid,
+                title=title[:500] if title else None,
+                channel=channel_title,
+                text=scoring_text[:4000],
+                score_value=persisted_score,
+                method=persisted_method,
+                heuristic_score=score,
+            )
+        except Exception as exc:  # noqa: BLE001 — discovery should continue
+            logger.warning("Failed to persist relevance_label for %s: %s", vid, exc)
+
+        if not passes_filter:
             continue
 
         out.append(
@@ -362,10 +423,12 @@ def youtube_discover(body: DiscoverRequest) -> list[ScoredVideoOut]:
                 duration_seconds=duration_sec,
                 thumbnail_url=thumb_url,
                 view_count=view_count,
-                relevance_score=score,
+                relevance_score=ranking_score,
                 relevance_reason=reason,
-            )
+                heuristic_score=score,
+                scoring_method=scoring_method,
+            ),
         )
 
-    out.sort(key=lambda x: x.relevance_score, reverse=True)
+    out.sort(key=lambda item: item.relevance_score, reverse=True)
     return out

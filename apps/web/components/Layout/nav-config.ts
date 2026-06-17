@@ -27,6 +27,12 @@ export const NAV_GROUPS: NavGroup[] = [
     columns: 2,
     items: [
       {
+        icon: "🔍",
+        name: "Ask The Record",
+        desc: "Grounded Q&A over the corpus",
+        href: "/ask",
+      },
+      {
         icon: "🧵",
         name: "Stories",
         desc: "Live accountability timelines",
@@ -126,6 +132,12 @@ export const MOBILE_NAV_SECTIONS: {
     sectionId: "investigate",
     title: "INVESTIGATE",
     items: [
+      {
+        icon: "🔍",
+        name: "Ask The Record",
+        desc: "Grounded Q&A with citations",
+        href: "/ask",
+      },
       {
         icon: "🧵",
         name: "Stories",

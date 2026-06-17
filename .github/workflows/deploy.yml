@@ -11,6 +11,7 @@
 #   APP_DIR         = /opt/therecord
 #
 # Post-migrate seeds (idempotent): impact-sectors → sa-history → state-entities.
+# Post-migrate intelligence: index_corpus (embeds stories/commissions/SIU into doc_chunk).
 # Full corpus refresh (mkhwanazi, new-stories-2026, accountability-bodies) still
 # requires `npm run seed:all` on the VPS when editorial seeds change — see RUNBOOK.md.
 #
@@ -68,6 +69,7 @@ jobs:
             docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
             # Run migrations (env vars already in container from compose)
             docker exec therecord-api node dist/database/run-migrations.js
+            docker exec therecord-intelligence python -m jobs.index_corpus
             docker exec therecord-api node dist/database/seeds/impact-sectors.seed.js
             docker exec therecord-api node dist/database/seeds/sa-history.seed.js
             docker exec therecord-api node dist/database/seeds/state-entities.seed.js

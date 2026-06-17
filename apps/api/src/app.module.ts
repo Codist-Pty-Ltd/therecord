@@ -11,6 +11,7 @@ import { HistoryModule } from './history/history.module';
 import { HumanImpactModule } from './human-impact/human-impact.module';
 import { ImpactModule } from './impact/impact.module';
 import { IngestionModule } from './ingestion/ingestion.module';
+import { IntelligenceModule } from './intelligence/intelligence.module';
 import { InvestigationsModule } from './investigations/investigations.module';
 import { LegalModule } from './legal/legal.module';
 import { MunicipalitiesModule } from './municipalities/municipalities.module';
@@ -55,6 +56,7 @@ import { StateEntitiesModule } from './state-entities/state-entities.module';
     HistoryModule,
     ImpactModule,
     IngestionModule,
+    IntelligenceModule,
     InvestigationsModule,
     LegalModule,
     MunicipalitiesModule,

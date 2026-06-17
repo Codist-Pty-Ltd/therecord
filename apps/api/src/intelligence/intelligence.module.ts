@@ -1,14 +1,25 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { Commission } from '../entities/commission.entity';
+import { SiuProclamation } from '../entities/siu_proclamation.entity';
+import { Story } from '../entities/story.entity';
+import { TimelineEvent } from '../entities/timeline_event.entity';
+import { IntelligenceCitationService } from './intelligence-citation.service';
+import { IntelligenceController } from './intelligence.controller';
 import { IntelligenceClient } from './intelligence.client';
 
-/**
- * Standalone module whose only job is to publish `IntelligenceClient` into
- * the DI container. Anything that needs to call the FastAPI service imports
- * this module and injects the client. There are no entities registered here
- * because the intelligence service is stateless — it doesn't own any tables.
- */
 @Module({
-  providers: [IntelligenceClient],
+  imports: [
+    TypeOrmModule.forFeature([
+      Story,
+      Commission,
+      SiuProclamation,
+      TimelineEvent,
+    ]),
+  ],
+  controllers: [IntelligenceController],
+  providers: [IntelligenceClient, IntelligenceCitationService],
   exports: [IntelligenceClient],
 })
 export class IntelligenceModule {}

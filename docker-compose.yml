@@ -8,7 +8,7 @@
 services:
   # --------------------------------------------------------------------- db
   postgres:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: therecord-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -65,8 +65,11 @@ services:
     environment:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       DATABASE_URL: ${DATABASE_URL}
+      APP_ENV: dev
       ENVIRONMENT: development
       YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:-}
+      RELEVANCE_STRATEGY: ${RELEVANCE_STRATEGY:-centroid}
+      RELEVANCE_MODEL_PATH: ${RELEVANCE_MODEL_PATH:-}
     volumes:
       - ./apps/intelligence:/app
     depends_on:
@@ -91,7 +94,8 @@ services:
       # Server-side fetches from Next RSC → hits the api container directly.
       API_URL: http://api:3091
       # Browser-side fetches → goes out through the host port binding.
-      NEXT_PUBLIC_API_URL: http://localhost:3091
+      # Match host binding (127.0.0.1:3090) — localhost ≠ 127.0.0.1 for CORS.
+      NEXT_PUBLIC_API_URL: http://127.0.0.1:3091
       NEXT_TELEMETRY_DISABLED: "1"
     volumes:
       # Source mounts for hot reload. The container WORKDIR is /repo/apps/web.

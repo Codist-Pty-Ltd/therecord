@@ -37,6 +37,9 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir --no-deps \
         "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl"
 
+COPY scripts/prewarm_embeddings.py ./scripts/prewarm_embeddings.py
+RUN python scripts/prewarm_embeddings.py || true
+
 COPY . .
 
 EXPOSE 8001

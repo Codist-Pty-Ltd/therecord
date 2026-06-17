@@ -11,4 +11,6 @@ export interface YoutubeScoredVideoDto {
   view_count: number | null;
   relevance_score: number;
   relevance_reason: string | null;
+  heuristic_score?: number | null;
+  scoring_method?: string | null;
 }

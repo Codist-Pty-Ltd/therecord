@@ -61,6 +61,58 @@ docker exec therecord-api npm run migration:run
 docker exec therecord-api npm run migration:run
 ```
 
+Intelligence-layer tables (`doc_chunk`, `relevance_label`, `entity_link_candidate`) ship via the same TypeORM migration runner — no separate Python migration step.
+
+### Intelligence corpus index (RAG + relevance centroid)
+
+After migrations and seeds, embed the accountability corpus into `doc_chunk`:
+
+```bash
+docker exec therecord-intelligence python -m jobs.index_corpus
+```
+
+Re-running is idempotent (unchanged chunks are skipped). Production deploy runs this automatically after migrations.
+
+Verify:
+
+```bash
+docker exec therecord-postgres psql -U therecord -d therecord_db \
+  -c "SELECT source_type, COUNT(*) FROM doc_chunk GROUP BY 1 ORDER BY 2 DESC;"
+curl -s http://127.0.0.1:8001/health | jq
+curl -s -X POST http://127.0.0.1:8001/api/relevance/score \
+  -H "content-type: application/json" \
+  -d '{"text":"Zondo commission state capture hearing"}' | jq
+```
+
+### Phase 2 relevance model (optional)
+
+1. Accumulate `relevance_label` rows (YouTube discover writes unlabelled rows; reviewers set `human_label`).
+2. Bootstrap or pseudo-label when starting cold:
+
+```bash
+docker exec therecord-intelligence pip install -r requirements-ml.txt
+docker exec therecord-intelligence python -m jobs.bootstrap_relevance_labels
+docker exec therecord-intelligence python -m ml.train_relevance
+```
+
+3. Point the intelligence service at the artifact (path inside the container is `/app/ml/artifacts/relevance_<timestamp>.joblib`):
+
+```bash
+# In /opt/therecord/app/.env on the VPS
+RELEVANCE_STRATEGY=model
+RELEVANCE_MODEL_PATH=/app/ml/artifacts/relevance_20260617T040024Z.joblib
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build intelligence
+```
+
+Evaluate against the centroid baseline:
+
+```bash
+docker exec therecord-intelligence python -m ml.eval_relevance \
+  /app/ml/artifacts/relevance_20260617T040024Z.joblib
+```
+
+**Note:** `ml/artifacts/` is gitignored. Copy the `.joblib` to the server after training locally, or run `train_relevance` on the VPS once labelled rows exist there.
+
 ### Run seeds (first time or after reset)
 
 After migrations, the recommended one-shot import is the orchestrated index (order: commissions master → reports → recommendations → ad hoc → SIU → impact-sectors → **sa-history** → state-entities → accountability-bodies → cape-town → mkhwanazi → **new-stories-2026** — see `apps/api/src/database/seeds/index.ts`):
@@ -517,6 +569,8 @@ docker exec therecord-postgres psql -U therecord -d therecord_db \
 | `INTELLIGENCE_URL`       | e.g. `http://intelligence:8001` (Docker service name)                 |
 | `ANTHROPIC_API_KEY`      | Required by the intelligence service for LLM calls                    |
 | `YOUTUBE_API_KEY`        | YouTube Data API v3 key on **intelligence** for `/api/youtube/discover` |
+| `RELEVANCE_STRATEGY`     | `centroid` (default) or `model` for Phase 2 relevance scoring          |
+| `RELEVANCE_MODEL_PATH`   | Path to trained `relevance_*.joblib` inside the intelligence container   |
 | `INGESTION_API_KEY`      | Required for `POST /api/ingestion/*` and operator YouTube routes       |
 | `INGESTION_ENABLED`      | Set `true` in production to run the RSS scheduler and YouTube discovery crons |
 | `HEALTH_API_KEY`         | Required for `GET /api/health/full`                                    |

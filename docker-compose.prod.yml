@@ -41,8 +41,11 @@ services:
     environment:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       DATABASE_URL: ${DATABASE_URL}
+      APP_ENV: prod
       ENVIRONMENT: production
       YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:-}
+      RELEVANCE_STRATEGY: ${RELEVANCE_STRATEGY:-centroid}
+      RELEVANCE_MODEL_PATH: ${RELEVANCE_MODEL_PATH:-}
     ports: !override []
     volumes: !override []
 

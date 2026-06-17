@@ -1,1 +1,176 @@
-# Therecord
+# The Record
+
+South African legal intelligence and accountability platform — connecting incidents, investigations, commissions, SIU proclamations, and outcomes in plain English.
+
+**Production:** [therecord.codist.co.za](https://therecord.codist.co.za) · **Stack:** Next.js · NestJS · FastAPI · PostgreSQL (pgvector)
+
+---
+
+## What it does
+
+The Record tracks accountability stories from incident through charges and court to outcome. It maps events to the Constitution and statutes (PRECCA, PFMA, POCA, and others), explains legal concepts at three reading levels, and surfaces commissions, ad hoc committees, SIU recovery, state entities, and human-impact sectors.
+
+Not just news — a structured record of who was investigated, what was found, and whether anyone was held accountable.
+
+---
+
+## Architecture
+
+| Service | Path | Container | Dev port | Role |
+|---------|------|-----------|----------|------|
+| **Web** | `apps/web` | `therecord-web` | **3090** | Next.js 15 frontend |
+| **API** | `apps/api` | `therecord-api` | **3091** | NestJS REST API, ingestion, TypeORM |
+| **Intelligence** | `apps/intelligence` | `therecord-intelligence` | **8001** | FastAPI — RAG, NLP, relevance, entity linking |
+| **Shared types** | `packages/shared-types` | — | — | TypeScript contracts shared by web + API |
+| **Database** | — | `therecord-postgres` | **5432** | PostgreSQL 16 + **pgvector** |
+
+Nest proxies the intelligence layer at `POST /api/intelligence/ask`. The web **Ask The Record** page (`/ask`) calls that route and renders grounded answers with citation links.
+
+```
+Browser → Next.js (:3090)
+       → NestJS (:3091) → FastAPI (:8001, internal in prod)
+       → PostgreSQL (stories, commissions, doc_chunk vectors, …)
+```
+
+---
+
+## Quick start
+
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) + Docker Compose v2
+- Node 20+ (for local workspace scripts outside Docker)
+- Copy [`.env.example`](./.env.example) → `.env` and set secrets (especially `ANTHROPIC_API_KEY` for grounded Q&A)
+
+### Run locally
+
+```bash
+cp .env.example .env   # edit as needed
+npm install
+docker compose up --build
+```
+
+| URL | Purpose |
+|-----|---------|
+| http://localhost:3090 | Web app |
+| http://localhost:3090/ask | Ask The Record (grounded Q&A) |
+| http://localhost:3091/api/health | API health |
+| http://localhost:8001/docs | FastAPI Swagger (**dev only** — disabled when `APP_ENV=prod`) |
+
+> Compose maps host **3090 → container 3000**. Do not use `localhost:3000` unless you run Next outside Docker.
+
+### First-time database setup
+
+After containers are up:
+
+```bash
+docker exec therecord-api npm run migration:run
+docker exec therecord-api npm run seed:all
+docker exec therecord-intelligence python -m jobs.index_corpus
+```
+
+Re-indexing is idempotent and runs automatically on production deploy after migrations.
+
+---
+
+## Development
+
+### Root scripts
+
+```bash
+npm run dev:build          # docker compose up --build
+npm run typecheck          # web + api + shared-types
+npm run lint               # all workspaces
+npm run build              # all workspaces
+```
+
+### Workspace scripts
+
+```bash
+npm run dev:web --workspace=@therecord/web
+npm run start:dev --workspace=@therecord/api
+```
+
+### Intelligence (Python)
+
+```bash
+cd apps/intelligence
+pip install -r requirements-dev.txt
+pytest -q
+ruff check .
+```
+
+Fastest intelligence smoke (no UI): open http://localhost:8001/docs and try **`POST /api/rag/ask`**.
+
+See **[PYTHON_RUNBOOK.md](./PYTHON_RUNBOOK.md)** for the full Python guide — jobs, env vars, manual curl tests, and Phase 2 relevance training.
+
+---
+
+## Testing & CI
+
+| Layer | Command | CI job |
+|-------|---------|--------|
+| TypeScript | `npm run typecheck` | `typecheck` |
+| Lint | `npm run lint` | `lint` |
+| API smoke | `npm run test:smoke --workspace=apps/api` | `api-smoke-test` |
+| Intelligence | `cd apps/intelligence && pytest -q` | `intelligence-lint` (+ ruff, mypy) |
+| Web build | `npm run build --workspace=apps/web` | `web-build` |
+
+CI runs on pull requests and pushes to `main`. Deploy runs on push to `main` only.
+
+---
+
+## Deploy
+
+Production uses Docker Compose on a Hetzner VPS:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+GitHub Actions ([`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml)) SSHs to the server, pulls `main`, rebuilds, runs migrations, indexes the RAG corpus, and health-checks the site.
+
+**Operator docs:**
+
+- **[RUNBOOK.md](./RUNBOOK.md)** — health checks, migrations, seeds, troubleshooting
+- **[docs/PLATFORM_CONTEXT.md](./docs/PLATFORM_CONTEXT.md)** — ports, domains, CI secrets, env split (`API_URL` vs `NEXT_PUBLIC_API_URL`)
+- **[PYTHON_RUNBOOK.md](./PYTHON_RUNBOOK.md)** — intelligence service ops
+
+Before changing Docker, nginx, workflows, or public URLs, read `docs/PLATFORM_CONTEXT.md`.
+
+---
+
+## Repository layout
+
+```
+apps/
+  web/              Next.js App Router frontend
+  api/              NestJS API, entities, migrations, seeds
+  intelligence/     FastAPI NLP + RAG pipeline
+packages/
+  shared-types/     Shared TypeScript types and helpers
+docs/               Platform and editorial reference
+.github/workflows/  CI and deploy
+docker-compose.yml  Local + prod base compose
+```
+
+Product rules, data model, seed order, and editorial constraints live in **[`.cursorrules`](./.cursorrules)**.
+
+---
+
+## Environment
+
+Variable names and defaults: **[`.env.example`](./.env.example)**. Never commit `.env`.
+
+Key splits:
+
+- **`API_URL`** — server-side Next.js → Nest (Docker: `http://api:3091`)
+- **`NEXT_PUBLIC_API_URL`** — browser → public API origin
+- **`INTELLIGENCE_URL`** — Nest → FastAPI (Docker: `http://intelligence:8001`)
+- **`DATABASE_URL`** — shared by API and intelligence; URL-encode special characters in passwords (e.g. `#` → `%23`)
+
+---
+
+## License
+
+Private — Codist. All rights reserved.

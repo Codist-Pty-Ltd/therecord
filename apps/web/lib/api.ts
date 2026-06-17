@@ -56,6 +56,7 @@ import type {
   StorySummary,
   TransformationPolicy,
   YoutubeVideo,
+  IntelligenceAskResponse,
 } from "@the-record/shared-types";
 
 /** Paginated envelope from the NestJS pagination helper. */
@@ -956,3 +957,45 @@ export const getHistoryCompare = cache(
     });
   },
 );
+
+export type IntelligenceAskOptions = {
+  topK?: number;
+  minSimilarity?: number;
+  sourceTypes?: string[];
+};
+
+/** POST /api/intelligence/ask — grounded Q&A over the indexed corpus. */
+export async function askIntelligence(
+  query: string,
+  opts?: IntelligenceAskOptions,
+): Promise<IntelligenceAskResponse> {
+  const base = resolveApiBaseUrl();
+  if (base === null) {
+    throw new ApiError("API URL is not configured", 503);
+  }
+
+  const res = await fetch(`${base}/api/intelligence/ask`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      query,
+      topK: opts?.topK,
+      minSimilarity: opts?.minSimilarity,
+      sourceTypes: opts?.sourceTypes,
+    }),
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new ApiError(
+      `API ${res.status} for /api/intelligence/ask${text ? `: ${text.slice(0, 300)}` : ""}`,
+      res.status,
+    );
+  }
+
+  return (await res.json()) as IntelligenceAskResponse;
+}

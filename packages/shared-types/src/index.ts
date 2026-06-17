@@ -2368,6 +2368,67 @@ export interface IntelligenceSimplifyResult {
   reading_level: IntelligenceReadingLevel;
 }
 
+/** Corpus source types indexed for RAG retrieval. */
+export type RagSourceType =
+  | "story"
+  | "commission"
+  | "person"
+  | "timeline_event"
+  | "siu";
+
+export interface RagCitation {
+  source_type: RagSourceType | string;
+  source_id: string;
+  chunk_index: number;
+  /** Populated by Nest when resolving web paths for slug-based entities. */
+  slug?: string | null;
+}
+
+export interface RagRetrievedChunk {
+  chunk_id: string;
+  source_type: RagSourceType | string;
+  source_id: string;
+  chunk_index: number;
+  content: string;
+  similarity: number;
+}
+
+/** Response from `POST /api/intelligence/ask` (Nest proxy to FastAPI RAG). */
+export interface IntelligenceAskResponse {
+  query: string;
+  answer: string;
+  grounded: boolean;
+  citations: RagCitation[];
+  sources: RagRetrievedChunk[];
+}
+
+/**
+ * Best-effort web path for a RAG citation.
+ *
+ * Slug-based entities (story, commission, siu) need a slug lookup via the API;
+ * person pages use UUID. Timeline events are usually shown on a parent story page.
+ */
+export function ragCitationPath(
+  citation: Pick<RagCitation, "source_type" | "source_id" | "slug">,
+  slug?: string | null,
+): string | null {
+  const resolvedSlug = slug ?? citation.slug ?? null;
+  switch (citation.source_type) {
+    case "person":
+      return `/person/${citation.source_id}`;
+    case "story":
+      return resolvedSlug ? `/story/${resolvedSlug}` : null;
+    case "commission":
+      return resolvedSlug ? `/commissions/${resolvedSlug}` : null;
+    case "siu":
+      return resolvedSlug ? `/siu/proclamations/${resolvedSlug}` : null;
+    case "timeline_event":
+      return resolvedSlug ? `/story/${resolvedSlug}` : null;
+    default:
+      return null;
+  }
+}
+
 /** Request shape for POST /api/ingestion/article. */
 export interface IngestArticleRequest {
   headline: string;

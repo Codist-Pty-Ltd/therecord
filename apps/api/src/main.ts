@@ -4,12 +4,42 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
+/** Production browser origins (explicit — never wildcard). */
 const CORS_ALLOWED_ORIGINS = [
+  'https://therecord.co.za',
+  'https://www.therecord.co.za',
+  'https://therecord.codist.co.za',
+  'https://www.therecord.codist.co.za',
+];
+
+/** Local dev: compose binds 127.0.0.1:3090 but browsers treat localhost ≠ 127.0.0.1. */
+const CORS_LOCAL_DEV_ORIGINS = [
   'http://localhost:3090',
   'http://localhost:3000',
-  'https://therecord.co.za',
-  'https://therecord.codist.co.za',
+  'http://127.0.0.1:3090',
+  'http://127.0.0.1:3000',
 ];
+
+function isLocalDevBrowserOrigin(origin: string): boolean {
+  try {
+    const { hostname, port, protocol } = new URL(origin);
+    if (protocol !== 'http:') return false;
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') return false;
+    return port === '3090' || port === '3000';
+  } catch {
+    return false;
+  }
+}
+
+function corsOriginAllowed(origin: string | undefined): boolean {
+  if (!origin) return true;
+  if (CORS_ALLOWED_ORIGINS.includes(origin)) return true;
+  if (CORS_LOCAL_DEV_ORIGINS.includes(origin)) return true;
+  if (process.env.NODE_ENV !== 'production' && isLocalDevBrowserOrigin(origin)) {
+    return true;
+  }
+  return false;
+}
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, {
@@ -19,7 +49,13 @@ async function bootstrap(): Promise<void> {
   app.setGlobalPrefix('api');
 
   app.enableCors({
-    origin: CORS_ALLOWED_ORIGINS,
+    origin: (origin, callback) => {
+      if (corsOriginAllowed(origin)) {
+        callback(null, origin ?? true);
+        return;
+      }
+      callback(new Error(`CORS blocked origin: ${origin}`), false);
+    },
     credentials: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
   });

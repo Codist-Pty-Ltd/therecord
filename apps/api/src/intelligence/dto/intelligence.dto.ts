@@ -59,6 +59,31 @@ export interface SimplifyResult {
   reading_level: ReadingLevel;
 }
 
+export interface RagCitationResult {
+  source_type: string;
+  source_id: string;
+  chunk_index: number;
+  /** Web slug when the source is story, commission, SIU, or timeline (parent story). */
+  slug?: string | null;
+}
+
+export interface RagRetrievedChunkResult {
+  chunk_id: string;
+  source_type: string;
+  source_id: string;
+  chunk_index: number;
+  content: string;
+  similarity: number;
+}
+
+export interface IntelligenceAskResult {
+  query: string;
+  answer: string;
+  grounded: boolean;
+  citations: RagCitationResult[];
+  sources: RagRetrievedChunkResult[];
+}
+
 /**
  * Minimal shape of a story we send to the clustering endpoint. Matches the
  * fields `apps/intelligence/services/nlp_service.py::cluster_match` actually

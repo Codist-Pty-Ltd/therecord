@@ -109,6 +109,9 @@ postgres-data/
 INTERVIEW_PREP.md
 INTERVIEW_PREP.warroom.json
 
+# Intelligence ML artifacts (Phase 2 relevance models)
+apps/intelligence/ml/artifacts/
+
 # Misc
 *.pem
 *.key
