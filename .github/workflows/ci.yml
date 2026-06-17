@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16-alpine
+        image: pgvector/pgvector:pg16
         env:
           POSTGRES_USER: therecord_test
           POSTGRES_PASSWORD: testpass
@@ -143,18 +143,24 @@ jobs:
       - name: Install ruff and mypy
         run: pip install ruff mypy --break-system-packages
 
+      - name: Install intelligence test deps
+        run: pip install -r apps/intelligence/requirements-dev.txt --break-system-packages
+
       - name: Ruff
         run: (cd apps/intelligence && ruff check .)
 
       - name: Mypy
         run: (cd apps/intelligence && mypy . --ignore-missing-imports)
 
+      - name: Pytest
+        run: (cd apps/intelligence && pytest -q)
+
   web-build:
     name: web-build
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16-alpine
+        image: pgvector/pgvector:pg16
         env:
           POSTGRES_USER: therecord_test
           POSTGRES_PASSWORD: testpass
