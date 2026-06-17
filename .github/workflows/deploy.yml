@@ -67,6 +67,9 @@ jobs:
             echo "--- latest commit on server ---"
             git log -1 --oneline
             docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+            # Fail fast if intelligence image is stale (missing RAG deps).
+            docker exec therecord-intelligence python -c \
+              "import fastembed, psycopg, pgvector; print('intelligence deps ok')"
             # Run migrations (env vars already in container from compose)
             docker exec therecord-api node dist/database/run-migrations.js
             docker exec therecord-intelligence python -m jobs.index_corpus
