@@ -8,7 +8,6 @@ import {
   SimplifyDto,
 } from './dto/intelligence-ops.dto';
 import type {
-  ClusterMatchResult,
   ExtractEntitiesResult,
   IntelligenceAskResult,
   LegalMapResult,

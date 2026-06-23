@@ -95,7 +95,13 @@ jobs:
             GIT_SSH_COMMAND="ssh -i ~/.ssh/therecord_deploy" git pull origin main
             echo "--- latest commit on server ---"
             git log -1 --oneline
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+            if ! docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build; then
+              echo "--- compose build/up failed — api logs ---"
+              docker compose -f docker-compose.yml -f docker-compose.prod.yml logs api --tail=80 || true
+              echo "--- intelligence logs ---"
+              docker compose -f docker-compose.yml -f docker-compose.prod.yml logs intelligence --tail=40 || true
+              exit 1
+            fi
             # Fail fast if intelligence image is stale (missing RAG deps).
             docker exec therecord-intelligence python -c \
               "import fastembed, psycopg, pgvector; print('intelligence deps ok')"
@@ -114,10 +120,13 @@ jobs:
               echo "Waiting... attempt $i"
               sleep 3
             done
-            # Health check via HTTP (after nginx is ready)
-            curl --retry 10 --retry-delay 3 --retry-connrefused \
-              --silent --output /dev/null --write-out "%{http_code}" \
-              http://127.0.0.1:3090/api/health
+            # Health check via HTTP (nginx → api on host 3090)
+            http_code=$(curl --retry 10 --retry-delay 3 --retry-connrefused \
+              --silent --output /tmp/health.json --write-out "%{http_code}" \
+              http://127.0.0.1:3090/api/health)
+            echo "Health HTTP status: ${http_code}"
+            cat /tmp/health.json || true
+            test "${http_code}" = "200"
             docker image prune -f
 
       - name: Show running containers
