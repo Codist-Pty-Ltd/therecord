@@ -172,7 +172,7 @@ export class ProvincesService {
       .createQueryBuilder('p')
       .innerJoin('p.story', 's')
       .where('COALESCE(p.province_id, s.province_id) = :pid', { pid: province.id })
-      .orderBy('CAST(p.amount_rands AS BIGINT)', 'DESC')
+      .orderBy('p.amount_rands::bigint', 'DESC')
       .take(5)
       .getMany();
 
@@ -290,7 +290,7 @@ export class ProvincesService {
     const dir = dto.dir === 'ASC' ? 'ASC' : 'DESC';
 
     if (sort === 'total_amount_rands') {
-      qb.orderBy('CAST(story.total_amount_rands AS BIGINT)', dir, 'NULLS LAST');
+      qb.orderBy('story.total_amount_rands::bigint', dir, 'NULLS LAST');
     } else {
       qb.orderBy('story.updated_at', dir);
     }
@@ -339,7 +339,7 @@ export class ProvincesService {
       .createQueryBuilder('p')
       .innerJoin('p.story', 's')
       .where('COALESCE(p.province_id, s.province_id) = :pid', { pid: province.id })
-      .orderBy('CAST(p.amount_rands AS BIGINT)', 'DESC')
+      .orderBy('p.amount_rands::bigint', 'DESC')
       .take(1)
       .getOne();
 

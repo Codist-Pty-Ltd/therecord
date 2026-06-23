@@ -82,8 +82,6 @@ COPY --chown=nestjs:nodejs packages/shared-types/package.json packages/shared-ty
 RUN npm ci --workspace=@therecord/api --omit=dev --no-audit --no-fund && npm cache clean --force
 
 COPY --from=builder --chown=nestjs:nodejs /repo/apps/api/dist ./apps/api/dist
-# GraphQL code-first schema (read-only layer); generated at build, refreshed on boot.
-COPY --from=builder --chown=nestjs:nodejs /repo/apps/api/src/schema.gql ./apps/api/dist/schema.gql
 
 USER nestjs
 

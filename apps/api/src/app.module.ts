@@ -53,11 +53,11 @@ import { GraphqlModule } from './graphql/graphql.module';
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      // Prod image ships dist/ only — never write schema under src/ at runtime.
-      autoSchemaFile: join(
-        process.cwd(),
-        process.env.NODE_ENV === 'production' ? 'dist/schema.gql' : 'src/schema.gql',
-      ),
+      // In-memory schema outside local dev — prod/CI images must not write src/.
+      autoSchemaFile:
+        process.env.NODE_ENV === 'development'
+          ? join(process.cwd(), 'src/schema.gql')
+          : true,
       sortSchema: true,
       playground: process.env.NODE_ENV !== 'production',
       introspection: process.env.NODE_ENV !== 'production',

@@ -137,14 +137,19 @@ jobs:
           cd apps/api
           export NODE_ENV=test
           export PORT=3091
+          export INTELLIGENCE_URL=http://127.0.0.1:8001
           nohup node dist/main.js > /tmp/therecord-api.log 2>&1 &
           echo $! > /tmp/therecord-api.pid
           sleep 8
 
       - name: Wait for health
         run: |
-          curl -fsS --retry 25 --retry-delay 2 --retry-connrefused \
-            http://127.0.0.1:3091/api/health
+          if ! curl -fsS --retry 25 --retry-delay 2 --retry-connrefused \
+            http://127.0.0.1:3091/api/health; then
+            echo "--- API failed to start; last 120 lines of log ---"
+            tail -120 /tmp/therecord-api.log || true
+            exit 1
+          fi
 
       - name: Run smoke tests
         run: npm run test:smoke --workspace=apps/api
@@ -228,17 +233,22 @@ jobs:
         run: |
           set -e
           cd apps/api
-          export NODE_ENV=production
+          export NODE_ENV=test
           export PORT=3091
           export INGESTION_API_KEY=ci-build-placeholder
+          export INTELLIGENCE_URL=http://127.0.0.1:8001
           nohup node dist/main.js > /tmp/ci-next-build-api.log 2>&1 &
           echo $! > /tmp/ci-next-build-api.pid
           sleep 8
 
       - name: Wait for API
         run: |
-          curl -fsS --retry 25 --retry-delay 2 --retry-connrefused \
-            http://127.0.0.1:3091/api/health
+          if ! curl -fsS --retry 25 --retry-delay 2 --retry-connrefused \
+            http://127.0.0.1:3091/api/health; then
+            echo "--- API failed to start; last 120 lines of log ---"
+            tail -120 /tmp/ci-next-build-api.log || true
+            exit 1
+          fi
 
       - name: Build web
         env:
