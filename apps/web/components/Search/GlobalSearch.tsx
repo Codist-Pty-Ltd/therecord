@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useSearch } from "@/hooks/useSearch";
 import {
   FILTER_CHIPS,
   filterIdToTypesParam,
@@ -13,9 +15,7 @@ import {
   resultKey,
   type SearchFilterId,
 } from "@/lib/search-ui";
-import { fetchSearchClient } from "@/lib/search-client";
 import { useSearchOverlayStore } from "@/stores/search.store";
-import type { SearchResult } from "@the-record/shared-types";
 
 import { SearchGlobalShortcuts } from "./SearchGlobalShortcuts";
 import { SearchResultsGrouped } from "./SearchResultsGrouped";
@@ -89,15 +89,12 @@ function GlobalSearchModal() {
 
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<SearchFilterId>("all");
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [highlight, setHighlight] = useState(0);
+
+  const debouncedQuery = useDebouncedValue(query, 200);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
   useFocusTrap(listRef, isOpen);
 
@@ -106,10 +103,38 @@ function GlobalSearchModal() {
     [filter],
   );
 
+  const {
+    data: searchData,
+    isLoading,
+    isFetching,
+    error: searchError,
+    isSuccess,
+  } = useSearch(
+    { q: debouncedQuery, types: typesParam, limit: 10, page: 1 },
+    { enabled: isOpen },
+  );
+
+  const results = searchData?.results ?? [];
+  const total = searchData?.total ?? 0;
+  const loading =
+    debouncedQuery.trim().length >= 2 && (isLoading || isFetching);
+  const error =
+    searchError instanceof Error
+      ? searchError.message
+      : searchError
+        ? "Search failed"
+        : null;
+
   const flatResults = useMemo(
     () => flattenGroupedResults(results),
     [results],
   );
+
+  useEffect(() => {
+    if (isSuccess && debouncedQuery.trim().length >= 2) {
+      pushRecentQuery(debouncedQuery);
+    }
+  }, [isSuccess, debouncedQuery]);
 
   useEffect(() => {
     setHighlight(0);
@@ -123,64 +148,9 @@ function GlobalSearchModal() {
     };
   }, [isOpen]);
 
-  const runSearch = useCallback(
-    async (q: string) => {
-      const t = q.trim();
-      if (t.length < 2) {
-        setResults([]);
-        setTotal(0);
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await fetchSearchClient({
-          q: t,
-          types: typesParam,
-          limit: 10,
-          page: 1,
-        });
-        setResults(data.results);
-        setTotal(data.total);
-        pushRecentQuery(t);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Search failed");
-        setResults([]);
-        setTotal(0);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [typesParam],
-  );
-
-  useEffect(() => {
-    if (!isOpen) return;
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    const q = query;
-    if (q.trim().length < 2) {
-      setResults([]);
-      setTotal(0);
-      setError(null);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    debounceRef.current = setTimeout(() => {
-      void runSearch(q);
-    }, 200);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [query, filter, isOpen, runSearch]);
-
   const onClose = useCallback(() => {
     close();
     setQuery("");
-    setResults([]);
-    setTotal(0);
-    setError(null);
     setFilter("all");
   }, [close]);
 

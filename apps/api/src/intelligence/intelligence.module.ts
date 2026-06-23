@@ -8,6 +8,9 @@ import { TimelineEvent } from '../entities/timeline_event.entity';
 import { IntelligenceCitationService } from './intelligence-citation.service';
 import { IntelligenceController } from './intelligence.controller';
 import { IntelligenceClient } from './intelligence.client';
+import { LegalMapperService } from './legal-mapper.service';
+import { StoryClusterService } from './story-cluster.service';
+import { YoutubeScorerService } from './youtube-scorer.service';
 
 @Module({
   imports: [
@@ -19,7 +22,18 @@ import { IntelligenceClient } from './intelligence.client';
     ]),
   ],
   controllers: [IntelligenceController],
-  providers: [IntelligenceClient, IntelligenceCitationService],
-  exports: [IntelligenceClient],
+  providers: [
+    IntelligenceClient,
+    IntelligenceCitationService,
+    LegalMapperService,
+    YoutubeScorerService,
+    StoryClusterService,
+  ],
+  exports: [
+    IntelligenceClient,
+    LegalMapperService,
+    YoutubeScorerService,
+    StoryClusterService,
+  ],
 })
 export class IntelligenceModule {}

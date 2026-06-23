@@ -2,15 +2,7 @@
 
 import type { SearchResponse } from "@the-record/shared-types";
 
-function clientApiBase(): string {
-  const b = process.env.NEXT_PUBLIC_API_URL;
-  if (!b) {
-    throw new Error(
-      "NEXT_PUBLIC_API_URL is not configured — required for in-browser search.",
-    );
-  }
-  return b.replace(/\/+$/, "");
-}
+import { clientApiBase } from "@/lib/client-api";
 
 export interface FetchSearchParams {
   q: string;

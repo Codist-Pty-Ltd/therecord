@@ -2,11 +2,10 @@
 
 import { motion, useMotionValue, useReducedMotion, useSpring } from "framer-motion";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { computeMoneyToReality } from "@/lib/money-to-reality";
-
-import type { MoneyToReality } from "@the-record/shared-types";
+import { useMoneyToReality } from "@/hooks/useMoneyToReality";
 
 const SLIDER_MIN = 1_000_000;
 const SLIDER_MAX = 100_000_000_000;
@@ -65,11 +64,6 @@ const PRESETS: Preset[] = [
 ];
 
 const PRESET_BY_ID = new Map(PRESETS.map((p) => [p.id, p] as const));
-
-function apiBase(): string {
-  const u = process.env.NEXT_PUBLIC_API_URL ?? "";
-  return u.replace(/\/+$/, "");
-}
 
 function formatRandsLong(n: number): string {
   if (!Number.isFinite(n) || n <= 0) return "R0";
@@ -155,37 +149,11 @@ export default function MoneyCalculator({
   const [activePresetId, setActivePresetId] = useState<string | null>(
     initialStoryKey && PRESET_BY_ID.has(initialStoryKey) ? initialStoryKey : null,
   );
-  const [fetched, setFetched] = useState<MoneyToReality | null>(null);
+
+  const { data: effective = computeMoneyToReality(amount) } =
+    useMoneyToReality(amount);
 
   const sliderPos = valueToLogSlider(Math.min(SLIDER_MAX, Math.max(amount, SLIDER_MIN)));
-
-  const effective = useMemo(() => {
-    if (fetched) return fetched;
-    return computeMoneyToReality(amount);
-  }, [fetched, amount]);
-
-  useEffect(() => {
-    const base = apiBase();
-    if (!base) {
-      setFetched(null);
-      return;
-    }
-    const rands = String(Math.max(1, Math.floor(amount)));
-    let cancelled = false;
-    void fetch(`${base}/api/impact/money-to-reality?rands=${encodeURIComponent(rands)}`, {
-      headers: { Accept: "application/json" },
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((j) => {
-        if (!cancelled && j) setFetched(j as MoneyToReality);
-      })
-      .catch(() => {
-        if (!cancelled) setFetched(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [amount]);
 
   const applyPreset = useCallback((p: Preset) => {
     setAmount(p.rands);

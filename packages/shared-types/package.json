@@ -14,9 +14,22 @@
   ],
   "scripts": {
     "build": "tsc --noEmit",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsc --noEmit",
+    "clean": "rimraf dist"
   },
   "devDependencies": {
     "typescript": "^5.7.2"
+  },
+  "turbo": {
+    "build": {
+      "outputs": []
+    },
+    "test": {
+      "outputs": []
+    },
+    "typecheck": {
+      "outputs": []
+    }
   }
 }

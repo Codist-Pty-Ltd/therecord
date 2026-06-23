@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 
+import { QueryErrorMessage } from "@/components/ui/QueryErrorMessage";
+import { useSubmitTakedown } from "@/hooks/useTakedown";
+
 const REQUEST_TYPES = [
   { value: "copyright", label: "Copyright" },
   { value: "factual_correction", label: "Factual correction" },
@@ -11,107 +14,55 @@ const REQUEST_TYPES = [
   { value: "other", label: "Other" },
 ] as const;
 
-type SubmitState =
-  | { status: "idle" }
-  | { status: "submitting" }
-  | { status: "success"; id: string; message: string }
-  | { status: "error"; message: string };
-
 export default function TakedownForm() {
-  const [state, setState] = useState<SubmitState>({ status: "idle" });
-  const apiBase =
-    typeof window !== "undefined"
-      ? (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "")
-      : "";
+  const submit = useSubmitTakedown();
+  const [success, setSuccess] = useState<{ id: string; message: string } | null>(
+    null,
+  );
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
-    if (!apiBase) {
-      setState({
-        status: "error",
-        message:
-          "This form is not configured (NEXT_PUBLIC_API_URL is missing). Email us using the addresses below.",
-      });
+    if (!process.env.NEXT_PUBLIC_API_URL) {
+      submit.reset();
       return;
     }
 
     const form = e.currentTarget;
     const fd = new FormData(form);
-    const request_type = String(fd.get("request_type") ?? "");
-    const requestor_name = String(fd.get("requestor_name") ?? "").trim();
-    const requestor_email = String(fd.get("requestor_email") ?? "").trim();
-    const content_url = String(fd.get("content_url") ?? "").trim();
-    const description = String(fd.get("description") ?? "").trim();
-
-    setState({ status: "submitting" });
-
     try {
-      const res = await fetch(`${apiBase}/api/takedown`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          request_type,
-          requestor_name,
-          requestor_email,
-          content_url,
-          description,
-        }),
+      const data = await submit.mutateAsync({
+        request_type: String(fd.get("request_type") ?? ""),
+        requestor_name: String(fd.get("requestor_name") ?? "").trim(),
+        requestor_email: String(fd.get("requestor_email") ?? "").trim(),
+        content_url: String(fd.get("content_url") ?? "").trim(),
+        description: String(fd.get("description") ?? "").trim(),
       });
-
-      const data: unknown = await res.json().catch(() => null);
-
-      if (!res.ok) {
-        const msg = apiErrorMessage(
-          data,
-          `Request failed (${res.status}).`,
-        );
-        setState({ status: "error", message: msg });
-        return;
-      }
-
-      if (
-        data &&
-        typeof data === "object" &&
-        "id" in data &&
-        typeof (data as { id: unknown }).id === "string" &&
-        "message" in data &&
-        typeof (data as { message: unknown }).message === "string"
-      ) {
-        setState({
-          status: "success",
-          id: (data as { id: string }).id,
-          message: (data as { message: string }).message,
-        });
-        form.reset();
-        return;
-      }
-
-      setState({
-        status: "error",
-        message: "Unexpected response from server. Please email us instead.",
-      });
+      setSuccess(data);
+      form.reset();
     } catch {
-      setState({
-        status: "error",
-        message: "Network error. Please try again or email us.",
-      });
+      /* error surfaced via submit.error */
     }
   }
 
-  if (state.status === "success") {
+  if (success != null) {
     return (
       <div
         className="rounded-sm border border-amber/40 bg-amber/5 px-4 py-4 font-sans text-[15px] leading-relaxed text-charcoal"
         role="status"
       >
         <p className="font-medium text-charcoal">Request received</p>
-        <p className="mt-2 text-charcoal/90">{state.message}</p>
+        <p className="mt-2 text-charcoal/90">{success.message}</p>
         <p className="mt-3 font-mono text-[12px] text-charcoal/70">
-          Reference: {state.id}
+          Reference: {success.id}
         </p>
       </div>
     );
   }
+
+  const configError =
+    typeof window !== "undefined" && !process.env.NEXT_PUBLIC_API_URL
+      ? "This form is not configured (NEXT_PUBLIC_API_URL is missing). Email us using the addresses below."
+      : null;
 
   return (
     <form
@@ -197,31 +148,19 @@ export default function TakedownForm() {
         />
       </div>
 
-      {state.status === "error" ? (
-        <p className="text-sm text-red-800" role="alert">
-          {state.message}
-        </p>
+      {configError ? (
+        <QueryErrorMessage error={new Error(configError)} />
       ) : null}
+
+      {submit.error ? <QueryErrorMessage error={submit.error} /> : null}
 
       <button
         type="submit"
-        disabled={state.status === "submitting"}
+        disabled={submit.isPending || Boolean(configError)}
         className="inline-flex items-center justify-center rounded-sm bg-charcoal px-5 py-2.5 font-mono text-[12px] tracking-wider uppercase text-cream hover:bg-charcoal/90 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber/60"
       >
-        {state.status === "submitting" ? "Submitting…" : "Submit request"}
+        {submit.isPending ? "Submitting…" : "Submit request"}
       </button>
     </form>
   );
-}
-
-function apiErrorMessage(data: unknown, fallback: string): string {
-  if (!data || typeof data !== "object" || !("message" in data)) {
-    return fallback;
-  }
-  const m = (data as { message: unknown }).message;
-  if (typeof m === "string") return m;
-  if (Array.isArray(m) && m.every((x) => typeof x === "string")) {
-    return m.join(" ");
-  }
-  return fallback;
 }

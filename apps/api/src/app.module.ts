@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { GraphQLModule } from '@nestjs/graphql';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { join } from 'path';
 import { AccountabilityBodiesModule } from './accountability-bodies/accountability-bodies.module';
 import { AdhocCommitteesModule } from './adhoc-committees/adhoc-committees.module';
 import { CommissionsModule } from './commissions/commissions.module';
@@ -26,6 +29,7 @@ import { TransformationPoliciesModule } from './transformation-policies/transfor
 import { YoutubeModule } from './youtube/youtube.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
 import { StateEntitiesModule } from './state-entities/state-entities.module';
+import { GraphqlModule } from './graphql/graphql.module';
 
 @Module({
   imports: [
@@ -47,6 +51,15 @@ import { StateEntitiesModule } from './state-entities/state-entities.module';
         logging: config.get<string>('NODE_ENV') === 'development' ? ['error', 'warn'] : ['error'],
       }),
     }),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      sortSchema: true,
+      playground: process.env.NODE_ENV !== 'production',
+      introspection: process.env.NODE_ENV !== 'production',
+      include: [GraphqlModule],
+    }),
+    GraphqlModule,
     AccountabilityBodiesModule,
     AdhocCommitteesModule,
     CommissionsModule,

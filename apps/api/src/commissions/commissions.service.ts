@@ -77,6 +77,27 @@ export class CommissionsService {
 
   /* ---------------------------------------------------------------- list */
 
+  /** Read-only list for GraphQL — no pagination wrapper. */
+  async findAllForGraphql(opts: {
+    status?: string;
+    limit?: number;
+  }): Promise<Commission[]> {
+    const limit = opts.limit ?? 20;
+    const qb = this.commissionRepo.createQueryBuilder('c');
+    if (opts.status) {
+      qb.andWhere('c.status = :status', { status: opts.status });
+    }
+    qb.orderBy('c.announced_date', 'DESC', 'NULLS LAST')
+      .addOrderBy('c.created_at', 'DESC')
+      .limit(limit);
+    return qb.getMany();
+  }
+
+  /** Read-only lookup for GraphQL by primary key. */
+  async findById(id: string): Promise<Commission | null> {
+    return this.commissionRepo.findOne({ where: { id } });
+  }
+
   async findAll(query: CommissionQueryDto): Promise<CommissionListResponseDto> {
     const { page, limit, domain, status } = query;
     const offset = (page - 1) * limit;

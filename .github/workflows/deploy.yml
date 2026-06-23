@@ -37,8 +37,37 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  build:
+    name: Build and test (Turborepo)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build all packages
+        run: npx turbo run build --filter=!@therecord/web
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+
+      - name: Run all tests
+        run: npx turbo run test
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+
   deploy:
     name: Deploy to production VPS
+    needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 20
 

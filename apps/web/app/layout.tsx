@@ -4,6 +4,7 @@ import { Instrument_Serif, Inter, JetBrains_Mono } from "next/font/google";
 import Footer from "@/components/Layout/Footer";
 import Header from "@/components/Layout/Header";
 import GlobalSearch from "@/components/Search/GlobalSearch";
+import RootProviders from "@/providers/RootProviders";
 
 import "./globals.css";
 
@@ -92,18 +93,20 @@ export default function RootLayout({
         className="min-h-screen bg-cream text-charcoal font-sans flex flex-col"
         suppressHydrationWarning
       >
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[300] focus:bg-charcoal focus:text-cream focus:px-4 focus:py-2 focus:rounded focus:font-mono focus:text-sm"
-        >
-          Skip to main content
-        </a>
-        <Header />
-        <main id="main-content" className="flex-1" tabIndex={-1}>
-          {children}
-        </main>
-        <Footer />
-        <GlobalSearch />
+        <RootProviders>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[300] focus:bg-charcoal focus:text-cream focus:px-4 focus:py-2 focus:rounded focus:font-mono focus:text-sm"
+          >
+            Skip to main content
+          </a>
+          <Header />
+          <main id="main-content" className="flex-1" tabIndex={-1}>
+            {children}
+          </main>
+          <Footer />
+          <GlobalSearch />
+        </RootProviders>
       </body>
     </html>
   );

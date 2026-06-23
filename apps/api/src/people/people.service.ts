@@ -109,6 +109,34 @@ export class PeopleService {
     };
   }
 
+  /**
+   * Batch load people linked to commissions — used by GraphQL DataLoader
+   * to avoid N+1 queries when resolving `Commission.people`.
+   */
+  async findByCommissionIds(commissionIds: string[]): Promise<
+    Array<{
+      commissionId: string;
+      id: string;
+      name: string;
+      role: string | null;
+    }>
+  > {
+    if (commissionIds.length === 0) return [];
+
+    const rows = await this.commissionPersonRepo.find({
+      where: { commission_id: In(commissionIds) },
+      relations: ['person'],
+      order: { role: 'ASC' },
+    });
+
+    return rows.map((cp) => ({
+      commissionId: cp.commission_id,
+      id: cp.person_id,
+      name: cp.person.full_name,
+      role: cp.role,
+    }));
+  }
+
   /* ------------------------------------------------------------ mappers */
 
   /**

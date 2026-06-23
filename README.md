@@ -55,6 +55,7 @@ docker compose up --build
 | http://localhost:3090 | Web app |
 | http://localhost:3090/ask | Ask The Record (grounded Q&A) |
 | http://localhost:3091/api/health | API health |
+| http://localhost:3091/graphql | GraphQL playground (**dev only**) |
 | http://localhost:8001/docs | FastAPI Swagger (**dev only** — disabled when `APP_ENV=prod`) |
 
 > Compose maps host **3090 → container 3000**. Do not use `localhost:3000` unless you run Next outside Docker.
@@ -78,10 +79,13 @@ Re-indexing is idempotent and runs automatically on production deploy after migr
 ### Root scripts
 
 ```bash
-npm run dev:build          # docker compose up --build
-npm run typecheck          # web + api + shared-types
-npm run lint               # all workspaces
-npm run build              # all workspaces
+npm run dev:docker       # docker compose up (full stack)
+npm run dev              # turbo: Next.js + NestJS dev servers in parallel
+npm run build            # turbo: build all JS packages (cached)
+npm run test             # turbo: run tests in all packages
+npm run lint             # turbo: lint all packages
+npm run typecheck        # turbo: typecheck all packages
+npm run dev:build        # docker compose up --build
 ```
 
 ### Workspace scripts
@@ -106,12 +110,45 @@ See **[PYTHON_RUNBOOK.md](./PYTHON_RUNBOOK.md)** for the full Python guide — j
 
 ---
 
+## GraphQL (read-only)
+
+In development, the Nest API exposes a **read-only GraphQL** layer alongside REST at **`http://localhost:3091/graphql`** (Apollo Playground). REST routes under `/api/*` are unchanged.
+
+Example — full accountability picture for one commission (people + timeline events in one request):
+
+```graphql
+query CommissionDetail($id: ID!) {
+  commission(id: $id) {
+    id
+    name
+    chairName
+    status
+    people {
+      id
+      name
+      role
+    }
+    events {
+      id
+      description
+      dateMentioned
+    }
+  }
+}
+```
+
+Nested fields use **DataLoader** batching so resolving `people` on many commissions does not trigger N+1 SQL queries.
+
+In production (`NODE_ENV=production`), GraphQL **introspection and the playground are disabled**; the schema file is generated at `apps/api/src/schema.gql` on build.
+
+---
+
 ## Testing & CI
 
 | Layer | Command | CI job |
 |-------|---------|--------|
-| TypeScript | `npm run typecheck` | `typecheck` |
-| Lint | `npm run lint` | `lint` |
+| TypeScript | `npm run typecheck` | `typecheck` (Turborepo) |
+| Lint | `npm run lint` | `lint` (Turborepo) |
 | API smoke | `npm run test:smoke --workspace=apps/api` | `api-smoke-test` |
 | Intelligence | `cd apps/intelligence && pytest -q` | `intelligence-lint` (+ ruff, mypy) |
 | Web build | `npm run build --workspace=apps/web` | `web-build` |

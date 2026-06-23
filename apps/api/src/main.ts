@@ -104,6 +104,7 @@ async function bootstrap(): Promise<void> {
   logger.log(`The Record API listening on http://0.0.0.0:${port}/api`);
   if (!isProduction) {
     logger.log(`Swagger docs at       http://0.0.0.0:${port}/api/docs`);
+    logger.log(`GraphQL playground at http://0.0.0.0:${port}/graphql`);
   }
 }
 

@@ -1,0 +1,73 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type AdhocCommitteeType {
+  id: ID!
+  name: String!
+  parliamentTerm: String
+  slug: String
+  status: String
+}
+
+type ArticleType {
+  headline: String!
+  id: ID!
+  publishedAt: String!
+  sourceName: String!
+  sourceUrl: String!
+}
+
+type CommissionType {
+  articles: [ArticleType!]
+  chairName: String
+  establishedYear: String
+  events: [EventType!]
+  id: ID!
+  name: String!
+  people: [PersonType!]
+  slug: String
+  status: String
+}
+
+type EventType {
+  dateMentioned: String
+  description: String!
+  eventType: String
+  id: ID!
+  legalReferences: [LegalReferenceType!]
+  title: String
+}
+
+type LegalReferenceType {
+  allegedViolation: Boolean!
+  constitutionSectionNumber: String
+  id: ID!
+  lawSectionLabel: String
+  relevance: String!
+}
+
+type PersonType {
+  id: ID!
+  name: String!
+  role: String
+}
+
+type Query {
+  adhocCommittee(id: ID!): AdhocCommitteeType
+  adhocCommittees(limit: Int = 20): [AdhocCommitteeType!]!
+  commission(id: ID!): CommissionType
+  commissions(limit: Int = 20, status: String): [CommissionType!]!
+  person(id: ID!): PersonType
+  siuProclamation(id: ID!): SiuProclamationType
+  siuProclamations(limit: Int = 20): [SiuProclamationType!]!
+}
+
+type SiuProclamationType {
+  id: ID!
+  name: String!
+  proclamationNumber: String!
+  signedDate: String
+  slug: String
+  status: String
+}

@@ -2,6 +2,7 @@
   "name": "therecord",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "npm@11.9.0",
   "description": "The Record — South African legal intelligence and news timeline platform (Codist).",
   "author": "Codist <hello@codist.co.za>",
   "license": "UNLICENSED",
@@ -11,33 +12,34 @@
     "url": "git+https://github.com/codist-co-za/therecord.git"
   },
   "workspaces": [
-    "apps/web",
-    "apps/api",
-    "packages/shared-types"
+    "apps/*",
+    "packages/*"
   ],
   "engines": {
     "node": ">=20.11.0",
     "npm": ">=10.2.4"
   },
   "scripts": {
-    "dev": "docker compose up",
+    "dev": "turbo run dev --parallel",
+    "dev:docker": "docker compose up",
     "dev:build": "docker compose up --build",
     "dev:down": "docker compose down",
     "prod:up": "docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d",
     "prod:down": "docker compose -f docker-compose.yml -f docker-compose.prod.yml down",
     "dev:web": "npm run dev --workspace=@therecord/web",
     "dev:api": "npm run start:dev --workspace=@therecord/api",
-    "build": "npm run build --workspaces --if-present",
-    "build:web": "npm run build --workspace=@therecord/web",
-    "build:api": "npm run build --workspace=@therecord/api",
-    "build:shared": "npm run build --workspace=@the-record/shared-types",
-    "lint": "npm run lint --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present",
-    "ci": "npm run typecheck && npm run lint",
-    "clean": "npm exec --workspaces -- rimraf dist .next .turbo node_modules/.cache"
+    "build": "turbo run build",
+    "build:web": "turbo run build --filter=@therecord/web",
+    "build:api": "turbo run build --filter=@therecord/api",
+    "build:shared": "turbo run build --filter=@the-record/shared-types",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "ci": "turbo run typecheck lint",
+    "clean": "turbo run clean && rimraf node_modules"
   },
   "devDependencies": {
-    "rimraf": "^5.0.5"
+    "rimraf": "^5.0.5",
+    "turbo": "^2.9.18"
   }
 }
