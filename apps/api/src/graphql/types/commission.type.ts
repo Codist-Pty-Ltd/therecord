@@ -9,19 +9,19 @@ export class CommissionType {
   @Field(() => ID)
   id!: string;
 
-  @Field()
+  @Field(() => String)
   name!: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   chairName!: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   establishedYear!: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   status!: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   slug!: string | null;
 
   @Field(() => [PersonType], { nullable: true })

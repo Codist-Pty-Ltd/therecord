@@ -5,15 +5,15 @@ export class AdhocCommitteeType {
   @Field(() => ID)
   id!: string;
 
-  @Field()
+  @Field(() => String)
   name!: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   status!: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   parliamentTerm!: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   slug!: string | null;
 }

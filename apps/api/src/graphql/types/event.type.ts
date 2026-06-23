@@ -7,16 +7,16 @@ export class EventType {
   @Field(() => ID)
   id!: string;
 
-  @Field()
+  @Field(() => String)
   description!: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   dateMentioned!: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   title!: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   eventType!: string | null;
 
   @Field(() => [LegalReferenceType], { nullable: true })

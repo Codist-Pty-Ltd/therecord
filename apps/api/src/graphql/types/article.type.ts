@@ -5,16 +5,16 @@ export class ArticleType {
   @Field(() => ID)
   id!: string;
 
-  @Field()
+  @Field(() => String)
   headline!: string;
 
-  @Field()
+  @Field(() => String)
   sourceName!: string;
 
-  @Field()
+  @Field(() => String)
   sourceUrl!: string;
 
-  @Field()
+  @Field(() => String)
   publishedAt!: string;
 
   /** Used by DataLoaders for grouping — not exposed in the schema. */

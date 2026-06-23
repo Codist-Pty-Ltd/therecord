@@ -5,16 +5,16 @@ export class LegalReferenceType {
   @Field(() => ID)
   id!: string;
 
-  @Field()
+  @Field(() => String)
   relevance!: string;
 
-  @Field()
+  @Field(() => Boolean)
   allegedViolation!: boolean;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   lawSectionLabel!: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   constitutionSectionNumber!: string | null;
 
   /** Used by DataLoaders for grouping — not exposed in the schema. */

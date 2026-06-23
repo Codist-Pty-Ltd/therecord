@@ -5,10 +5,10 @@ export class PersonType {
   @Field(() => ID)
   id!: string;
 
-  @Field()
+  @Field(() => String)
   name!: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   role!: string | null;
 
   /** Used by DataLoaders for grouping — not exposed in the schema. */
