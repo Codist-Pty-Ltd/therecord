@@ -219,7 +219,7 @@ export class ExpenditureService {
     const total = await qb.clone().getCount();
 
     const rows = await qb
-      .orderBy('per.amount_rands::bigint', 'DESC')
+      .orderBy('per.amount_rands', 'DESC')
       .offset(offset)
       .limit(limit)
       .getMany();

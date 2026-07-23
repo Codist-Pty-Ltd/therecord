@@ -98,7 +98,9 @@ jobs:
             export NEXT_PUBLIC_BUILD_SHA="$(git rev-parse HEAD)"
             export NEXT_PUBLIC_BUILD_DATE="$(git log -1 --format=%cI)"
             export NEXT_PUBLIC_BUILD_MESSAGE="$(git log -1 --format=%s)"
-            if ! docker compose --profile analytics -f docker-compose.yml -f docker-compose.prod.yml up -d --build; then
+            # Core stack only. Umami is optional — start manually when UMAMI_* are in .env:
+            #   docker compose --profile analytics up -d umami umami-db
+            if ! docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build; then
               echo "--- compose build/up failed — api logs ---"
               docker compose -f docker-compose.yml -f docker-compose.prod.yml logs api --tail=80 || true
               echo "--- intelligence logs ---"
@@ -156,4 +158,4 @@ jobs:
           script_stop: false
           script: |
             cd "${{ secrets.APP_DIR }}/app"
-            docker compose --profile analytics -f docker-compose.yml -f docker-compose.prod.yml ps
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
