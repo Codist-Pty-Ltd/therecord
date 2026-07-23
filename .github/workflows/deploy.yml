@@ -125,13 +125,33 @@ jobs:
               echo "Waiting... attempt $i"
               sleep 3
             done
-            # Health check via HTTP (nginx → api on host 3090)
-            http_code=$(curl --retry 10 --retry-delay 3 --retry-connrefused \
-              --silent --output /tmp/health.json --write-out "%{http_code}" \
-              http://127.0.0.1:3090/api/health)
-            echo "Health HTTP status: ${http_code}"
-            cat /tmp/health.json || true
-            test "${http_code}" = "200"
+            # Wait for API HTTP (not exposed on host in prod — probe inside container)
+            api_ok=0
+            for i in $(seq 1 10); do
+              if docker exec therecord-api node -e "
+                fetch('http://127.0.0.1:' + (process.env.PORT || 3091) + '/api/health')
+                  .then(async (r) => {
+                    const body = await r.text();
+                    console.log('Health HTTP status:', r.status);
+                    console.log(body);
+                    process.exit(r.status === 200 ? 0 : 1);
+                  })
+                  .catch((e) => { console.error(e); process.exit(1); });
+              "; then
+                api_ok=1
+                break
+              fi
+              echo "API health retry... attempt $i"
+              sleep 3
+            done
+            test "${api_ok}" = "1"
+
+            # Web liveness (Next.js on host 3090 — no /api/* proxy in standalone mode)
+            web_code=$(curl --retry 5 --retry-delay 2 --retry-connrefused \
+              --silent --output /dev/null --write-out "%{http_code}" \
+              http://127.0.0.1:3090/)
+            echo "Web HTTP status: ${web_code}"
+            test "${web_code}" = "200"
             docker image prune -f
 
       - name: Notify deployment success
