@@ -23,6 +23,9 @@
 # ======================================================================
 FROM node:20-alpine AS deps
 
+# Root .npmrc sets script-shell=bash for Windows dev; Alpine has no bash.
+ENV npm_config_script_shell=/bin/sh
+
 # libc6-compat is required by Next.js swc binaries on Alpine.
 RUN apk add --no-cache libc6-compat
 
@@ -40,6 +43,8 @@ RUN npm ci --workspace=@therecord/web
 # builder — compile Next.js
 # ======================================================================
 FROM node:20-alpine AS builder
+
+ENV npm_config_script_shell=/bin/sh
 
 RUN apk add --no-cache libc6-compat
 
@@ -72,6 +77,8 @@ RUN npm run build --workspace=@therecord/web
 # Hot reload: docker-compose.yml mounts apps/web → /repo/apps/web at runtime.
 # ======================================================================
 FROM node:20-alpine AS development
+
+ENV npm_config_script_shell=/bin/sh
 
 RUN apk add --no-cache libc6-compat
 

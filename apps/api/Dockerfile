@@ -21,6 +21,8 @@
 # ======================================================================
 FROM node:20-alpine AS deps
 
+ENV npm_config_script_shell=/bin/sh
+
 WORKDIR /repo
 
 COPY package.json package-lock.json ./
@@ -35,6 +37,8 @@ RUN npm ci --workspace=@therecord/api
 # ======================================================================
 FROM node:20-alpine AS builder
 
+ENV npm_config_script_shell=/bin/sh
+
 WORKDIR /repo
 
 COPY --from=deps /repo/node_modules ./node_modules
@@ -46,6 +50,8 @@ RUN npm run build --workspace=@therecord/api
 # development  (used by docker-compose.yml, target: development)
 # ======================================================================
 FROM node:20-alpine AS development
+
+ENV npm_config_script_shell=/bin/sh
 
 ENV NODE_ENV=development \
     PORT=3091
@@ -65,6 +71,8 @@ CMD ["npm", "run", "start:dev"]
 # runner  (used by docker-compose.prod.yml, target: runner)
 # ======================================================================
 FROM node:20-alpine AS runner
+
+ENV npm_config_script_shell=/bin/sh
 
 ENV NODE_ENV=production \
     PORT=3091
