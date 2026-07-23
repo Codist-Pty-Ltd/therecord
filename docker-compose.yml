@@ -110,6 +110,48 @@ services:
     networks:
       - therecord-network
 
+  # ------------------------------------------------------------------ umami
+  umami:
+    profiles: ["analytics"]
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    container_name: therecord-umami
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${UMAMI_DB_USER:-umami}:${UMAMI_DB_PASSWORD}@umami-db:5432/${UMAMI_DB_NAME:-umami}
+      DATABASE_TYPE: postgresql
+      APP_SECRET: ${UMAMI_APP_SECRET}
+    depends_on:
+      umami-db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3095:3000"
+    networks:
+      - therecord-network
+
+  umami-db:
+    profiles: ["analytics"]
+    image: postgres:16-alpine
+    container_name: therecord-umami-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${UMAMI_DB_NAME:-umami}
+      POSTGRES_USER: ${UMAMI_DB_USER:-umami}
+      POSTGRES_PASSWORD: ${UMAMI_DB_PASSWORD}
+    volumes:
+      - umami_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${UMAMI_DB_USER:-umami} -d ${UMAMI_DB_NAME:-umami}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - therecord-network
+
 # ----------------------------------------------------------------- networks
 networks:
   therecord-network:
@@ -120,3 +162,5 @@ networks:
 volumes:
   therecord_postgres_data:
     name: therecord_postgres_data
+  umami_pgdata:
+    name: umami_pgdata

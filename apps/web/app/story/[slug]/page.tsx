@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import StoryAnalytics from "@/components/analytics/StoryAnalytics";
 import InvestigationsBar from "@/components/Story/InvestigationsBar";
 import KeyPeopleStrip from "@/components/Story/KeyPeopleStrip";
 import LegalFramework from "@/components/Story/LegalFramework";
@@ -99,6 +100,12 @@ export default async function StoryPage({ params }: StoryPageProps) {
        */}
       <div className="w-full max-w-6xl mx-auto px-4 md:px-8">
         <StoryHeader story={story} />
+        <StoryAnalytics
+          title={story.title}
+          slug={story.slug}
+          story_category={story.story_category}
+          commission_id={story.commission_id}
+        />
       </div>
 
       {/* People strip */}

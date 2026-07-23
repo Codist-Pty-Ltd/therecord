@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { SearchResultRow } from "@/components/Search/SearchResultRow";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useSearch } from "@/hooks/useSearch";
+import { trackSearch } from "@/lib/umami";
 import { resultKey } from "@/lib/search-ui";
 
 export default function SmartSearch() {
@@ -14,7 +15,7 @@ export default function SmartSearch() {
   const rootRef = useRef<HTMLDivElement>(null);
   const debouncedQ = useDebouncedValue(q, 200);
 
-  const { data, isLoading, isFetching, error } = useSearch(
+  const { data, isLoading, isFetching, isSuccess, error } = useSearch(
     { q: debouncedQ, limit: 6, page: 1 },
     { enabled: open && debouncedQ.trim().length >= 2 },
   );
@@ -42,6 +43,12 @@ export default function SmartSearch() {
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, []);
+
+  useEffect(() => {
+    if (isSuccess && debouncedQ.trim().length >= 2) {
+      trackSearch(debouncedQ.trim());
+    }
+  }, [isSuccess, debouncedQ]);
 
   const qTrim = q.trim();
   const showPanel =

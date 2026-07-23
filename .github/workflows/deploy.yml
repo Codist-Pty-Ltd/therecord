@@ -95,7 +95,10 @@ jobs:
             GIT_SSH_COMMAND="ssh -i ~/.ssh/therecord_deploy" git pull origin main
             echo "--- latest commit on server ---"
             git log -1 --oneline
-            if ! docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build; then
+            export NEXT_PUBLIC_BUILD_SHA="$(git rev-parse HEAD)"
+            export NEXT_PUBLIC_BUILD_DATE="$(git log -1 --format=%cI)"
+            export NEXT_PUBLIC_BUILD_MESSAGE="$(git log -1 --format=%s)"
+            if ! docker compose --profile analytics -f docker-compose.yml -f docker-compose.prod.yml up -d --build; then
               echo "--- compose build/up failed — api logs ---"
               docker compose -f docker-compose.yml -f docker-compose.prod.yml logs api --tail=80 || true
               echo "--- intelligence logs ---"
@@ -129,6 +132,19 @@ jobs:
             test "${http_code}" = "200"
             docker image prune -f
 
+      - name: Notify deployment success
+        if: success()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -n "${TELEGRAM_BOT_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID}" ]; then
+            curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+              -d chat_id="${TELEGRAM_CHAT_ID}" \
+              --data-urlencode "text=✅ The Record deployed: ${{ github.event.head_commit.message }} (${GITHUB_SHA:0:7})" \
+              || true
+          fi
+
       - name: Show running containers
         if: always()
         uses: appleboy/ssh-action@v1.0.3
@@ -140,4 +156,4 @@ jobs:
           script_stop: false
           script: |
             cd "${{ secrets.APP_DIR }}/app"
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
+            docker compose --profile analytics -f docker-compose.yml -f docker-compose.prod.yml ps

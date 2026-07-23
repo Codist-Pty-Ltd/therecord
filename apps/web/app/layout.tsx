@@ -3,6 +3,7 @@ import { Instrument_Serif, Inter, JetBrains_Mono } from "next/font/google";
 
 import Footer from "@/components/Layout/Footer";
 import Header from "@/components/Layout/Header";
+import UmamiScript from "@/components/analytics/UmamiScript";
 import GlobalSearch from "@/components/Search/GlobalSearch";
 import RootProviders from "@/providers/RootProviders";
 
@@ -106,6 +107,7 @@ export default function RootLayout({
           </main>
           <Footer />
           <GlobalSearch />
+          <UmamiScript />
         </RootProviders>
       </body>
     </html>

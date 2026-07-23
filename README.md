@@ -23,6 +23,7 @@ Not just news — a structured record of who was investigated, what was found, a
 | **Intelligence** | `apps/intelligence` | `therecord-intelligence` | **8001** | FastAPI — RAG, NLP, relevance, entity linking |
 | **Shared types** | `packages/shared-types` | — | — | TypeScript contracts shared by web + API |
 | **Database** | — | `therecord-postgres` | **5432** | PostgreSQL 16 + **pgvector** |
+| **Umami** | `docs/nginx/` example | `therecord-umami` | **3095** | Self-hosted analytics (optional `--profile analytics`) |
 
 Nest proxies the intelligence layer at `POST /api/intelligence/ask`. The web **Ask The Record** page (`/ask`) calls that route and renders grounded answers with citation links.
 
@@ -30,6 +31,7 @@ Nest proxies the intelligence layer at `POST /api/intelligence/ask`. The web **A
 Browser → Next.js (:3090)
        → NestJS (:3091) → FastAPI (:8001, internal in prod)
        → PostgreSQL (stories, commissions, doc_chunk vectors, …)
+       → Umami (:3095, optional) ← analytics.therecord.co.za
 ```
 
 ---
@@ -154,6 +156,39 @@ In production (`NODE_ENV=production`), GraphQL **introspection and the playgroun
 | Web build | `npm run build --workspace=apps/web` | `web-build` |
 
 CI runs on pull requests and pushes to `main`. Deploy runs on push to `main` only.
+
+---
+
+## Commit messages
+
+Use a short **type prefix** so deploy history and the footer build line stay readable:
+
+| Prefix | Use for |
+|--------|---------|
+| `feat:` | New feature |
+| `fix:` | Bug fix |
+| `content:` | New story or commission editorial |
+| `data:` | Seed / corpus data update |
+| `chore:` | Maintenance, deps, CI |
+
+Example: `content: Add Zondo Commission final report analysis`
+
+---
+
+## Analytics (Umami)
+
+Self-hosted, cookieless analytics — POPIA-friendly. Optional locally; enabled in production with the `analytics` Compose profile.
+
+```bash
+# Set UMAMI_* vars in .env (see .env.example), then:
+docker compose --profile analytics up -d umami umami-db
+```
+
+- Dashboard: `https://analytics.therecord.co.za` (nginx example in `docs/nginx/`)
+- Script env: `NEXT_PUBLIC_UMAMI_SCRIPT_URL`, `NEXT_PUBLIC_UMAMI_WEBSITE_ID`
+- RSS feed for readers: `GET /api/feed.xml`
+
+See `docs/CONTENT_PIPELINE.md` for monitoring sources and the content-queue roadmap.
 
 ---
 

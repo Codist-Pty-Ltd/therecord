@@ -12,8 +12,9 @@ Single reference for deployment, ports, domains, CI/CD, and env. Keep in sync wh
 | NestJS (`apps/api`) | HTTP API | `api:3091` (`NESTJS_PORT`) | `127.0.0.1:3091` → container `:3091` |
 | Next.js (`apps/web`) | Frontend (app listens on **3000** in container) | `web:3000` (internal) | `127.0.0.1:3090` → container `:3000` |
 | Intelligence (FastAPI) | NLP / Anthropic | `intelligence:8001` | `127.0.0.1:8001` |
+| Umami | Privacy-first analytics | `umami:3000` | `127.0.0.1:3095` (optional `--profile analytics`) |
 
-**Production edge:** Nginx on the Hetzner VPS proxies the public site to **`127.0.0.1:3090`** (web container mapping only). API, Postgres, and Intelligence are **not** published on host ports in `docker-compose.prod.yml` (`ports: []` overrides).
+**Production edge:** Nginx on the Hetzner VPS proxies the public site to **`127.0.0.1:3090`** (web container mapping only). API, Postgres, and Intelligence are **not** published on host ports in `docker-compose.prod.yml` (`ports: []` overrides). Umami dashboard: **`analytics.therecord.co.za`** → `127.0.0.1:3095` (nginx example in `docs/nginx/analytics.therecord.co.za.conf.example`).
 
 `.env.example` uses `NEXTJS_PORT=3090` as the **host** mapping convention for documentation; Next inside Docker still listens on port **3000** unless overridden in the Dockerfile.
 

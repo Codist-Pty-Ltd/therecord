@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useSearch } from "@/hooks/useSearch";
+import { trackSearch } from "@/lib/umami";
 import {
   FILTER_CHIPS,
   filterIdToTypesParam,
@@ -133,6 +134,7 @@ function GlobalSearchModal() {
   useEffect(() => {
     if (isSuccess && debouncedQuery.trim().length >= 2) {
       pushRecentQuery(debouncedQuery);
+      trackSearch(debouncedQuery.trim());
     }
   }, [isSuccess, debouncedQuery]);
 

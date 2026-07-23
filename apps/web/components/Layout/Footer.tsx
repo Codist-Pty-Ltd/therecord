@@ -3,12 +3,15 @@
  */
 import Link from "next/link";
 
+import BuildInfo from "@/components/Layout/BuildInfo";
+
 const LEGAL_LINKS: ReadonlyArray<{ href: string; label: string }> = [
   { href: "/privacy", label: "Privacy Policy" },
   { href: "/terms", label: "Terms of Use" },
   { href: "/editorial", label: "Editorial Standards" },
   { href: "/takedown", label: "Content Removal" },
   { href: "/about", label: "About" },
+  { href: "/api/feed.xml", label: "RSS" },
 ];
 
 export default function Footer() {
@@ -40,7 +43,11 @@ export default function Footer() {
 
         <div className="flex flex-col items-center gap-1.5 text-center font-sans text-[11px] text-charcoal/50">
           <p>© {year} Codist (Pty) Ltd · South Africa</p>
-          <p>The Record does not use tracking cookies or advertising.</p>
+          <p>
+            Privacy-first analytics (no cookies). No advertising or third-party
+            trackers.
+          </p>
+          <BuildInfo />
         </div>
       </div>
     </footer>

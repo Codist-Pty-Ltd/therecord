@@ -3,6 +3,8 @@ import type {
   CommissionReportType,
 } from "@the-record/shared-types";
 
+import TrackedExternalLink from "@/components/analytics/TrackedExternalLink";
+
 const REPORT_TYPE_ORDER: CommissionReportType[] = [
   "final_report",
   "interim_report",
@@ -117,14 +119,15 @@ function ReportRow({ report }: { report: CommissionReport }) {
             <p className="mt-1 font-mono text-[10px] text-charcoal/50">{meta}</p>
           ) : null}
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
-            <a
+            <TrackedExternalLink
               href={report.source_url}
               target="_blank"
               rel="noopener noreferrer"
+              documentName={report.title}
               className="font-mono text-xs font-medium text-amber underline-offset-2 hover:underline"
             >
               Download PDF →
-            </a>
+            </TrackedExternalLink>
             {report.mirror_url && !report.is_verified ? (
               <a
                 href={report.mirror_url}
@@ -188,14 +191,15 @@ function SingleReportPanel({
         <p className="mt-2 font-mono text-[10px] text-charcoal/50">{meta}</p>
       ) : null}
       <div className="mt-4 flex flex-wrap gap-3">
-        <a
+        <TrackedExternalLink
           href={report.source_url}
           target="_blank"
           rel="noopener noreferrer"
+          documentName={report.title}
           className="inline-flex items-center rounded border border-amber/40 bg-amber/10 px-3 py-2 font-mono text-xs font-medium text-charcoal transition hover:border-amber hover:bg-amber/15"
         >
           Download PDF →
-        </a>
+        </TrackedExternalLink>
         {report.mirror_url && !report.is_verified ? (
           <a
             href={report.mirror_url}

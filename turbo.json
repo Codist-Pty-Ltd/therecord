@@ -3,7 +3,16 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"],
+      "env": [
+        "API_URL",
+        "NEXT_PUBLIC_API_URL",
+        "NEXT_PUBLIC_BUILD_SHA",
+        "NEXT_PUBLIC_BUILD_DATE",
+        "NEXT_PUBLIC_BUILD_MESSAGE",
+        "NEXT_PUBLIC_UMAMI_SCRIPT_URL",
+        "NEXT_PUBLIC_UMAMI_WEBSITE_ID"
+      ]
     },
     "test": {
       "dependsOn": ["^build"],

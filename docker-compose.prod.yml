@@ -57,7 +57,12 @@ services:
       args:
         API_URL: http://api:3091
         # Baked into client bundles at build time (search, Ask, People grid).
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://therecord.codist.co.za/api}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://therecord.co.za/api}
+        NEXT_PUBLIC_UMAMI_SCRIPT_URL: ${NEXT_PUBLIC_UMAMI_SCRIPT_URL:-}
+        NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-}
+        NEXT_PUBLIC_BUILD_SHA: ${NEXT_PUBLIC_BUILD_SHA:-}
+        NEXT_PUBLIC_BUILD_DATE: ${NEXT_PUBLIC_BUILD_DATE:-}
+        NEXT_PUBLIC_BUILD_MESSAGE: ${NEXT_PUBLIC_BUILD_MESSAGE:-}
       target: runner
     restart: unless-stopped
     environment:
@@ -69,3 +74,13 @@ services:
     ports: !override
       - "127.0.0.1:3090:3000"
     volumes: !override []
+
+  # ------------------------------------------------------------------ umami
+  umami:
+    restart: unless-stopped
+    ports: !override
+      - "127.0.0.1:3095:3000"
+
+  umami-db:
+    restart: unless-stopped
+    ports: !override []

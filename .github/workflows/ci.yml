@@ -254,6 +254,9 @@ jobs:
         env:
           API_URL: http://127.0.0.1:3091
           NEXT_PUBLIC_API_URL: http://127.0.0.1:3091
+          NEXT_PUBLIC_BUILD_SHA: ${{ github.sha }}
+          NEXT_PUBLIC_BUILD_DATE: ${{ github.event.head_commit.timestamp }}
+          NEXT_PUBLIC_BUILD_MESSAGE: ${{ github.event.head_commit.message }}
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
         run: npx turbo run build --filter=@therecord/web
