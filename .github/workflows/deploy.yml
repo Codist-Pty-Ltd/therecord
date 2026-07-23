@@ -125,19 +125,10 @@ jobs:
               echo "Waiting... attempt $i"
               sleep 3
             done
-            # Wait for API HTTP (not exposed on host in prod — probe inside container)
+            # Wait for API HTTP (not exposed on host in prod — single-line probe for SSH action)
             api_ok=0
             for i in $(seq 1 10); do
-              if docker exec therecord-api node -e "
-                fetch('http://127.0.0.1:' + (process.env.PORT || 3091) + '/api/health')
-                  .then(async (r) => {
-                    const body = await r.text();
-                    console.log('Health HTTP status:', r.status);
-                    console.log(body);
-                    process.exit(r.status === 200 ? 0 : 1);
-                  })
-                  .catch((e) => { console.error(e); process.exit(1); });
-              "; then
+              if docker exec therecord-api node -e "fetch('http://127.0.0.1:'+(process.env.PORT||3091)+'/api/health').then(r=>r.text().then(t=>{console.log('Health HTTP status:',r.status);console.log(t);process.exit(r.status===200?0:1)})).catch(()=>process.exit(1))"; then
                 api_ok=1
                 break
               fi
