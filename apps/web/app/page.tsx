@@ -15,6 +15,7 @@ import HomeHero from "@/components/Homepage/HomeHero";
 import HowItWorks from "@/components/Homepage/HowItWorks";
 import LiveTicker from "@/components/Homepage/LiveTicker";
 import MoneyCounter from "@/components/Homepage/MoneyCounter";
+import NewsletterSignup from "@/components/Newsletter/NewsletterSignup";
 import PeopleStrip, { type PeopleStripRow } from "@/components/Homepage/PeopleStrip";
 import SiuMoneyBanner from "@/components/Homepage/SiuMoneyBanner";
 import SmartSearch from "@/components/Homepage/SmartSearch";
@@ -338,6 +339,9 @@ export default async function HomePage() {
       <PeopleStrip rows={strip} />
       <ConstitutionSpotlight />
       <HowItWorks />
+      <section className="mx-auto max-w-6xl px-4 md:px-8 py-12 md:py-16">
+        <NewsletterSignup source="homepage" />
+      </section>
       <DomainFooterStrip />
     </div>
   );

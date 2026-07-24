@@ -105,10 +105,36 @@ def apply_entity_link_candidate_migration(database_url: str) -> None:
         cur.execute(ENTITY_LINK_CANDIDATE_MIGRATION_SQL)
 
 
+CONTENT_QUEUE_MIGRATION_SQL = """
+CREATE TABLE IF NOT EXISTS "content_queue" (
+  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  "title" text NOT NULL,
+  "source" varchar(32) NOT NULL,
+  "source_url" text,
+  "relevance_score" double precision NOT NULL DEFAULT 0,
+  "suggested_action" varchar(32) NOT NULL DEFAULT 'new_story',
+  "related_entities" jsonb NOT NULL DEFAULT '{}',
+  "summary" text,
+  "status" varchar(32) NOT NULL DEFAULT 'pending',
+  "reviewed_by" varchar(200),
+  "reviewed_at" timestamptz,
+  "story_id" uuid,
+  "created_at" timestamptz NOT NULL DEFAULT now(),
+  "updated_at" timestamptz NOT NULL DEFAULT now()
+);
+"""
+
+
+def apply_content_queue_migration(database_url: str) -> None:
+    with psycopg.connect(database_url, autocommit=True) as conn, conn.cursor() as cur:
+        cur.execute(CONTENT_QUEUE_MIGRATION_SQL)
+
+
 def apply_intelligence_migrations(database_url: str) -> None:
     apply_doc_chunk_migration(database_url)
     apply_relevance_label_migration(database_url)
     apply_entity_link_candidate_migration(database_url)
+    apply_content_queue_migration(database_url)
 
 
 def unit_vector(dim: int, axis: int) -> list[float]:

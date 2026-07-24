@@ -31,6 +31,15 @@ services:
       PORT: ${NESTJS_PORT:-3091}
       INTELLIGENCE_URL: ${INTELLIGENCE_URL:-http://intelligence:8001}
       INTELLIGENCE_TIMEOUT_MS: ${INTELLIGENCE_TIMEOUT_MS:-30000}
+      INGESTION_ENABLED: ${INGESTION_ENABLED:-false}
+      INGESTION_API_KEY: ${INGESTION_API_KEY:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      NEWSLETTER_FROM_EMAIL: ${NEWSLETTER_FROM_EMAIL:-newsletter@therecord.co.za}
+      NEWSLETTER_FROM_NAME: ${NEWSLETTER_FROM_NAME:-The Record}
+      NEWSLETTER_WEB_URL: ${NEWSLETTER_WEB_URL:-https://therecord.co.za}
+      NEWSLETTER_ENABLED: ${NEWSLETTER_ENABLED:-false}
+      SIU_AGENT_ENABLED: ${SIU_AGENT_ENABLED:-false}
+      SAFLII_AGENT_ENABLED: ${SAFLII_AGENT_ENABLED:-false}
     ports: !override []
     volumes: !override []
 
@@ -46,6 +55,9 @@ services:
       YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:-}
       RELEVANCE_STRATEGY: ${RELEVANCE_STRATEGY:-centroid}
       RELEVANCE_MODEL_PATH: ${RELEVANCE_MODEL_PATH:-}
+      SIU_AGENT_ENABLED: ${SIU_AGENT_ENABLED:-false}
+      SAFLII_AGENT_ENABLED: ${SAFLII_AGENT_ENABLED:-false}
+      AGENT_MIN_RELEVANCE: ${AGENT_MIN_RELEVANCE:-0.4}
     ports: !override []
     volumes: !override []
 
@@ -70,6 +82,7 @@ services:
       # Server-side fetches stay on the docker network (therecord-api).
       API_URL: http://api:3091
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://therecord.codist.co.za/api}
+      INGESTION_API_KEY: ${INGESTION_API_KEY:-}
       NEXT_TELEMETRY_DISABLED: "1"
     ports: !override
       - "127.0.0.1:3090:3000"

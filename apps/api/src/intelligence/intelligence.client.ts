@@ -129,6 +129,20 @@ export class IntelligenceClient {
     });
   }
 
+  async runSiuAgent(): Promise<{ scanned: number; added: number }> {
+    return this.request<{ scanned: number; added: number }>(
+      '/api/agents/siu/run',
+      'POST',
+    );
+  }
+
+  async runSafliiAgent(): Promise<{ scanned: number; added: number }> {
+    return this.request<{ scanned: number; added: number }>(
+      '/api/agents/saflii/run',
+      'POST',
+    );
+  }
+
   /* ------------------------------------------------------- internals */
 
   private async request<T>(

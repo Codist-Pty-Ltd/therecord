@@ -29,7 +29,9 @@ import { TransformationPoliciesModule } from './transformation-policies/transfor
 import { YoutubeModule } from './youtube/youtube.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
 import { StateEntitiesModule } from './state-entities/state-entities.module';
+import { ContentQueueModule } from './content-queue/content-queue.module';
 import { GraphqlModule } from './graphql/graphql.module';
+import { NewsletterModule } from './newsletter/newsletter.module';
 
 @Module({
   imports: [
@@ -88,6 +90,8 @@ import { GraphqlModule } from './graphql/graphql.module';
     YoutubeModule,
     RecommendationsModule,
     StateEntitiesModule,
+    NewsletterModule,
+    ContentQueueModule,
   ],
 })
 export class AppModule {}

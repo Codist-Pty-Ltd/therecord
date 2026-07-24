@@ -31,7 +31,7 @@ from fastapi import FastAPI, Response
 
 import db
 from config import get_settings
-from routers import cluster, entities, legal, rag, relevance, summary, youtube
+from routers import agents, cluster, entities, legal, rag, relevance, summary, youtube
 from services.nlp_service import get_nlp
 
 # Load .env before logging and lifespan read os.environ.
@@ -75,6 +75,7 @@ app = FastAPI(
     redoc_url="/redoc" if _docs_enabled else None,
 )
 
+app.include_router(agents.router, prefix="/api")
 app.include_router(entities.router, prefix="/api")
 app.include_router(legal.router, prefix="/api")
 app.include_router(summary.router, prefix="/api")

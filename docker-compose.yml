@@ -45,6 +45,13 @@ services:
       INTELLIGENCE_TIMEOUT_MS: ${INTELLIGENCE_TIMEOUT_MS:-30000}
       INGESTION_ENABLED: ${INGESTION_ENABLED:-false}
       INGESTION_API_KEY: ${INGESTION_API_KEY:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      NEWSLETTER_FROM_EMAIL: ${NEWSLETTER_FROM_EMAIL:-newsletter@therecord.co.za}
+      NEWSLETTER_FROM_NAME: ${NEWSLETTER_FROM_NAME:-The Record}
+      NEWSLETTER_WEB_URL: ${NEWSLETTER_WEB_URL:-https://therecord.co.za}
+      NEWSLETTER_ENABLED: ${NEWSLETTER_ENABLED:-false}
+      SIU_AGENT_ENABLED: ${SIU_AGENT_ENABLED:-false}
+      SAFLII_AGENT_ENABLED: ${SAFLII_AGENT_ENABLED:-false}
     volumes:
       - ./apps/api/src:/repo/apps/api/src
     depends_on:
@@ -70,6 +77,9 @@ services:
       YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:-}
       RELEVANCE_STRATEGY: ${RELEVANCE_STRATEGY:-centroid}
       RELEVANCE_MODEL_PATH: ${RELEVANCE_MODEL_PATH:-}
+      SIU_AGENT_ENABLED: ${SIU_AGENT_ENABLED:-false}
+      SAFLII_AGENT_ENABLED: ${SAFLII_AGENT_ENABLED:-false}
+      AGENT_MIN_RELEVANCE: ${AGENT_MIN_RELEVANCE:-0.4}
     volumes:
       - ./apps/intelligence:/app
     depends_on:
@@ -96,6 +106,7 @@ services:
       # Browser-side fetches → goes out through the host port binding.
       # Match host binding (127.0.0.1:3090) — localhost ≠ 127.0.0.1 for CORS.
       NEXT_PUBLIC_API_URL: http://127.0.0.1:3091
+      INGESTION_API_KEY: ${INGESTION_API_KEY:-}
       NEXT_TELEMETRY_DISABLED: "1"
     volumes:
       # Source mounts for hot reload. The container WORKDIR is /repo/apps/web.

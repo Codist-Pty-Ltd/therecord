@@ -4,6 +4,7 @@
 import Link from "next/link";
 
 import BuildInfo from "@/components/Layout/BuildInfo";
+import NewsletterSignup from "@/components/Newsletter/NewsletterSignup";
 
 const LEGAL_LINKS: ReadonlyArray<{ href: string; label: string }> = [
   { href: "/privacy", label: "Privacy Policy" },
@@ -40,6 +41,8 @@ export default function Footer() {
             </span>
           ))}
         </nav>
+
+        <NewsletterSignup source="footer" compact />
 
         <div className="flex flex-col items-center gap-1.5 text-center font-sans text-[11px] text-charcoal/50">
           <p>© {year} Codist (Pty) Ltd · South Africa</p>
