@@ -111,7 +111,7 @@ export default function RootLayout({
         </RootProviders>
 
 <Script  defer  src="https://analytics.therecord.co.za/script.js"
-  data-website-id="YOUR-WEBSITE-ID-FROM-UMAMI"
+  data-website-id="91b3d17a-e147-49af-a4ac-cd723171ea9a"
   strategy="afterInteractive" />
       </body>
     </html>
