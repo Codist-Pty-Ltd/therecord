@@ -102,7 +102,7 @@ async def calculate_relevance(text: str) -> float:
     score += min(len(related["people"]) * 0.08, 0.32)
     score += min(len(related["commissions"]) * 0.1, 0.3)
 
-    if re.search(r"\bR\d{1,4}\s*[/\-]?\s*\d{4}\b", text, re.I):
+    if re.search(r"\bR\d{1,4}\s*[/\-]?\s*\d{4}\b", text, re.IGNORECASE):
         score += 0.15
 
     return min(score, 1.0)
