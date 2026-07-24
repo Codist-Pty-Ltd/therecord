@@ -15,8 +15,10 @@ from pydantic import BaseModel, Field
 from core.relevance import (
     HEURISTIC_FALLBACK_THRESHOLD,
     is_relevant,
-    score as relevance_score,
     upsert_relevance_label,
+)
+from core.relevance import (
+    score as relevance_score,
 )
 
 logger = logging.getLogger(__name__)

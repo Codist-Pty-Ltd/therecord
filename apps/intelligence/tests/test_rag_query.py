@@ -11,7 +11,12 @@ import pytest
 from fastapi.testclient import TestClient
 
 from config import get_settings
-from tests.conftest import apply_doc_chunk_migration, insert_doc_chunk, to_psycopg_url, unit_vector
+from tests.conftest import (
+    apply_doc_chunk_migration,
+    insert_doc_chunk,
+    to_psycopg_url,
+    unit_vector,
+)
 
 
 @pytest.fixture()
@@ -29,9 +34,8 @@ def rag_client() -> Iterator[tuple[TestClient, str]]:
 
         from main import app
 
-        with patch("main.get_nlp"):
-            with TestClient(app) as client:
-                yield client, database_url
+        with patch("main.get_nlp"), TestClient(app) as client:
+            yield client, database_url
 
         get_settings.cache_clear()
 

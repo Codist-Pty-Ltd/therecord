@@ -7,7 +7,6 @@ import asyncio
 import logging
 from pathlib import Path
 
-import db
 import joblib
 import numpy as np
 from sklearn.metrics import (
@@ -18,6 +17,7 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
+import db
 from ml.relevance_features import RelevanceFeatureInput, build_feature_vector
 
 logger = logging.getLogger(__name__)

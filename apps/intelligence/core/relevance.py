@@ -142,6 +142,7 @@ def _predict_model_score(
 
     try:
         import numpy as np
+
         from ml.relevance_features import RelevanceFeatureInput, build_feature_vector
 
         features = build_feature_vector(

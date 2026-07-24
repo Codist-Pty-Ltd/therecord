@@ -50,9 +50,8 @@ def to_psycopg_url(url: str) -> str:
 
 
 def apply_doc_chunk_migration(database_url: str) -> None:
-    with psycopg.connect(database_url, autocommit=True) as conn:
-        with conn.cursor() as cur:
-            cur.execute(DOC_CHUNK_MIGRATION_SQL)
+    with psycopg.connect(database_url, autocommit=True) as conn, conn.cursor() as cur:
+        cur.execute(DOC_CHUNK_MIGRATION_SQL)
 
 
 RELEVANCE_LABEL_MIGRATION_SQL = """
@@ -97,15 +96,13 @@ ON "entity_link_candidate" ("source_type", "source_id");
 
 
 def apply_relevance_label_migration(database_url: str) -> None:
-    with psycopg.connect(database_url, autocommit=True) as conn:
-        with conn.cursor() as cur:
-            cur.execute(RELEVANCE_LABEL_MIGRATION_SQL)
+    with psycopg.connect(database_url, autocommit=True) as conn, conn.cursor() as cur:
+        cur.execute(RELEVANCE_LABEL_MIGRATION_SQL)
 
 
 def apply_entity_link_candidate_migration(database_url: str) -> None:
-    with psycopg.connect(database_url, autocommit=True) as conn:
-        with conn.cursor() as cur:
-            cur.execute(ENTITY_LINK_CANDIDATE_MIGRATION_SQL)
+    with psycopg.connect(database_url, autocommit=True) as conn, conn.cursor() as cur:
+        cur.execute(ENTITY_LINK_CANDIDATE_MIGRATION_SQL)
 
 
 def apply_intelligence_migrations(database_url: str) -> None:
@@ -133,9 +130,8 @@ def insert_doc_chunk(
     chunk_id: UUID | None = None,
 ) -> UUID:
     row_id = chunk_id or uuid4()
-    with psycopg.connect(database_url, autocommit=True) as conn:
-        with conn.cursor() as cur:
-            cur.execute(
+    with psycopg.connect(database_url, autocommit=True) as conn, conn.cursor() as cur:
+        cur.execute(
                 """
                 INSERT INTO doc_chunk (
                     id, source_type, source_id, chunk_index, content,

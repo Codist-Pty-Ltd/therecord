@@ -31,9 +31,8 @@ def entities_client() -> Iterator[TestClient]:
 
         from main import app
 
-        with patch("main.get_nlp"):
-            with TestClient(app) as client:
-                yield client
+        with patch("main.get_nlp"), TestClient(app) as client:
+            yield client
 
         get_settings.cache_clear()
 
@@ -68,12 +67,11 @@ def test_entities_link_queues_low_confidence_mention(entities_client: TestClient
     assert body["confidence"] == pytest.approx(0.41)
 
     database_url = os.environ["DATABASE_URL"]
-    with psycopg.connect(database_url) as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT mention, status, suggested_id::text FROM entity_link_candidate",
-            )
-            row = cur.fetchone()
+    with psycopg.connect(database_url) as conn, conn.cursor() as cur:
+        cur.execute(
+            "SELECT mention, status, suggested_id::text FROM entity_link_candidate",
+        )
+        row = cur.fetchone()
     assert row is not None
     assert row[0] == "Mystery Official"
     assert row[1] == "pending"
@@ -104,9 +102,8 @@ def test_entities_link_does_not_queue_high_confidence_match(entities_client: Tes
     assert response.json()["canonical_id"] == str(canonical_id)
 
     database_url = os.environ["DATABASE_URL"]
-    with psycopg.connect(database_url) as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT COUNT(*) FROM entity_link_candidate")
-            count_row = cur.fetchone()
+    with psycopg.connect(database_url) as conn, conn.cursor() as cur:
+        cur.execute("SELECT COUNT(*) FROM entity_link_candidate")
+        count_row = cur.fetchone()
     assert count_row is not None
     assert count_row[0] == 0

@@ -5,9 +5,9 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
-import db
 from pydantic import BaseModel, Field
 
+import db
 from config import get_settings
 from core.embeddings import embed_text
 

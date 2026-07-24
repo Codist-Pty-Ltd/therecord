@@ -24,9 +24,11 @@ async def test_score_falls_back_to_centroid_when_model_missing(
     os.environ.pop("RELEVANCE_MODEL_PATH", None)
     get_settings.cache_clear()
 
-    with patch("core.relevance.get_centroid", return_value=[1.0] + [0.0] * 383):
-        with patch("core.relevance.embed_text", return_value=[1.0] + [0.0] * 383):
-            result = await score("Zondo commission hearing")
+    with (
+        patch("core.relevance.get_centroid", return_value=[1.0] + [0.0] * 383),
+        patch("core.relevance.embed_text", return_value=[1.0] + [0.0] * 383),
+    ):
+        result = await score("Zondo commission hearing")
 
     assert result.method == "centroid_v1"
     assert result.cold_start is False
@@ -74,9 +76,11 @@ async def test_score_uses_model_when_artifact_present(
 
     relevance_mod._model_bundle = None
 
-    with patch("core.relevance.get_centroid", return_value=[1.0] + [0.0] * 383):
-        with patch("core.relevance.embed_text", return_value=list(features_pos[:384])):
-            result = await score("Zondo commission hearing")
+    with (
+        patch("core.relevance.get_centroid", return_value=[1.0] + [0.0] * 383),
+        patch("core.relevance.embed_text", return_value=list(features_pos[:384])),
+    ):
+        result = await score("Zondo commission hearing")
 
     assert result.method == "model_vtest123"
     assert isinstance(result, RelevanceScore)

@@ -28,9 +28,8 @@ def health_client() -> Iterator[TestClient]:
 
         from main import app
 
-        with patch("main.get_nlp"):
-            with TestClient(app) as client:
-                yield client
+        with patch("main.get_nlp"), TestClient(app) as client:
+            yield client
 
 
 def test_health_returns_ok_with_pgvector(health_client: TestClient) -> None:

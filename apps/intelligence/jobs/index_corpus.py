@@ -222,30 +222,29 @@ async def _index_document(
             batch = texts[start : start + EMBED_BATCH_SIZE]
             embeddings.extend(embed_texts(batch))
 
-    async with db.connection() as conn:
-        async with conn.transaction():
-            for (index, chunk, digest), vector in zip(pending, embeddings, strict=True):
-                await _upsert_chunk(
-                    conn,
-                    source_type=source.source_type,
-                    source_id=source_id,
-                    chunk_index=index,
-                    content=chunk,
-                    digest=digest,
-                    embedding=vector,
-                )
-                if index in existing:
-                    stats.updated += 1
-                else:
-                    stats.indexed += 1
-
-            removed = await _delete_stale_chunks(
+    async with db.connection() as conn, conn.transaction():
+        for (index, chunk, digest), vector in zip(pending, embeddings, strict=True):
+            await _upsert_chunk(
                 conn,
                 source_type=source.source_type,
                 source_id=source_id,
-                keep_count=len(chunks),
+                chunk_index=index,
+                content=chunk,
+                digest=digest,
+                embedding=vector,
             )
-            stats.deleted += removed
+            if index in existing:
+                stats.updated += 1
+            else:
+                stats.indexed += 1
+
+        removed = await _delete_stale_chunks(
+            conn,
+            source_type=source.source_type,
+            source_id=source_id,
+            keep_count=len(chunks),
+        )
+        stats.deleted += removed
 
 
 async def _index_source(

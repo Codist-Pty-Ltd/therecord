@@ -9,12 +9,16 @@ import logging
 from datetime import UTC, datetime
 from pathlib import Path
 
-import db
 import joblib
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 
-from ml.relevance_features import RelevanceFeatureInput, build_feature_vector, feature_spec
+import db
+from ml.relevance_features import (
+    RelevanceFeatureInput,
+    build_feature_vector,
+    feature_spec,
+)
 
 logger = logging.getLogger(__name__)
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from difflib import SequenceMatcher
 from functools import lru_cache
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import spacy
 
@@ -58,7 +58,7 @@ CRIME_KEYWORDS: frozenset[str] = frozenset(
 
 
 @lru_cache(maxsize=1)
-def get_nlp() -> "Language":
+def get_nlp() -> Language:
     """Load (and cache) the spaCy pipeline. Safe to call from any thread."""
     logger.info("Loading spaCy model '%s'…", SPACY_MODEL)
     try:
@@ -231,7 +231,7 @@ async def cluster_match(
 # ---------------------------------------------------------------- similarity
 
 
-def _token_set(nlp: "Language", text: str) -> set[str]:
+def _token_set(nlp: Language, text: str) -> set[str]:
     """Lemmatised, lower-cased, stopword-free, length-filtered token set."""
     if not text.strip():
         return set()

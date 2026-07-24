@@ -31,9 +31,8 @@ def youtube_client() -> Iterator[TestClient]:
 
         from main import app
 
-        with patch("main.get_nlp"):
-            with TestClient(app) as client:
-                yield client
+        with patch("main.get_nlp"), TestClient(app) as client:
+            yield client
 
         get_settings.cache_clear()
 

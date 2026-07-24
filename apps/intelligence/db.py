@@ -73,14 +73,13 @@ async def healthcheck() -> dict[str, str | bool]:
 
     Raises on connection/query failure so callers can return HTTP 503.
     """
-    async with connection() as conn:
-        async with conn.cursor() as cur:
-            await cur.execute("SELECT 1")
-            await cur.execute(
-                "SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'vector')",
-            )
-            row = await cur.fetchone()
-            pgvector_installed = bool(row[0]) if row else False
+    async with connection() as conn, conn.cursor() as cur:
+        await cur.execute("SELECT 1")
+        await cur.execute(
+            "SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'vector')",
+        )
+        row = await cur.fetchone()
+        pgvector_installed = bool(row[0]) if row else False
 
     return {"db": "ok", "pgvector": pgvector_installed}
 
@@ -90,11 +89,10 @@ async def fetch(
     params: Sequence[Any] | Mapping[str, Any] | None = None,
 ) -> list[tuple[Any, ...]]:
     """Run a read query and return all rows."""
-    async with connection() as conn:
-        async with conn.cursor() as cur:
-            await cur.execute(sql, params)
-            rows = await cur.fetchall()
-            return list(rows)
+    async with connection() as conn, conn.cursor() as cur:
+        await cur.execute(sql, params)
+        rows = await cur.fetchall()
+        return list(rows)
 
 
 async def execute(
