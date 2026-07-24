@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Instrument_Serif, Inter, JetBrains_Mono } from "next/font/google";
-
+import Script from 'next/script'
 import Footer from "@/components/Layout/Footer";
 import Header from "@/components/Layout/Header";
 import UmamiScript from "@/components/analytics/UmamiScript";
@@ -109,6 +109,10 @@ export default function RootLayout({
           <GlobalSearch />
           <UmamiScript />
         </RootProviders>
+
+<Script  defer  src="https://analytics.therecord.co.za/script.js"
+  data-website-id="YOUR-WEBSITE-ID-FROM-UMAMI"
+  strategy="afterInteractive" />
       </body>
     </html>
   );
