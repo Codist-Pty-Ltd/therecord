@@ -35,6 +35,21 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
+  async redirects() {
+    return [
+      {
+        source: '/newsletter/confirm/:token',
+        destination: '/api/newsletter/confirm/:token',
+        permanent: false,
+      },
+      {
+        source: '/newsletter/unsubscribe/:token',
+        destination: '/api/newsletter/unsubscribe/:token',
+        permanent: false,
+      },
+    ]
+  }
 };
 
 export default nextConfig;
