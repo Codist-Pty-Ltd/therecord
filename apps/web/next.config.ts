@@ -40,7 +40,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/newsletter/confirm/:token',
-        destination: '/api/newsletter/confirm/:token',
+        destination: '/newsletter/confirm/:token',
         permanent: false,
       },
       {
