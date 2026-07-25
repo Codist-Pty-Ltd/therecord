@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import re
+from typing import Any
 
 import db
 
@@ -108,7 +109,7 @@ async def calculate_relevance(text: str) -> float:
     return min(score, 1.0)
 
 
-async def add_to_content_queue(payload: dict[str, object]) -> str | None:
+async def add_to_content_queue(payload: dict[str, Any]) -> str | None:
     """Insert a pending queue row; returns id or None if duplicate."""
     title = str(payload["title"]).strip()
     source = str(payload["source"])
