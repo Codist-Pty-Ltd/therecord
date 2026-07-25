@@ -82,6 +82,7 @@ export default function RootLayout({
     >
       <head>
         <meta name="robots" content="index, follow" />
+        <script defer src="https://analytics.therecord.co.za/recorder.js" data-website-id="91b3d17a-e147-49af-a4ac-cd723171ea9a"></script>
       </head>
       {/*
        * `suppressHydrationWarning` on <body> absorbs attribute mismatches
