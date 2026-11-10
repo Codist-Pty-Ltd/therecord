@@ -39,6 +39,8 @@ services:
       - "127.0.0.1:3091:3091"
     environment:
       NODE_ENV: development
+      OTEL_SERVICE_NAME: therecord-api
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://host.docker.internal:4318}
       DATABASE_URL: ${DATABASE_URL}
       PORT: ${NESTJS_PORT:-3091}
       INTELLIGENCE_URL: ${INTELLIGENCE_URL:-http://intelligence:8001}

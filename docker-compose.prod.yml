@@ -27,6 +27,8 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
+      OTEL_SERVICE_NAME: therecord-api
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://host.docker.internal:4318}
       DATABASE_URL: ${DATABASE_URL}
       PORT: ${NESTJS_PORT:-3091}
       INTELLIGENCE_URL: ${INTELLIGENCE_URL:-http://intelligence:8001}
