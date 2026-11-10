@@ -1262,8 +1262,8 @@ const COMMISSIONS_SEED: readonly CommissionSeed[] = [
     reason_summary:
       'To investigate allegations that efforts were made to stop the investigation or prosecution of cases that arose from the TRC process — meaning apartheid-era perpetrators who were denied amnesty and should have faced prosecution.',
     plain_english_summary:
-      'After apartheid, the TRC gave many people amnesty — but only if they told the full truth. Those who did NOT get amnesty were supposed to be prosecuted. Thirty years later, almost none of them have been. This commission is investigating whether powerful people have been deliberately blocking those prosecutions.',
-    chair_name: 'TBA',
+      'After apartheid, the TRC gave many people amnesty — but only if they told the full truth. Those who did NOT get amnesty were supposed to be prosecuted. Thirty years later, almost none of them have been. This commission, chaired by retired Justice Sisi Khampepe, is investigating whether powerful people have been deliberately blocking those prosecutions. The President has said its written report is due on 18 December 2026. In October 2026 the commission asked for more time. He had not announced a further extension by 10 November 2026.',
+    chair_name: 'Sisi Khampepe',
     announced_date: '2025-05-29',
     hearings_started: null,
     concluded_date: null,
@@ -1273,12 +1273,19 @@ const COMMISSIONS_SEED: readonly CommissionSeed[] = [
     report_url: null,
     cost_rands: null,
     total_hearing_days: null,
-    outcome_summary: null,
+    outcome_summary:
+      'Active as of 10 November 2026. On 14 May 2026 President Ramaphosa extended the term so the final report is due on 18 December 2026. On 23 October 2026 the commission asked him for more time, saying further witnesses were only then cooperating and that new names had emerged. No further extension had been announced by the Presidency.',
     produced_prosecutions: null,
     president_who_established: 'Cyril Ramaphosa',
     law_links: [],
     person_links: [
       { full_name: 'Cyril Ramaphosa', role: CommissionPersonRole.ESTABLISHED_BY, summary: null },
+      {
+        full_name: 'Sisi Khampepe',
+        role: CommissionPersonRole.CHAIR,
+        summary:
+          'Chairs this inquiry into alleged interference with TRC-case prosecutions. Distinct from her 2005–06 commission on the Scorpions.',
+      },
     ],
   },
   // 19 ────────────────────────────────────────────────────────────────────

@@ -272,7 +272,7 @@ export default async function HomePage() {
   }));
   if (tembisaStory?.status === "active") {
     storyTickerExtras.push(
-      "TEMBISA HOSPITAL · R2BN LOOTED · MASTERMINDS STILL FREE",
+      "TEMBISA HOSPITAL · SIU PRESERVED R42.4M · SEPTEMBER 2026",
     );
   }
   if (medicareStory?.status === "active") {
