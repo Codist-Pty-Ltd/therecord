@@ -30,7 +30,8 @@ COPY apps/api/package.json apps/api/
 COPY apps/web/package.json apps/web/
 COPY packages/shared-types/package.json packages/shared-types/
 
-RUN npm ci --workspace=@therecord/api
+RUN npm ci --workspace=@therecord/api \
+    && mkdir -p apps/api/node_modules
 
 # ======================================================================
 # builder
@@ -42,6 +43,10 @@ ENV npm_config_script_shell=/bin/sh
 WORKDIR /repo
 
 COPY --from=deps /repo/node_modules ./node_modules
+# Some workspace deps (for example @opentelemetry/resources) are installed
+# under apps/api/node_modules rather than the hoisted root. Nest cannot
+# compile without them.
+COPY --from=deps /repo/apps/api/node_modules ./apps/api/node_modules
 COPY . .
 
 RUN npm run build --workspace=@therecord/api
@@ -59,6 +64,7 @@ ENV NODE_ENV=development \
 WORKDIR /repo
 
 COPY --from=deps /repo/node_modules ./node_modules
+COPY --from=deps /repo/apps/api/node_modules ./apps/api/node_modules
 COPY . .
 
 WORKDIR /repo/apps/api
