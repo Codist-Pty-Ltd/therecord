@@ -1009,6 +1009,20 @@ export async function run(): Promise<void> {
           ],
         },
         {
+          event_date: '2026-09-27',
+          event_type: EventType.STATEMENT,
+          title: 'SIU announces R42.4 million preserved over alleged Tembisa bribes',
+          description:
+            'SIU statement, 27 September 2026. The Special Tribunal had, the previous month, granted a preservation order over cash, properties, pensions and investments of about R42.4 million linked to R100 million in bribes allegedly paid by Stefan Joel Govindraju to Tembisa Hospital officials for procurement of about R600 million. The order covers Zacharia Tshisele, members of his family, and associates including former hospital area manager Ernest Monnakgotla. The SIU said the Govindraju syndicate used 75 companies and received about R600 million, and that the Mazibuko syndicate, run by Rudolf Mduduzi Mazibuko, used 17 companies and received about R283 million. Tshisele had repaid R13,530,894.27 under a 2025 acknowledgement of debt. The SIU said its criminal referral led to Govindraju’s arrest the previous month on 70 counts of fraud, theft, money laundering and corruption-related offences. The arrest day was not stated. Civil recovery is continuing. These figures are the SIU’s allegations and preservation totals, not a criminal conviction.',
+          plain_english:
+            'Investigators froze about R42.4 million they say was paid as bribes to get hospital contracts. They also said one businessman was arrested the month before. A court has not yet decided the criminal case.',
+          significance: EventSignificance.CRITICAL,
+          source_urls: [
+            'https://www.gov.za/news/media-statements/special-investigating-unit-secures-r424-million-cash-and-assets-linked-bribes',
+          ],
+          legal_links: [],
+        },
+        {
           event_date: '2026-01-01',
           event_type: EventType.HEARING,
           title: 'WhatsApp traffic — Matlala and Deokaran lines (January 2026)',

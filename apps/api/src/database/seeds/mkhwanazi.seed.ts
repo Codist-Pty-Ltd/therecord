@@ -89,7 +89,7 @@ const COMMISSION_SEED = {
   reason_summary:
     "To investigate General Mkhwanazi's allegations that senior SAPS leadership and the Ministry of Police protected a criminal syndicate linked to businessman Vusimuzi 'Cat' Matlala, including the disbandment of the Political Killings Task Team and the handling of the Medicare 24 Tshwane District healthcare contract.",
   plain_english_summary:
-    "A retired judge — Justice Mbuyiseli Madlanga — was asked by the President to investigate very serious allegations made by a top police general. The allegations say powerful people inside the police and government were protecting criminals. The commission is gathering evidence in public so the country can see what is true.",
+    "A retired judge — Justice Mbuyiseli Madlanga — was asked by the President to investigate very serious allegations made by a top police general. The allegations say powerful people inside the police and government were protecting criminals. The commission is still hearing evidence. The President has said the written report must reach him by 25 January 2027.",
   chair_name: 'Mbuyiseli Madlanga',
   announced_date: '2025-07-14',
   hearings_started: '2025-09-17',
@@ -100,7 +100,8 @@ const COMMISSION_SEED = {
   report_url: null,
   cost_rands: null,
   total_hearing_days: null,
-  outcome_summary: null,
+  outcome_summary:
+    'Active as of 10 November 2026. On 9 July 2026 the President moved the final-report date from 31 August 2026 to 16 November 2026, with evidence to close on 2 October 2026. On 19 September 2026 he set a later deadline of 25 January 2027. Public hearings resumed on 9 November 2026. No report has been delivered.',
   produced_prosecutions: null,
   president_who_established: 'Cyril Ramaphosa',
 } as const;
@@ -127,9 +128,9 @@ const STORY_SEED = {
   domain: StoryDomain.CRIMINAL_JUSTICE,
   status: StoryStatus.ACTIVE,
   summary:
-    "In July 2025 KZN Provincial Police Commissioner Lt Gen Nhlanhla Mkhwanazi delivered an extraordinary televised press conference accusing the then-Minister of Police, senior SAPS leadership and a private businessman of protecting an organised-crime cartel operating inside the state. The allegations led to the suspension of the Minister, the establishment of the Madlanga Commission of Inquiry by Presidential Proclamation, and a parallel National Assembly Ad Hoc Committee — two investigations into the same set of allegations running at once.",
+    "In July 2025 KZN Provincial Police Commissioner Lt Gen Nhlanhla Mkhwanazi delivered an extraordinary televised press conference accusing the then-Minister of Police, senior SAPS leadership and a private businessman of protecting an organised-crime cartel operating inside the state. The allegations led to the suspension of the Minister, the establishment of the Madlanga Commission of Inquiry by Presidential Proclamation, and a parallel National Assembly Ad Hoc Committee — two investigations into the same set of allegations running at once. As of 10 November 2026 the commission is still sitting. The President's latest deadline for its final report is 25 January 2027. Public hearings resumed on 9 November with Vusimuzi Matlala called to testify. On 10 November that evidence was delayed by a dispute over whether parts of his legal consultations were off the record. Parliament's ad hoc committee finished the substance of a draft report on 7 October 2026. That draft had not been adopted by the National Assembly.",
   plain_english_summary:
-    'Imagine your school has a special teacher whose job is to catch cheaters. One day that teacher stood up and said: the principal is helping the cheaters and hiding the evidence. That is what happened in South Africa. A senior police officer named General Mkhwanazi stood up and said some very powerful politicians and police bosses were protecting a criminal gang. Two groups of very important people are now investigating to find out if this is true.',
+    'Imagine your school has a special teacher whose job is to catch cheaters. One day that teacher stood up and said: the principal is helping the cheaters and hiding the evidence. That is what happened in South Africa. A senior police officer named General Mkhwanazi stood up and said some very powerful politicians and police bosses were protecting a criminal gang. Two groups of very important people are now investigating to find out if this is true. By 10 November 2026 the judge was still asking questions, and the written answer for the President is due on 25 January 2027.',
 } as const;
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -768,6 +769,108 @@ const TIMELINE_SEED: readonly TimelineEventSeed[] = [
       'The commission is still working — more than three months in, with more witnesses still to come.',
     significance: EventSignificance.MEDIUM,
     source_urls: ['https://criminaljusticecommission.org.za'],
+    legal_links: [],
+  },
+  {
+    event_date: '2026-07-09',
+    event_type: EventType.STATEMENT,
+    title: 'President extends the Madlanga report deadline to 16 November 2026',
+    description:
+      'Presidency statement, 9 July 2026. President Ramaphosa extended the commission’s final-report date from 31 August 2026 to Monday 16 November 2026. The same extension set an evidence deadline of Friday 2 October 2026, so the commission could close topics already opened and hear the matters in its terms of reference. The Presidency said that without the extension large parts of the work would be left unfinished.',
+    plain_english:
+      'The president gave the judge more time. The written report moved from the end of August to 16 November, and new evidence had to be in by 2 October.',
+    significance: EventSignificance.CRITICAL,
+    source_urls: [
+      'https://www.gov.za/news/media-statements/president-cyril-ramaphosa-grants-extension-madlanga-commission-report',
+      'https://www.news24.com/southafrica/crime-and-courts/ramaphosa-extends-madlanga-commission-by-two-and-a-half-months-20260709-0722',
+    ],
+    legal_links: [],
+  },
+  {
+    event_date: '2026-08-26',
+    event_type: EventType.STATEMENT,
+    title: 'Daily Maverick reports Matlala’s account of bids pooled with Maumela',
+    description:
+      'Report published 26 August 2026, not a commission finding. Daily Maverick reported that Vusimuzi Matlala told the Madlanga Commission he and Hangwani Morgan Maumela pooled cash from about 2018 to 2023 to bid for Gauteng health quotations, shared about 10 percent of the profit, and used supplier Telox. The article says three Matlala companies received about R13.5 million, and that Matlala invoked the right against self-incrimination. The article does not give a separate hearing date, so this row uses the publication date.',
+    plain_english:
+      'A newspaper said Cat Matlala told the judge he and another businessman put money together to win hospital supply jobs. That is his story in the hearing. The commission has not decided it is true.',
+    significance: EventSignificance.HIGH,
+    source_urls: [
+      'https://www.dailymaverick.co.za/article/2026-08-26-matlala-s-ties-to-tenderpreneur-opens-new-tembisa-hospital-procurement-trail/',
+    ],
+    legal_links: [],
+  },
+  {
+    event_date: '2026-09-19',
+    event_type: EventType.STATEMENT,
+    title: 'President sets a final report deadline of 25 January 2027',
+    description:
+      'Presidency statement, 19 September 2026. President Ramaphosa extended the deadline for the final report to Monday 25 January 2027, replacing the 16 November 2026 date set in July. The statement says the new date allows the commission to process additional evidence, including testimony from experts who made recommendations on the terms of reference.',
+    plain_english:
+      'The president moved the deadline again. The commission must now give him its written report by 25 January 2027.',
+    significance: EventSignificance.CRITICAL,
+    source_urls: [
+      'https://www.gov.za/news/media-statements/president-cyril-ramaphosa-grants-final-extension-madlanga-commission-report',
+      'https://www.news24.com/southafrica/news/ramaphosa-grants-final-extension-for-madlanga-commission-20260919-0449',
+    ],
+    legal_links: [],
+  },
+  {
+    event_date: '2026-09-30',
+    event_type: EventType.STATEMENT,
+    title: 'Commission publishes its schedule through January 2027',
+    description:
+      'Statement of 30 September 2026 by commission spokesperson Jeremy Michaels. The commission said it would not sit on Friday 2 October 2026, and that from the week of 5 October it would hear evidence in camera because the material was not suitable for public broadcast (ongoing investigations or confidential material). It also planned a two-day seminar in October to prepare the final report. Citing the local government elections of 4 November 2026, it said public hearings would resume on 9 November 2026. The remaining public work in 2026 would wrap up Phase Two, including the testimony of Minister Senzo Mchunu, then Phase Three, with Lieutenant-General Nhlanhla Mkhwanazi returning to the stand. December 2026 and January 2027 would be used to write the report due to the President on 25 January 2027. The commission said it would no longer accept new submissions, while still accepting information on matters already with its evidence leaders and investigators.',
+    plain_english:
+      'The commission said it would hear some evidence in private during October, then open the doors again on 9 November. The minister and General Mkhwanazi are still due to speak. The written report is due on 25 January 2027, and the commission is no longer taking brand-new complaints.',
+    significance: EventSignificance.HIGH,
+    source_urls: [
+      'https://files.madlangacommission.co.za/documents/madlanga-schedule.pdf',
+    ],
+    legal_links: [],
+  },
+  {
+    event_date: '2026-10-07',
+    event_type: EventType.HEARING,
+    title: 'Ad hoc committee finishes the substance of its draft report',
+    description:
+      'Parliamentary record, 7 October 2026. The National Assembly ad hoc committee chaired by Molapi Soviet Lekganyane completed substantive consideration of a draft report of about 790 pages. The chair told members the report still needed refinement, circulation to witnesses, their responses, and legal review before final adoption. It had not been adopted or tabled. Reporting the next day said the committee, on its sixth extension, was working toward a 30 October 2026 deadline to table the report. As of 10 November 2026 the committee’s Parliament page still listed the inquiry as open and did not publish an adopted report.',
+    plain_english:
+      'Parliament’s own inquiry finished reading its long draft. People named in it still had to be shown the draft, and lawyers still had to check it, before Parliament could adopt it. That last step was not on the public record by 10 November 2026.',
+    significance: EventSignificance.HIGH,
+    source_urls: [
+      'https://pmg.org.za/committee-meeting/43823/',
+      'https://www.enca.com/news-top-stories/parlys-ad-hoc-committee-wraps-draft-report-deliberations',
+    ],
+    legal_links: [],
+  },
+  {
+    event_date: '2026-11-09',
+    event_type: EventType.HEARING,
+    title: 'Public hearings resume — Matlala called for 9 and 10 November',
+    description:
+      'SAnews, 9 November 2026, quoting a commission statement. Public hearings resumed that day. Vusimuzi Matlala was scheduled for the witness stand on 9 and 10 November 2026. The commission said the preceding weeks had been in camera because the evidence was not suitable for public broadcast, and that it had held a two-day seminar toward the final report due on 25 January 2027. After Matlala, other witnesses were scheduled under subpoena, including Police Minister Senzo Mchunu, Lieutenant-General Nhlanhla Mkhwanazi and Lieutenant-General Dumisani Khumalo. The commission repeated that it was not accepting new submissions.',
+    plain_english:
+      'The public hearings started again. A businessman known as Cat Matlala was called to speak on 9 and 10 November. The minister and General Mkhwanazi are still on the list to come back.',
+    significance: EventSignificance.CRITICAL,
+    source_urls: [
+      'https://www.sanews.gov.za/south-africa/madlanga-commission-public-hearings-resume',
+    ],
+    legal_links: [],
+  },
+  {
+    event_date: '2026-11-10',
+    event_type: EventType.HEARING,
+    title: 'Matlala’s evidence delayed by a dispute over legal consultations',
+    description:
+      'Hearing coverage, 10 November 2026 — procedural, not a finding. Proceedings were delayed after Matlala’s counsel, Adv Annelene van den Heever, alleged that an agreement with the commission’s legal team kept parts of consultations with him off the record, and that evidence leader Adv Adila Hassim had disclosed covered information during Monday’s testimony. Evidence leader Adv Mahlape Sello denied any such agreement. eNCA reported that after the tea break it emerged Sello had not been party to an agreement as alleged, and that Van den Heever was ordered to apologise for suggesting Sello knew of it. This was the second consecutive day the testimony was delayed. On 9 November his lawyer had argued he might incriminate himself, and the testimony proceeded anyway.',
+    plain_english:
+      'On 10 November the hearing started late. Matlala’s lawyer and the commission’s lawyers argued about what he had been told could stay private. The commission ordered his lawyer to apologise. This is not a decision about who is guilty.',
+    significance: EventSignificance.HIGH,
+    source_urls: [
+      'https://www.enca.com/news-top-stories-videos/record-madlanga-commission-hears-clash-over-matlalas-legal-consultations',
+      'https://www.timeslive.co.za/news/2026-11-10-watch-live-cat-matlala-continues-with-his-testimony-at-madlanga-commission/',
+    ],
     legal_links: [],
   },
 ];

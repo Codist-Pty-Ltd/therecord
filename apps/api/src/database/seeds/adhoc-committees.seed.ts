@@ -552,7 +552,8 @@ const COMMITTEES_SEED: readonly CommitteeSeed[] = [
     concluded_date: null,
     report_adopted_date: null,
     status: AdhocCommitteeStatus.ACTIVE,
-    outcome_summary: null,
+    outcome_summary:
+      'Active as of 10 November 2026. On 7 October 2026 the committee completed substantive consideration of a draft report of about 790 pages. The chair said it still needed refinement, a right of reply for witnesses, and legal review before adoption. It had not been tabled in the National Assembly.',
     produced_legislative_change: null,
     produced_accountability_action: null,
     report_url: null,
